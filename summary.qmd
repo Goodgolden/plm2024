@@ -1,0 +1,73 @@
+# Working log {.unnumbered}
+
+Here is the Future work for TSA and Randy's thesis
+
+## 20231101
+
+1.  Including other features and outcomes for matching
+
+2.  Using both pain for informative outcome for outcome inference
+
+    2\*. pain and dash two outcomes
+
+3.  ✅ 365 days cut off this is the last step of data cleaning
+
+4.  ✅ Insurance company, and the worker report worse
+
+5.  ✅ Cleaning multiple surgeries
+
+-   filter out the patient with only one
+
+-   filter out the two situations
+
+    -   gap between the two surgeries are short or with few outcomes
+
+    -   two adjacent surgeries without outcomes in between
+
+    -   the second surgery without any further outcomes after
+
+## 20231106
+
+6.  ✅ Cleaning the pain dataset
+
+7.  ✅ Table or histogram for the outcome number, timemax, and pain
+
+## 20231109
+
+8.  How to use the tsa data.
+
+    -   filter the patients with the first outcome in a week after surgery
+
+    -   use imputation inla-rw or inla-bspline as the baseline
+
+    -   ask Stef whether brokenstick or multiple-imputation is powerful enough to provide
+
+    -   test on the patients with first outcome in a week (pick out the patients)
+
+9.  ✅ The pain and outcome at the same time ??? - most with both outcomes, very few no at the same time
+
+10. only keep the first surgery for every one
+
+11. the baseline will be `what ever the first outcome value is` and include the time gap between surgery and the first outcome
+
+## 20231122-29
+
+12. clean the patients with two and three surgeries
+
+13. remove the second surgery for patients
+
+14. filter out patient with fewer than 3 visits
+
+15. filter out the time over a year
+
+## 20231204
+
+Things need to be fixed
+
+1.  the matching plots are all-dataset-level together, but predictive plots are individual in level
+
+2.  to add other matching distance and weights
+
+3.  decide which variables are included into the lm() model
+
+4.  the memory and speed for the function, a clean version for speed-up functions. **overwrite the objects**

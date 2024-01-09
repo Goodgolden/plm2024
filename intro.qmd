@@ -1,0 +1,147 @@
+# Introduction {.unnumbered}
+
+This is a book created from markdown and executable code.
+
+This project contains the works for TSA shoulder datasets. Here are the details for each dataset. Interested varaibles are labeled in italic and bold.
+
+## Base data
+
+This tab contains a list of all TSA/Reverse TSA surgeries as described above. One line for each surgery. Other variables at the time of surgery are also included.
+
+-   EMPI_DEIDENTIFIED
+
+    -   **cross the tables unique id probably for shoulder not for person**, is it true?)
+
+    -   Unique patient identifier that can be linked between data tables
+
+    -   Categorical variable (sequence of letters and numbers)
+
+-   PATIENT_AGE
+
+    -   The age of the patient at the time of surgery
+
+    -   Integer variable (years)
+
+-   PATIENT_GENDER
+
+    -   Indicator of patient-reported sex
+
+    -   Categorical variable (male or female)
+
+-   PRIMARY_PAYER
+
+    -   Patient's insurance provider
+
+    -   Categorical variable (name of insurance)
+
+-   SURGERY_TYPE
+
+    -   Type of shoulder arthroplasty performed
+
+    -   Categorical variable (Reverse TSA or TSA)
+
+-   SURGERY_DT
+
+    -   Timestamp of surgical date
+
+    -   Time variable (YYYY-mm-dd hh:mm:ss)
+
+-   BMI
+
+    -   Body mass index
+
+    -   Continuous variable (kg/m2)
+
+-   ADI_VALUE
+
+    -   Utah Area Deprivation Index standardized value. The ADI is a proxy of socioeconomic status with values ranging from -40.0 to 139.4. Higher values indicate greater levels of deprivation. More details available here: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5019337/.
+
+    -   Continuous variable (standardized value)
+
+-   ADI_QUINTILE
+
+    -   Utah Area Deprivation Index score divided into categories from 1-5. Higher categories indicate greater levels of deprivation
+
+    -   Ordinal variable (1-5), 20% per level
+
+## Outcomes
+
+This tab contains a list of all DASH or QDASH outcomes collected for the patient population contained in the "base" population. Outcomes are collected for all patients from 1/1/2016 to allow for any pre-surgical values to be pulled if needed. Outcomes are pulled from iCentra (Cerner), ROMS 1, and ROMS 2.
+
+-   EMPI_DEIDENTIFIED
+
+    -   Unique patient identifier that can be linked between data tables
+
+    -   Categorical variable (sequence of letters and numbers)
+
+-   OUTCOME_TYPE
+
+    -   Indicates whether the full DASH or QuickDASH was collected
+
+    -   Categorical variable (**DASH or QDASH**)
+
+    -   **seems the similar to each other**
+
+Potentially be a variable to adjust
+
+-   OUTCOME_DT
+
+    -   Timestamp indicating when outcome was assessed
+
+    -   Time variable (YYYY-mm-dd hh:mm:ss)
+
+-   OUTCOME_SCORE
+
+    -   Raw value of either DASH or QuickDASH where higher scores indicate greater disability
+
+    -   Integer variable (0-100)
+
+## Pain
+
+This tab contains a list of all pain scores collected for the patient population contained in the "base" population. Only pain scores collected at the time of the DASH/QDASH are included. Pain scores are collected for all patients from 1/1/2016 to allow for any pre-surgical values to be pulled if needed. Pain Values are pulled from iCentra (Cerner), ROMS 1, and ROMS 2
+
+-   EMPI_DEIDENTIFIED
+
+    -   Unique patient identifier that can be linked between data tables
+
+    -   Categorical variable (sequence of letters and numbers)
+
+-   PAIN_DT
+
+    -   Timestamp indicating when patient's pain was assessed
+
+    -   Time variable (YYYY-mm-dd hh:mm:ss)
+
+-   PAIN_SCORE
+
+    -   Patient-reported pain via the Numeric Pain Rating Scale where 0 = no pain and 10 = worst pain imaginable
+
+    -   Integer variable (1-10)
+
+## Range of Motion
+
+This tab contains all data points for the range of motion documented in iCentra (Cerner) for the "base" population of patients. This data is a really messy, but I'm just providing it in its raw state as requested. The data points are collected for all patients from 1/1/2016 to allow for any pre-surgical values to be pulled if needed.
+
+-   EMPI_DEIDENTIFIED
+
+    -   Unique patient identifier that can be linked between data tables
+
+    -   Categorical variable (sequence of letters and numbers)
+
+-   RANGE_OF_MOTION_TYPE
+
+    -   Therapist description of how range of motion was assessed. This can include the plane of motion, patient positioning, or other pertinent factors
+
+    -   Character variable that needs to be transformed to categorical
+
+-   RANGE_OF_MOTION_TIMESTAMP
+
+    -   Timestamp indicating when range of motion was assessed
+
+    -   Time variable (YYYY-mm-dd hh:mm:ss)
+
+-   RANGE_OF_MOTION_VALUE
+
+    -   Therapist indicated value of the assessed range of motion. Primarily, this variable continues integers that indicate the degrees of motion assessed, but it may also contain characters that describe the type or amount of motion.
+
+    -   Character variable that needs to be transformed to integer

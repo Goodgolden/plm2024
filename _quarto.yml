@@ -1,0 +1,59 @@
+project:
+  type: book
+  output-dir: _book
+
+book:
+  title: "TSA project analysis"
+  # output-file: "TSA project analysis"
+  date: "10/30/2023"
+  navbar:
+    search: true
+    downloads: [pdf, epub]
+  repo-url: https://github.com/Goodgolden/tsa
+  repo-actions: [edit]
+  sidebar:
+    search: true
+    tools:
+      - icon: github
+        href: https://github.com/
+        aria-label: GitHub
+      - icon: share
+        aria-label: Email
+      - icon: hospital
+        aria-label: CU Anschutz
+        href: https://coloradosph.cuanschutz.edu/education/departments/biostatistics-informatics
+  page-navigation: true
+  chapters:
+    - index.qmd
+    - intro.qmd
+    - 01_table1.qmd
+    - 02_time.qmd
+    - 03_time2.qmd
+    - 04_pain.qmd
+    - 05_pain2.qmd
+    - 06_final_outcome.qmd
+    # - 07_plm.qmd
+    - 07_clean_insurance.qmd
+    - summary.qmd
+    - references.qmd
+
+bibliography: references.bib
+
+format: 
+  html: 
+    code-fold: true
+    code-tools: true
+    code-link: true
+    df-print: paged
+    # fig-cap-location: top
+    fig.topcaption: TRUE
+    author-meta: "Randy Jin, Elizabeth Juarez-Colunga"
+    # include-in-header: "plausible.html"
+    callout-appearance: simple
+
+editor: visual
+
+toc: true
+
+comments:
+  hypothesis: true

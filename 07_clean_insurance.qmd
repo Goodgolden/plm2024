@@ -1,0 +1,316 @@
+---
+title: "Final Cleaning"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      warnings = FALSE,
+                      message = FALSE,
+                      comment = "#>",
+                      #results = "hide",
+                      digits = 4,
+                      error = FALSE)
+
+## clean the R environment
+graphics.off()
+rm(list = ls())
+freshr::freshr()
+
+## load packages
+library(here, quietly = TRUE)
+library(tidyverse, quietly = TRUE)
+library(gtsummary, quietly = TRUE)
+library(flextable, quietly = TRUE)
+
+## 
+library(devtools, quietly = TRUE)
+load_all()
+
+## check the directory for the file
+# here::dr_here()
+here::set_here()
+
+## the figure or results should be saved 
+# paste0("foldername/Sfilename_workingresult_", 
+#      Sys.Date(), ".filetype")
+```
+
+```{css "css_setup", echo=FALSE}
+.scroll-100 {
+  max-height: 300px;
+  max-width: 1000px;
+  overflow-y: auto;
+  background-color: inherit;
+}
+```
+
+## Show Insurance variable
+
+
+Here is the table1 for the variables included in the final model.
+
+
+```{r}
+#| label: insurance_table1
+#| tbl-cap: "Original Table1"
+
+
+baseline_insurance <- read_csv("newdata/final_tsa_clean_baseline_for_insurance2023-12-04.csv")
+
+table1_base <- baseline_insurance %>%
+  dplyr::select(patient_age, patient_gender,
+         primary_payer, surgery_type, adi_value, bmi) %>%
+  # mutate(adi_quintile = as.factor(adi_quintile)) %>% 
+  tbl_summary(by = surgery_type,
+              statistic = all_continuous() ~ c("{median} ({p25}, {p75})",
+                                               "({min}, {max})"),
+              type = all_continuous() ~ "continuous2") %>%
+  ## just display all the variables in one column
+  modify_header(label = "**Characteristics**") %>%
+  # update the column header
+  bold_labels() %>%
+  add_p() %>%
+  italicize_labels() %>%
+  as_flex_table()
+
+table1_base
+```
+
+The variables will be used in the linear model (the second step for PLM):
+
+1.  Insurance: need to be cleaned
+2.  ADI values: missing values 66 + 110 = 175 total
+3.  BMI values: missing values 25 + 16 = 41 total
+4.  the best knots for brokenstick model
+5.  the best anchor time points
+
+Total tsa id: 981 + 1515 = 2496 ids         
+
+Total missing with either bmi or adi is 209 ids           
+
+Total non-missing tsa id: 2287 ids                 
+
+
+```{r}
+#| label: insurance_check 
+
+tsa_na <- baseline_insurance %>%
+  filter(is.na(bmi) | is.na(adi_value))
+
+tsa_ta <- baseline_insurance %>%
+  filter(!is.na(bmi), !is.na(adi_value))
+
+nrow(tsa_ta)
+```
+
+
+## Clean the tsa longitudinal and baseline
+
+1. clean the insurance variable into 6 groups (self-pay is in commercial)
+2. remove time over 365 days and visit number fewer than 4 times
+  - visit time with more than 3 times: 2007 ids
+  - visit time with more than 4 times: 1851 ids 
+3. remove second visits from the dataset, sid contains all 2b
+4. log transform the outcomes
+
+```{r}
+#| label: tsa00
+
+set.seed(555)
+tsa00 <- read.csv("newdata/tsa_clean_baseout_2023-11-07.csv", 
+                 row.names = 1) %>%
+  dplyr::select(id, sid, outcome_type, outcome_score, surgery_type,
+                patient_age, patient_gender, adi_value,
+                primary_payer, bmi, time) 
+
+## 174 individuals have two surgeries with 1st
+tsa02a <- tsa00 %>%
+  filter(grepl('2a', sid)) %>%
+  dplyr::select(sid, id) %>%
+  unique()
+
+nrow(tsa02a)
+```
+
+There are 174 individuals contains two surgeries
+  
+  
+```{r}  
+#| label: tsa0
+
+tsa0 <- tsa00 %>%
+  # filter(!grepl('2b', sid)) %>%
+  group_by(sid) %>%
+  arrange(sid) %>%
+  # filter(!is.na(adi_value)) %>%
+  mutate(log_outcome = log(outcome_score + 0.1),
+         # t0 = min(time),
+         id = as.character(id),
+         primary_payer = case_when(primary_payer %in% c("Medicaid", "MEDICAID", "Medicaid HMO") ~ "Medicaid",
+                                   primary_payer %in% c("Medicare", "MEDICARE") ~ "Medicare",
+                                   primary_payer %in% c("Medicare Advantage") ~ "Medicare Advantage",
+                                   primary_payer %in% c("Workers Comp/Liability") ~ "Workers comp / liability",
+                                   primary_payer %in% c("Select Health", "SELECTHEALTH") ~ "Select health",
+                                   primary_payer %in% c("SELF PAY", "Self Pay") ~ "Self paid",
+                                   primary_payer %in% c("Auto/TPL", "AETNA", "Commercial", "PEHP", "Regence Blue Cross",
+                                                        # "SELF PAY", "Self Pay",
+                                                        "Tricare", "United HealthCare") ~ "Commercial")) %>% 
+    fill(patient_age, patient_gender, surgery_type,
+         primary_payer, bmi, adi_value) %>%
+  filter(time < 365) %>%
+  group_by(sid) %>%
+  mutate(visit_max = n() - 1,
+         visit_n = row_number() - 1) %>%
+  filter(!is.na(adi_value),
+         !is.na(bmi),
+         visit_max >= 4) 
+
+tsa02a <- tsa0 %>%
+  filter(grepl('2a', sid)) %>%
+  dplyr::select(sid, id) %>%
+  unique()
+tsa02b <- tsa0 %>%
+  filter(grepl('2b', sid)) %>%
+  dplyr::select(sid, id) %>%
+  unique()
+
+id_both <- full_join(tsa02a, tsa02b, by = "id")
+```
+
+some people will lose their first surgery or their second surgery.
+so the people with both surgery 
+
+
+```{r "1st_2nd_surgeries", class.output="scroll-100"}
+id_both
+```
+
+
+```{r}
+#| label: remove_2nd
+# if there are two surgeries for a given id
+# we will remove the second one if the first one 
+# is avaiable for the data analysis
+# if not we will only keep the second surgery
+
+sid_ignore <- id_both %>%
+  mutate(sid_ignore = ifelse(!is.na(sid.x) | !is.na(sid.y), sid.y, NA)) %>%
+  dplyr::select(sid_ignore) %>% 
+  na.omit() %>% 
+  unlist()
+
+tsa1 <- tsa0 %>%
+  filter(sid %!in% sid_ignore)
+```
+
+
+```{r}
+#| label: tsa2
+# tsa2 is the dataset for the final testing training
+# split and final analysis
+
+tsa2 <- tsa1 %>%
+  filter(outcome_type != "baseline") %>%
+  group_by(sid) %>%
+  mutate(t0 = min(time)) 
+ 
+# tsa2_base <- tsa1 %>%
+#   filter(outcome_type == "baseline") 
+
+tsa_baseline <- tsa2 %>%
+  filter(outcome_type != "baseline") %>%
+  group_by(sid) %>%
+  slice(1L) %>%
+  mutate(log_baseline = log_outcome,
+         time0 = time) 
+# View(tsa_baseline)
+```
+
+
+```{r}
+#| label: split_data
+
+set.seed(555)
+library(splitstackshape)
+tsa_train <- stratified(tsa_baseline, c('primary_payer'), 2/3)
+id_train <- tsa_train$id %>% unique()
+
+tsa_train <- tsa2 %>%
+  filter(id %in% id_train,) %>%
+  left_join(tsa_baseline) %>% 
+  group_by(id) %>%
+  fill(log_baseline) %>%
+  dplyr::select(-visit_max, -visit_n, -time0) %>%
+  filter()
+
+tsa_test <- tsa2 %>%
+  filter(id %!in% id_train) %>%
+  left_join(tsa_baseline)  %>%
+  fill(log_baseline) %>%
+  dplyr::select(-visit_max, -visit_n, -time0)
+
+id_test <- tsa_test$id %>% unique()
+
+length(id_test)
+length(id_train)
+```
+
+
+```{r}
+#| label: final_tsa_baseline
+
+identical(names(tsa_test), names(tsa_train))
+# View(tsa_train)
+# View(tsa_test)
+
+tsa_baseline <- tsa_baseline %>%
+  ungroup() %>%
+  mutate(group = ifelse(id %in% id_train, 
+                        "Training", "Testing"))
+```
+
+
+```{r "tsa_final_baseline", class.output="scroll-100"}
+tsa_baseline
+```
+
+## Final Table1 for Analysis
+
+```{r}
+#| label: final_table1
+#| tbl-cap: "Final Table1"
+
+table2 <- tsa_baseline %>%
+  dplyr::select(patient_age, patient_gender, group, 
+                primary_payer, surgery_type, visit_max,
+                adi_value, bmi) %>% 
+  # mutate(adi_quintile = as.factor(adi_quintile)) %>% 
+  tbl_summary(by = group,
+              statistic = all_continuous() ~ c("{median} ({p25}, {p75})",
+                                               "({min}, {max})"),
+              type = all_continuous() ~ "continuous2") %>%
+  ## just display all the variables in one column
+  modify_header(label = "**Characteristics**") %>%
+  # update the column header
+  bold_labels() %>%
+  add_p() %>%
+  italicize_labels() %>%
+  as_flex_table()
+
+table2
+```
+
+
+## Saving data
+
+```{r}
+usethis::use_data_raw("tsa_baseline")
+usethis::use_data_raw("tsa_test")
+usethis::use_data_raw("tsa_train")
+
+usethis::use_data(tsa_test,
+                  tsa_train,
+                  internal = TRUE,
+                  overwrite = TRUE)
+```
+

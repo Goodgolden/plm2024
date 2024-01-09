@@ -1,0 +1,15 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+/.quarto/
+/data/
+/newdata/
+/data-raw/
+.rda
+.DS_Store
+.here
+.Rbuildignore
+/_book/
+/figure/
+.png

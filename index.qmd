@@ -1,0 +1,21 @@
+# Preface {.unnumbered}
+
+This is a Quarto book for TSA project.
+
+-   00_intro.qmd: the data dictionary for tsa datasets
+
+-   01_table1.qmd: data cleaning and table1s for each dataset
+
+-   02_time.qmd: clean out the outcome dataset
+
+-   03_time2.qmd: clean out the outcome dataset again and merger with baseline dataset, with outcome visit times concerned
+
+-   04_pain.qmd: clean out the pain dataset
+
+-   05_pain2.qmd: merge outcome, pain, and baseline dataset together, keeping two different formats:
+
+    -   merged outcome, pain, and baseline
+
+    -   separately merged pain_baseline and outcome_baseline
+
+-   06_final_outcome.qmd

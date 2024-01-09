@@ -1,0 +1,301 @@
+---
+title: "Table1 for DASH (v1.1)"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      warnings = FALSE,
+                      message = FALSE,
+                      comment = "#>",
+                      #results = "hide",
+                      digits = 4,
+                      error = FALSE)
+
+## clean the R environment
+graphics.off()
+rm(list = ls())
+freshr::freshr()
+
+## load packages
+library(here, quietly = TRUE)
+library(tidyverse, quietly = TRUE)
+library(gtsummary, quietly = TRUE)
+library(flextable, quietly = TRUE)
+
+## check the directory for the file
+# here::dr_here()
+here::set_here()
+
+## the figure or results should be saved 
+# paste0("foldername/Sfilename_workingresult_", 
+#      Sys.Date(), ".filetype")
+```
+
+```{css, "css_setup", echo=FALSE}
+.scroll-100 {
+  max-height: 300px;
+  max-width: 1000px;
+  overflow-y: auto;
+  background-color: inherit;
+}
+```
+
+## Dataset from last page
+
+Only cleaned to remove adjacent surgeries without any outcome results in between;\
+Also remove the surgeries without any outcome after;\
+A new `id` given to each unique individual patient, and a new `sid` given to each unique surgery.
+
+This page is to further clean the dataset, especially for the patients with more than one surgeries.
+
+```{r "baseline"}
+baseline0 <- read.csv("newdata/tsa_clean_baseline_for_outcome_2023-11-07.csv", row.names = 1)
+baseout0 <- read.csv("newdata/tsa_clean_baseout_2023-11-07.csv", row.names = 1)
+```
+
+```{r "surgery_nid"}
+## using lead() function to add extra surgery time
+## in order to calculate the time gap in adjacent surgeries
+base_sid1 <- baseline0 %>% 
+  filter(surgery_max == 1) %>%
+  select(id, sid, surgery_dt, timemax, outcome_n, everything())
+
+base_sid2 <- baseline0 %>%
+  filter(surgery_max == 2) %>%
+  group_by(id) %>%
+  mutate(surgery_time = row_number(),
+         surgery_dt2 = lead(surgery_dt),
+         surgery_gap = as.Date(surgery_dt2) - as.Date(surgery_dt)) %>%
+  ## Mon Nov  6 12:22:10 2023 ------------------------------
+  ########################
+  ## pay attention here ##
+  ########################
+  select(id, sid, surgery_dt, surgery_dt2, 
+         surgery_gap, timemax, outcome_n, everything()) 
+
+base_sid3 <- baseline0 %>%
+  filter(surgery_max == 3) %>%
+  group_by(id) %>%
+  mutate(surgery_time = row_number(),
+         surgery_dt2 = lead(surgery_dt),
+         surgery_gap = as.Date(surgery_dt2) - as.Date(surgery_dt)) %>%
+  # Mon Nov  6 12:34:24 2023 ------------------------------
+  ########################
+  ## pay attention here ##
+  ########################
+  select(id, sid, surgery_dt, surgery_dt2, 
+         surgery_gap, timemax, outcome_n, everything()) 
+
+```
+
+## Time gap (between surgeries)
+
+Now the dataset contains the time gap between the adjacent surgeries.
+
+If the time gap is larger than `100` days, we keep the first surgery; If the time gap is smaller than `100` days, we remove the fist surgery.\
+Plot the distribution of the the time gap.
+
+```{r "histogram"}
+#| fig-cap-location: top
+#| fig-cap: "Time gap histograms"
+#| fig-subcap:
+#| - "time gap for two surgeries"
+#| - "time gap for three surgeries"
+#| warning: false
+#| layout-ncol: 1
+
+
+hist_gap2 <- base_sid2 %>%
+  ggplot(aes(x = surgery_gap)) +
+  geom_histogram(alpha = 0.5) +
+  # xlim(c(0, 100)) +
+  theme_bw() + 
+  geom_vline(xintercept = 100,
+             linetype = "dotted") +
+  theme(legend.position = "bottom") 
+
+hist_gap3 <- base_sid3 %>%
+  ggplot(aes(x = surgery_gap)) +
+  geom_histogram(alpha = 0.5) +
+  # xlim(c(0, 100)) +
+  geom_vline(xintercept = 100,
+             linetype = "dotted") +
+  theme_bw() + 
+  theme(legend.position = "bottom") 
+
+hist_gap2
+hist_gap3
+```
+
+Then based on the filter conditions, we can do:
+
+-   remove the `time gap < 90`???
+
+-   remove the `outcome_n < 5`???
+
+```{r "sid_to_keep"}
+base_sid2 <- base_sid2 %>%
+  filter(surgery_gap >= 90 | outcome_n > 10 | is.na(surgery_gap)) %>%
+  select(-surgery_dt2, -surgery_gap)
+
+base_sid3 <- base_sid3 %>%
+  filter(surgery_gap >= 90 | outcome_n > 10 | is.na(surgery_gap)) %>%
+  select(-surgery_dt2, -surgery_gap)
+
+id_keep <- c(base_sid1$sid, base_sid2$sid, base_sid3$sid)
+```
+
+```{r "save_data"}
+baseout1 <- baseout0 %>%
+  filter(sid %in% id_keep)
+baseline1 <- baseline0 %>%
+  filter(sid %in% id_keep) %>%
+  mutate(primary_payer = case_when(primary_payer %in% c("Medicaid", "MEDICAID", "Medicaid HMO") ~ "Medicaid",
+                     primary_payer %in% c("Medicare", "MEDICARE", "Medicare Advantage") ~ "Medicare",
+                     primary_payer %in% c("Workers Comp/Liability") ~ "Workers comp / liability",
+                     primary_payer %in% c("Select Health", "SELECTHEALTH") ~ "Select health",
+                     primary_payer %in% c("Auto/TPL", "AETNA", "Commercial", "PEHP", "Regence Blue Cross",
+                                          "Tricare", "United HealthCare") ~ "Commercial",
+                     primary_payer %in% c("SELF PAY", "Self Pay") ~ "Self paid"))
+
+baseline2 <- baseline0 %>%
+  filter(sid %in% id_keep)
+
+
+write.csv(baseout1, file = paste0("newdata/final_tsa_clean_baseout_", Sys.Date(), ".csv"))
+write.csv(baseline2, file = paste0("newdata/final_tsa_clean_baseline_for_insurance", Sys.Date(), ".csv"))
+write.csv(baseline1, file = paste0("newdata/final_tsa_clean_baseline_", Sys.Date(), ".csv"))
+```
+
+## Table1 verstion 1.1 {#sec-3-outcome-table1}
+
+::: callout-important
+The original baseline dataset contains: `RTSA N = 2,371`; `TSA N = 5,092`
+
+The patients having both baseline longitudinal data: `RTSA N = 1,134`; `TSA N = 1,898`
+
+The newly updated baseline longitudinal dataset: `RTSA N = 981`; `TSA N = 1,515`
+:::
+
+To see the difference, go to @sec-1.2-table1-baseline;\
+go to @sec-5-pain-table1
+
+```{r "new_table1_outcome"}
+#| tbl-cap: "Table1 new version for DASH"
+#| tbl-cap-location: top
+table1_base <- baseline1 %>%
+  select(patient_age, patient_gender,
+         primary_payer, surgery_type, surgery_max,
+         bmi, adi_value, outcome_n, timemax) %>%
+  # mutate(adi_quintile = as.factor(adi_quintile)) %>% 
+  tbl_summary(by = surgery_type,
+              statistic = all_continuous() ~ c("{median} ({p25}, {p75})",
+                                               "({min}, {max})"),
+              type = all_continuous() ~ "continuous2") %>%
+  ## just display all the variables in one column
+  modify_header(label = "**Characteristics**") %>%
+  # update the column header
+  bold_labels() %>%
+  add_p() %>%
+  italicize_labels() %>%
+  as_flex_table()
+
+table1_base
+```
+
+::: callout-warning
+need to clean the insurance
+:::
+
+## Spaghetti plots
+
+```{r "longitudinal_plot"}
+#| fig-cap: Individual spaghetti plot and smoothing plot for DASH
+#| fig-cap-location: top
+#| fig-width: 10
+#| fig-height: 5
+plot1 <- baseout1 %>%
+  group_by(sid) %>%
+  arrange(time) %>%
+  fill(surgery_type) %>%
+  filter(outcome_type != "baseline",
+         outcome_score < 100) %>% 
+  ggplot(aes(x = time, y = outcome_score, 
+             group = sid, 
+             color = surgery_type)) +
+  geom_line(alpha = 0.3) +
+  geom_smooth(aes(group = surgery_type), 
+              method = "loess", color = "black") +
+  theme(legend.position = "none") +
+  facet_wrap(~surgery_type) 
+
+plot1 + theme_bw() + theme(legend.position = "none")
+```
+
+```{r "365 day_plot"}
+#| fig-cap: Individual spaghetti plot and smoothing plot within 365 days
+#| fig-cap-location: top
+#| fig-width: 10
+#| fig-height: 5
+plot2 <- baseout1 %>%
+  group_by(sid) %>%
+  arrange(time) %>%
+  fill(surgery_type) %>%
+  filter(outcome_type != "baseline",
+         outcome_score < 100,
+         time < 366) %>% 
+  ggplot(aes(x = time, y = outcome_score, 
+             group = sid, 
+             color = surgery_type)) +
+  geom_line(alpha = 0.3) +
+  geom_smooth(aes(group = surgery_type), 
+              method = "loess", color = "black") +
+  theme(legend.position = "none") +
+  facet_wrap(~surgery_type) 
+
+plot2 + theme_bw() + theme(legend.position = "none")
+
+# ggsave(paste0("figure/tsa_dash_score_365day_", Sys.Date(), ".png"))
+```
+
+## Quantiles for the outcomes {#sec-3-quantiles}
+
+To compare the quantiles in `outcome` and `pain` datasets, see @sec-5-quantiles
+
+```{r "quantiles"}
+p <- c(0, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 1)
+rbind(Q_outcome = quantile(baseline1$outcome_n, probs = p),
+      Q_time = quantile(baseline1$timemax, probs = p))
+```
+
+```{r "hist_time_outcome"}
+#| fig-cap: "Time gap histograms"
+#| fig-cap-location: top
+#| fig-subcap:
+#| - "histogram outcome number"
+#| - "histogram for max followup time"
+#| warning: false
+#| layout-ncol: 1
+
+hist_outcome <- baseline1 %>%
+  ggplot(aes(x = outcome_n)) +
+  geom_histogram(alpha = 0.5) +
+  # xlim(c(0, 100)) +
+  theme_bw() + 
+  xlab("qdash/dash") +
+  # geom_vline(xintercept = 100,
+  #            linetype = "dotted") +
+  theme(legend.position = "bottom") 
+
+hist_time <- baseline1 %>%
+  ggplot(aes(x = timemax)) +
+  geom_histogram(alpha = 0.5) +
+  # xlim(c(0, 100)) +
+  theme_bw() + 
+  # geom_vline(xintercept = 100,
+  #            linetype = "dotted") +
+  theme(legend.position = "bottom") 
+
+hist_outcome
+hist_time
+```

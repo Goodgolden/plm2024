@@ -1,0 +1,542 @@
+---
+title: "Table1 (v1.0)"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      warnings = FALSE,
+                      message = FALSE,
+                      comment = "",
+                      #results = "hide",
+                      digits = 4,
+                      error = FALSE)
+
+## clean the R environment
+graphics.off()
+rm(list = ls())
+freshr::freshr()
+
+## load packages
+library(here, quietly = TRUE)
+library(tidyverse, quietly = TRUE)
+library(gtsummary, quietly = TRUE)
+library(flextable, quietly = TRUE)
+
+## check the directory for the file
+# here::dr_here()
+here::set_here()
+
+## the figure or results should be saved 
+# paste0("foldername/Sfilename_workingresult_", 
+#      Sys.Date(), ".filetype")
+
+```
+
+```{css "css_setup", echo=FALSE}
+.scroll-100 {
+  max-height: 300px;
+  max-width: 900px;
+  font-size: 0.5em
+  overflow-y: auto;
+  overflow-x: auto;
+  background-color: inherit;
+}
+```
+
+## Data Cleaning
+
+```{r clean_data}
+#| eval: false
+#| include: false
+
+library(readxl)    
+
+read_excel_allsheets <- function(filename, tibble = FALSE) {
+    # I prefer straight data.frames
+    # but if you like tidyverse tibbles (the default with read_excel)
+    # then just pass tibble = TRUE
+    sheets <- readxl::excel_sheets(filename)
+    x <- lapply(sheets, function(X) readxl::read_excel(filename, sheet = X))
+    if(!tibble) x <- lapply(x, as.data.frame)
+    names(x) <- sheets
+    return(x)
+}
+
+
+files <- read_excel_allsheets("data/tsa_data_deidentified.xlsx")
+tsa_base <- files[[1]] %>% 
+  janitor::clean_names()
+
+tsa_outcome <- files[[2]] %>% 
+  janitor::clean_names()
+
+tsa_pain <- files[[3]] %>% 
+  janitor::clean_names()
+
+tsa_rom <- files[[4]] %>% 
+  janitor::clean_names()
+
+save(tsa_base, tsa_outcome, tsa_pain, tsa_rom,
+     file = paste0("data/tsa_all_data_", 
+                   Sys.Date(), ".rdata"))
+```
+
+```{r counting_id}
+# summary(tsa_base)
+# View(tsa_base)
+# summary(tsa_outcome)
+# summary(tsa_rom)
+# View(tsa_rom)
+
+load("data/tsa_all_data_2023-10-11.rdata")
+
+tsa_rom_id <- unique(tsa_rom$empi_deidentified) 
+tsa_pain_id <- unique(tsa_pain$empi_deidentified)
+tsa_outcome_id <- unique(tsa_outcome$empi_deidentified)
+tsa_base_id <- unique(tsa_base$empi_deidentified)
+
+cat(" The ROM dataset contains ", length(tsa_rom_id),
+    # [1] 1377, 
+    "unique patients. \n",
+    "The Pain dataset contains ", length(tsa_pain_id),
+    # [1] 2599,
+    "unique patients. \n",
+    "The outcome dataset contains ", length(tsa_outcome_id),
+    # [1] 2651,
+    "unique patients. \n",
+    "The baseline dataset contains ", length(tsa_base_id),
+    # [1] 6534,
+    "unique patients. \n")
+
+
+```
+
+## Baseline {#sec-1.2-table1-baseline}
+
+Solely the baseline characteristics:
+
+```{r "base_data", class.output="scroll-100"}
+tsa_base %>% select(-empi_deidentified)
+```
+
+::: callout-important
+The original baseline dataset contains: RTSA `N = 2,371`; TSA `N = 5,092`
+
+The patients having both baseline longitudinal data: RTSA `N = 1,134`; TSA `N = 1,898`
+:::
+
+```{r base_table}
+#| label: base_table
+#| tbl-cap: "Baseline Table1"
+
+clean_base0 <- tsa_base %>%
+  group_by(empi_deidentified) %>%
+  mutate(surgeryn = n()) %>%
+  ungroup() %>%
+  # filter(empi_deidentified %in% tsa_outcome_id) %>%
+  dplyr::select(-adi_quintile,
+                -primary_payer) %>%
+    mutate(patient_age = as.numeric(patient_age),
+           adi_value = as.numeric(adi_value),
+           bmi = as.numeric(bmi))
+
+clean_base <- clean_base0 %>% 
+  dplyr::select(-empi_deidentified, 
+                -surgery_dt)
+
+
+table1_base <- clean_base %>%
+  # mutate(adi_quintile = as.factor(adi_quintile)) %>% 
+  tbl_summary(by = surgery_type,
+              statistic = all_continuous() ~ c("{median} ({p25}, {p75})", "{min}, {max}"),
+              type = all_continuous() ~ "continuous2") %>%
+  ## just display all the variables in one column
+  modify_header(label = "**Characteristics**") %>%
+  # update the column header
+  bold_labels() %>%
+  add_p() %>%
+  italicize_labels() %>%
+  as_flex_table()
+
+table1_base
+```
+
+```{r hist_base}
+#| fig-cap: "Baseline histograms"
+#| fig-subcap:
+#| - "age"
+#| - "bmi"
+#| - "adi"
+#| warning: false
+#| layout-ncol: 1
+
+hist_base1 <- ggplot(data = clean_base, 
+       aes(x = patient_age, 
+           fill = surgery_type, 
+           group = surgery_type)) +
+  geom_histogram(alpha = 0.5) +
+  theme_bw()
+
+hist_base2 <- ggplot(data = clean_base, 
+       aes(x = bmi, 
+           fill = surgery_type, 
+           group = surgery_type)) +
+  geom_histogram(alpha = 0.5) +
+  xlim(c(0, 75)) +
+  theme_bw()
+  
+hist_base3 <- ggplot(data = clean_base, 
+       aes(x = adi_value,
+           fill = surgery_type, 
+           group = surgery_type)) +
+  geom_histogram(alpha = 0.5) +
+  theme_bw()
+
+hist_base1 + theme(legend.position = "bottom")
+hist_base2 + theme(legend.position = "bottom")
+hist_base3 + theme(legend.position = "bottom")
+```
+
+## Outcome (Longitudinal)
+
+There are only two types of outcomes DASH and QDASH, some patient will have both types of outcomes. If so, the outcomes are normally with the same values.
+
+```{r "outcome_data", class.output="scroll-100"}
+tsa_outcome %>% select(-empi_deidentified)
+```
+
+```{r outcome_table}
+#| label: outcome_table
+#| tbl-cap: "Outcome Table1"
+
+clean_outcome <- tsa_outcome %>%
+  group_by(empi_deidentified) %>%
+  mutate(visitn = n(),
+         time0 = as.Date(min(outcome_dt)),
+         timen = as.Date(max(outcome_dt)),
+         timeg = timen - time0) %>%
+  ungroup() %>%
+  # filter(empi_deidentified %in% tsa_outcome_id) %>%
+  dplyr::select(-empi_deidentified, 
+                -outcome_dt,
+                -time0, -timen) 
+
+table1_outcome <- clean_outcome %>%
+  # mutate(adi_quintile = as.factor(adi_quintile)) %>% 
+  tbl_summary(by = outcome_type,
+              statistic = all_continuous() ~ c("{median} ({p25}, {p75})", "{min}, {max}"),
+              type = all_continuous() ~ "continuous2") %>%
+  ## just display all the variables in one column
+  modify_header(label = "**Characteristics**") %>%
+  # update the column header
+  bold_labels() %>%
+  add_p() %>%
+  italicize_labels() %>%
+  as_flex_table()
+
+table1_outcome
+```
+
+```{r hist_outcome}
+#| fig-cap: "Outcome histograms"
+#| fig-subcap:
+#| - "outcome score"
+#| - "visit numebr"
+#| - "visit time"
+#| warning: false
+#| layout-ncol: 1
+
+hist_out1 <- ggplot(data = clean_outcome, 
+       aes(x = outcome_score, 
+           fill = outcome_type, 
+           group = outcome_type)) +
+  geom_histogram(alpha = 0.5) +
+  xlim(c(0, 100)) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+
+hist_out2 <- ggplot(data = clean_outcome, 
+       aes(x = visitn, 
+           fill = outcome_type, 
+           group = outcome_type)) +
+  geom_histogram(alpha = 0.5) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+
+hist_out3 <- ggplot(data = clean_outcome, 
+       aes(x = timeg, 
+           fill = outcome_type, 
+           group = outcome_type)) +
+  geom_histogram(alpha = 0.5) +
+  geom_vline(xintercept = 500, linetype = "dashed", alpha = 0.5) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+
+hist_out1
+hist_out2
+hist_out3
+```
+
+## Pain (Longitudinal)
+
+```{r "pain_data", class.output="scroll-100"}
+tsa_pain %>% select(-empi_deidentified)
+```
+
+```{r pain_table}
+#| label: pain_table
+#| tbl-cap: "Pain Table1"
+
+clean_pain <- tsa_pain %>%
+  group_by(empi_deidentified) %>%
+  mutate(visitn = n(),
+         time0 = as.Date(min(pain_dt)),
+         timen = as.Date(max(pain_dt)),
+         timeg = timen - time0) %>%
+  ungroup() %>%
+  # filter(empi_deidentified %in% tsa_outcome_id) %>%
+  dplyr::select(-empi_deidentified, 
+                -pain_dt,
+                -time0, -timen) 
+
+table1_pain <- clean_pain %>%
+  # mutate(adi_quintile = as.factor(adi_quintile)) %>% 
+  tbl_summary(type = all_continuous() ~ "continuous2",
+              statistic = all_continuous() ~ c("{median} ({p25}, {p75})", "{min}, {max}")) %>%
+  ## just display all the variables in one column
+  modify_header(label = "**Characteristics**") %>%
+  # update the column header
+  bold_labels() %>%
+  italicize_labels() %>%
+  as_flex_table()
+
+table1_pain
+
+```
+
+```{r hist_pain}
+#| fig-cap: "Pain histograms"
+#| fig-subcap:
+#| - "pain score"
+#| - "visit numebr"
+#| - "visit time"
+#| warning: false
+#| layout-ncol: 1
+
+hist_pain1 <- ggplot(data = clean_pain, 
+       aes(x = pain_score)) +
+  geom_histogram(alpha = 0.5) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+
+hist_pain2 <- ggplot(data = clean_pain, 
+       aes(x = visitn)) +
+  geom_histogram(alpha = 0.5) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+
+hist_pain3 <- ggplot(data = clean_pain, 
+       aes(x = timeg)) +
+  geom_histogram(alpha = 0.5) +
+  geom_vline(xintercept = 500, linetype = "dashed", alpha = 0.5) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+
+hist_pain1
+hist_pain2
+hist_pain3
+```
+
+## Range of motion (ROM)
+
+::: callout-warning
+The data is very confusing (`N = 1377`):
+
+-   ROM type is not consistent
+
+-   Values contain both characters and number
+
+-   Mis-location for type in the values
+
+-   Missing values and extra individuals in this dataset
+:::
+
+```{r "rom_data", class.output="scroll-100"}
+tsa_rom %>% select(-empi_deidentified)
+```
+
+```{r rom_table}
+#| label: rom_table
+#| tbl-cap: "ROM Table1"
+#| warning: false
+
+clean_rom <- tsa_rom %>%
+  rename(rom_type = range_of_motion_type,
+            rom_dt = range_of_motion_timestamp,
+            rom_value = range_of_motion_value) %>%
+  group_by(empi_deidentified) %>%
+  mutate(visitn = n(),
+         time0 = as.Date(min(rom_dt)),
+         timen = as.Date(max(rom_dt)),
+         timeg = timen - time0) %>%
+  ungroup() %>%
+  separate(col = rom_type, into = c("type1", "type2", "type3", 
+                                    "type4", "type5", "type6", 
+                                    "type7")) %>%
+  mutate(side = case_when(type1 %in% c("Left", "L") | type2 %in% c("Left", "L") ~ "L",
+                          type1 %in% c("Right", "R") | type2 %in% c("Right", "R") ~ "R",
+                          .default = type2))
+  # filter(empi_deidentified %in% tsa_rom_id) %>%
+  # dplyr::select(-empi_deidentified, 
+  #               -rom_dt,
+  #               -time0, -timen) 
+# unique(clean_rom$type1)
+# unique(clean_rom$type2)
+# unique(clean_rom$type3)
+# unique(clean_rom$type4)
+# unique(clean_rom$type5)
+# unique(clean_rom$type6)
+# unique(clean_rom$type7)
+# unique(clean_rom$rom_value)
+
+table1_rom <- clean_rom %>%
+  select(-contains("type"),
+         -rom_value,
+         -empi_deidentified, 
+         -rom_dt,
+         -time0, -timen) %>%
+  # mutate(adi_quintile = as.factor(adi_quintile)) %>% 
+  tbl_summary(by = side,
+              statistic = all_continuous() ~ c("{median} ({p25}, {p75})", "{min}, {max}"),
+              type = all_continuous() ~ "continuous2") %>%
+  ## just display all the variables in one column
+  modify_header(label = "**Characteristics**") %>%
+  # update the column header
+  bold_labels() %>%
+  # add_p() %>%
+  italicize_labels() %>%
+  as_flex_table()
+
+table1_rom
+```
+
+<!-- # ```{r rom_example} -->
+
+<!-- # clean_rom %>%  -->
+
+<!-- #   filter(empi_deidentified == "006B1109082F05A0FAB0F07CFAE01C2E6E67C02B") %>% -->
+
+<!-- #   dplyr::select(-empi_deidentified, -time0, -timen, -rom_dt) %>% -->
+
+<!-- #   knitr::kable() -->
+
+<!-- # ``` -->
+
+The ROM value is too messy to plot or summarize.
+
+```{r hist_rom}
+#| fig-cap: "ROM histograms"
+#| fig-subcap:
+#| - "visit numebr"
+#| - "visit time"
+#| warning: false
+#| layout-ncol: 1
+
+hist_rom1 <- ggplot(data = clean_rom, 
+       aes(x = visitn)) +
+  geom_histogram(aes(color = side, fill = side), alpha = 0.2) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+
+hist_rom2 <- ggplot(data = clean_rom, 
+       aes(x = timeg)) +
+  geom_histogram(aes(color = side, fill = side), alpha = 0.2) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+
+hist_rom1
+hist_rom2
+```
+
+## Merge Baseline with Outcome 500 days
+
+```{r id15334}
+#| label: example_rom
+#| tbl-cap: "ROM example id15334"
+#| warning: false
+
+tsa_outcome0 <- data.frame(empi_deidentified = tsa_base$empi_deidentified,
+                           outcome_type = "BASE",
+                           outcome_dt = tsa_base$surgery_dt,
+                           outcome_score = "baseline") 
+# View(tsa_outcome0)
+
+tsa_outcome1 <- rbind(tsa_outcome0, tsa_outcome) %>%
+  as.data.frame() %>%
+  group_by(empi_deidentified) %>%
+  arrange(empi_deidentified) %>%
+  ungroup() 
+
+# tsa_outcome2 <- tsa_outcome1 %>%
+#   nest(-empi_deidentified) %>%
+#   inner_join(clean_base0) %>%
+#   unnest() %>%
+#   group_by(empi_deidentified) %>%
+#   mutate(visitn = n()) %>%
+#   ungroup()
+
+tsa_id1534 <- tsa_outcome1 %>% 
+  filter(empi_deidentified == "8FAD5BAF588CB75795AD4CCE725E6EF3435BCF71") %>%
+  arrange(outcome_dt) %>%
+  select(- empi_deidentified) %>%
+  as_flextable()
+  # mutate(time = as.Date(outcome_dt) - as.Date(surgery_dt)) %>%
+  #  filter(time >= 0,
+  #        time < 500)
+
+# tsa_id1534
+```
+
+Here is the table for individuals having outcomes in baseline dataset.
+
+```{r joint_table1}
+#| label: joint_table
+#| tbl-cap: "Longitudinal Table1"
+#| warning: false
+
+# tsa_long <- tsa_base %>%
+#   filter(empi_deidentified %in% tsa_outcome_id) %>%
+#   mutate(id = as.numeric(factor(empi_deidentified))) %>%
+#   dplyr::select(#-surgery_dt,
+#                 -charlson_comorbidity_count,
+#                 -charlson_comorbidity_index_value,
+#                 -adi_quintile,
+#                 -primary_payer) %>% 
+#   group_by(empi_deidentified) %>%
+#   mutate(surgeryn = n()) %>%
+#   ungroup() %>%
+#   right_join(tsa_outcome)    
+
+table1_long <- tsa_base %>%
+  group_by(empi_deidentified) %>%
+  mutate(surgeryn = n()) %>%
+  ungroup() %>%
+  filter(empi_deidentified %in% tsa_outcome_id) %>%
+  dplyr::select(-empi_deidentified, 
+                -surgery_dt,
+                # -charlson_comorbidity_count,
+                # -charlson_comorbidity_index_value,
+                -adi_quintile,
+                -primary_payer) %>%
+  # mutate(adi_quintile = as.factor(adi_quintile)) %>% 
+  tbl_summary(by = surgery_type) %>%
+  ## just display all the variables in one column
+  modify_header(label = "**Characteristics**") %>%
+  # update the column header
+  bold_labels() %>%
+  add_p() %>%
+  italicize_labels() %>%
+  as_flex_table()
+
+table1_long
+```

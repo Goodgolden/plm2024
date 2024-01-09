@@ -1,0 +1,46 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# plm2024
+
+<!-- badges: start -->
+
+[![R-CMD-check](https://github.com/Goodgolden/plmlmm/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Goodgolden/plmlmm/actions/workflows/R-CMD-check.yaml) [![Codecov test coverage](https://codecov.io/gh/plmlmm/branch/20221115/graph/badge.svg)](https://app.codecov.io/gh/plmlmm?branch=20221115)
+
+<!-- badges: end -->
+
+The goal of plm2024 is to ...
+
+## Installation
+
+You can install the development version of plm2024 from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("Goodgolden/plm2024")
+```
+
+## Example
+
+This is a basic example which shows you how to solve a common problem:
+
+```{r example}
+library(plm2024)
+## basic example code
+```
+
+What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
+
+In that case, don't forget to commit and push the resulting figure files, so they display on GitHub and CRAN.

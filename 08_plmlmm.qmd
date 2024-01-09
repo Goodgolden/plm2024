@@ -1,0 +1,135 @@
+---
+title: "plmlmm"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      warnings = FALSE,
+                      message = FALSE,
+                      comment = "#>",
+                      #results = "hide",
+                      digits = 4,
+                      error = FALSE)
+
+## clean the R environment
+graphics.off()
+rm(list = ls())
+freshr::freshr()
+
+## load packages
+library(here, quietly = TRUE)
+library(tidyverse, quietly = TRUE)
+library(gtsummary, quietly = TRUE)
+library(flextable, quietly = TRUE)
+
+library(plmlmm)
+
+## check the directory for the file
+# here::dr_here()
+here::set_here()
+
+## the figure or results should be saved 
+# paste0("foldername/Sfilename_workingresult_", 
+#      Sys.Date(), ".filetype")
+```
+
+```{css, echo=FALSE}
+.scroll-100 {
+  max-height: 300px;
+  max-width: 1000px;
+  overflow-y: auto;
+  background-color: inherit;
+}
+```
+
+```{r}
+#| label: loading data
+
+data("tsa_train")
+```
+
+```{r}
+library(devtools)
+load_all()
+e_k10 <- people_like_us(train_data = tsa_train,
+                                   test_data = tsa_test,
+                                   anchor_time = c(30, 60, 180),
+                                   brokenstick_knots = c(50, 100, 200),
+                                   linear_formula = "log_outcome ~ as.factor(time) * patient_gender + 
+                                                     adi_value + primary_payer +
+                                                     patient_age:t0 + bmi:t0",
+                                   gamlss_formula = "log_outcome ~ cs(time, df = 3)",
+                                   gamlss_sigma = "~ cs(time, df = 1)",
+                                   tmin = 0,
+                                   tmax = 100,
+                                   id_var = "id",
+                                   outcome_var = "log_outcome",
+                                   time = "time",
+                                   match_methods = "euclidean",
+                                   match_number = 10,
+                                   weight = FALSE,
+                                   match_plot = FALSE,
+                                   predict_plot = FALSE)
+
+m_k10 <- people_like_us(train_data = tsa_train,
+                                   test_data = tsa_test,
+                                   anchor_time = c(30, 60,180),
+                                   brokenstick_knots = c(50, 100, 200),
+                                   linear_formula = "log_outcome ~ as.factor(time) * patient_gender + 
+                                                     adi_value + primary_payer +
+                                                     patient_age:t0 + bmi:t0",
+                                   gamlss_formula = "log_outcome ~ cs(time, df = 3)",
+                                   gamlss_sigma = "~ cs(time, df = 1)",
+                                   tmin = 0,
+                                   tmax = 300,
+                                   id_var = "id",
+                                   outcome_var = "log_outcome",
+                                   time = "time",
+                                   match_methods = "mahalanobis",
+                                   match_number = 10,
+                                   weight = FALSE,
+                                   match_plot = FALSE,
+                                   predict_plot = FALSE)
+
+View(e_k10)
+
+# m_a80 <- people_like_us(train_data = tsa_train,
+#                                    test_data = tsa_test,
+#                                    anchor_time = c(30, 60, 180),
+#                                    brokenstick_knots = c(50, 100, 200),
+#                                    linear_formula = "log_outcome ~ as.factor(time) * patient_gender + 
+#                                                      adi_value + primary_payer +
+#                                                      patient_age:t0 + bmi:t0",
+#                                    gamlss_formula = "log_outcome ~ cs(time, df = 3)",
+#                                    gamlss_sigma = "~ cs(time, df = 1)",
+#                                    tmin = 0,
+#                                    tmax = 300,
+#                                    id_var = "id",
+#                                    outcome_var = "log_outcome",
+#                                    time = "time",
+#                                    match_methods = "mahalanobis",
+#                                    match_alpha = 0.80,
+#                                    weight = FALSE,
+#                                    match_plot = FALSE,
+#                                    predict_plot = FALSE)
+save(e_k10, m_k10, 
+     file = "figure/results_plmlmm.Rdata")
+
+meanout <- function(dataset,
+                    ...){
+  # browser()
+  result0 <- dataset$centiles_observed %>%
+    mutate(mse = bias^2) %>%
+    colMeans() 
+  
+  return(result0)
+}
+
+```
+
+```{r}
+ek10 <- map(e_k10, ~try(meanout(.))) 
+View(e_k10)
+View(m_k10)
+id_train[[44]]
+```

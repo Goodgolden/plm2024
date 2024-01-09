@@ -1,0 +1,351 @@
+---
+title: "Table1 for Pain (v.1.2)"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      warnings = FALSE,
+                      message = FALSE,
+                      comment = "#>",
+                      #results = "hide",
+                      digits = 4,
+                      error = FALSE)
+
+## clean the R environment
+graphics.off()
+rm(list = ls())
+freshr::freshr()
+
+## load packages
+library(here, quietly = TRUE)
+library(tidyverse, quietly = TRUE)
+library(gtsummary, quietly = TRUE)
+library(flextable, quietly = TRUE)
+
+## check the directory for the file
+# here::dr_here()
+here::set_here()
+
+## the figure or results should be saved 
+# paste0("foldername/Sfilename_workingresult_", 
+#      Sys.Date(), ".filetype")
+```
+
+```{css, echo=FALSE}
+.scroll-100 {
+  max-height: 300px;
+  max-width: 1000px;
+  overflow-y: auto;
+  background-color: inherit;
+}
+```
+
+## Merge pain and outcome?
+
+The pain dataset has 2599 unique individual patients;\
+The outcome dataset has 2651 unique individual patients.
+
+After merging the two datasets:
+
+-   There are 140 patients with only 1 visit outcome with both pain_score and outcome_score
+
+-   There are 402 patients with fewer than 3 visit outcomes with both pain_score and outcome_score
+
+-   There are 755 patients with fewer than 5 visit outcomes with both pain_score and outcome_score
+
+-   There are 25 visits without outcome_score
+
+-   There are 1096 visits without pain_score
+
+::: callout-important
+Currently, we are keeping all the NA values and did not remove any visits and patients.
+
+There are a few patients with unreasonable scores (outcome \> 100 and pain \> 10)
+:::
+
+```{r "baseline"}
+base_outcome<- read.csv("newdata/tsa_clean_baseline_for_outcome_2023-11-07.csv", row.names = 1)
+outcome <- read.csv("newdata/tsa_clean_baseout_2023-11-07.csv", row.names = 1)
+
+base_pain <- read.csv("newdata/tsa_clean_baseline_for_pain2023-11-07.csv", row.names = 1)
+pain <-  read.csv("newdata/tsa_clean_basepain_2023-11-07.csv", row.names = 1)
+
+# 
+# "04DBB83940DBD64E7740F0990B0A4CE26B440114"
+# "04DBCD8BCF928C0C6447C3AF7DE8C3462A890A37"
+```
+
+```{r "merge_pain_outcome"}
+load("data/tsa_all_data_2023-10-11.rdata")
+pain_out <- tsa_outcome %>% 
+  full_join(tsa_pain, 
+            by = c("empi_deidentified", 
+                   "outcome_dt" = "pain_dt")) %>%
+  arrange(empi_deidentified, outcome_dt) 
+  # filter(outcome_score <= 100,
+  #        pain_score <= 10) 
+pain_out$sid = NA
+```
+
+Here is the merged pain_outcome dataset:
+
+```{r "pain_out", class.output="scroll-100"}
+pain_out
+```
+
+```{r "merge_all_three"}
+tsa_all <- 
+  ## change the baseline into outcome format
+  data.frame(empi_deidentified = factor(base_outcome$empi_deidentified), 
+             sid = base_outcome$sid,
+             outcome_type = "baseline",
+             outcome_dt = base_outcome$surgery_dt,
+             outcome_score = NA,
+             pain_score = NA) %>%
+  rbind(pain_out) %>%
+  arrange(empi_deidentified, outcome_dt) %>%
+  mutate(surgery_dt = ifelse(outcome_type == "baseline", outcome_dt, NA)) %>%
+  group_by(empi_deidentified) %>%
+  fill(surgery_dt, .direction = "down") %>%
+  fill(sid, .direction = "downup") %>%
+  ungroup() %>%
+  mutate(time = as.Date(outcome_dt) - as.Date(surgery_dt),
+         time = ifelse(time < 0, NA, time)) %>%
+  filter(!is.na(sid),
+         outcome_type != "baseline") %>% 
+  group_by(sid) %>%
+  mutate(visitmax = n() - 1,
+         visitn = row_number() - 1,
+         so_gap = min(time, na.rm = TRUE)) 
+
+# all_sid_na <- tsa_all %>%
+#   filter(is.na(sid))
+# all_sid_na$empi_deidentified %>% unique() %>% length()
+
+```
+
+Here is the time gap between the surgery and the first outcome,\
+The question is ***"how can we get the baseline outcome?"***
+
+There are 392 patients have no outcome after but before the surgery.
+
+```{r "pain_out2", class.output="scroll-100"}
+tsa_all %>% 
+  select(sid, so_gap, visitmax, outcome_dt, surgery_dt) %>%
+  filter(!is.na(surgery_dt)) %>%
+  group_by(sid) %>%
+  slice(1L) %>%
+    arrange(so_gap)
+
+p = c(0, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 1)
+rbind(Q_outcome = quantile(tsa_all$so_gap, probs = p))
+
+```
+
+## Pain (longitudinal dataset)
+
+```{r}
+base_pain <- base_pain %>%
+  mutate(primary_payer = case_when(primary_payer %in% c("Medicaid", "MEDICAID", "Medicaid HMO") ~ "Medicaid",
+                     primary_payer %in% c("Medicare", "MEDICARE", "Medicare Advantage") ~ "Medicare",
+                     primary_payer %in% c("Workers Comp/Liability") ~ "Workers comp / liability",
+                     primary_payer %in% c("Select Health", "SELECTHEALTH") ~ "Select health",
+                     primary_payer %in% c("Auto/TPL", "AETNA", "Commercial", "PEHP", "Regence Blue Cross",
+                                          "Tricare", "United HealthCare") ~ "Commercial",
+                     primary_payer %in% c("SELF PAY", "Self Pay") ~ "Self paid"))
+
+```
+
+Here are the datasets for `baseline_pain` and `clean_pain`:
+
+```{r "pain_basepain", class.output="scroll-100"}
+base_pain
+
+pain
+```
+
+## Table1 verstion 1.1 {#sec-5-pain-table1}
+
+::: callout-important
+The original baseline dataset contains: `RTSA N = 2,371`; `TSA N = 5,092`
+
+The patients having both baseline longitudinal data: `RTSA N = 1,134`; `TSA N = 1,898`
+
+-   The newly updated baseline outcome longitudinal dataset: `RTSA N = 981`; `TSA N = 1,515`
+
+-   The newly updated baseline pain longitudinal dataset: `RTSA N = 976`; `TSA N = 1,502`
+
+(all the patients in `pain` dataset are also in `outcome`)
+:::
+
+To see the difference, go to @sec-1.2-table1-baseline (the original baseline table1)\
+go to @sec-3-outcome-table1 (the outcome table1)
+
+```{r "new_table1_pain"}
+#| tbl-cap: "Table1 new version for PAIN"
+#| tbl-cap-location: top
+
+table1_pain <- base_pain %>%
+  select(patient_age, patient_gender,
+         primary_payer, surgery_type, surgery_max,
+         bmi, adi_value, outcome_n, timemax) %>% 
+  # mutate(adi_quintile = as.factor(adi_quintile)) %>% 
+  tbl_summary(by = surgery_type,
+              statistic = all_continuous() ~ c("{median} ({p25}, {p75})",
+                                               "({min}, {max})"),
+              type = all_continuous() ~ "continuous2") %>%
+  ## just display all the variables in one column
+  modify_header(label = "**Characteristics**") %>%
+  # update the column header
+  bold_labels() %>%
+  add_p() %>%
+  italicize_labels() %>%
+  as_flex_table()
+
+table1_pain
+```
+
+## Spaghetti plots
+
+```{r "longitudinal_plot"}
+#| fig-cap: Individual spaghetti plot and smoothing plot for PAIN
+#| fig-cap-location: top
+#| fig-width: 10
+#| fig-height: 5
+
+plot1 <- pain %>%
+  group_by(pid) %>%
+  arrange(time) %>%
+  fill(surgery_type) %>%
+  filter(pain_score != "baseline") %>%
+  ## always to remember to ungroup the dataset
+  ## otherwise the dataset only show the first 
+  ## visit outcome of each id
+  ungroup() %>% 
+  mutate(pain_score = as.numeric(pain_score)) %>%
+  filter(pain_score < 10) %>%
+  ggplot(aes(x = time, y = pain_score, 
+             group = pid, 
+             color = surgery_type)) +
+  geom_line(alpha = 0.3) +
+  geom_smooth(aes(group = surgery_type), 
+              method = "loess", color = "black") +
+  theme(legend.position = "none") +
+  facet_wrap(~surgery_type) 
+
+plot1 + theme_bw() + theme(legend.position = "none")
+```
+
+```{r "365 day_plot"}
+#| fig-cap: Individual spaghetti plot and smoothing plot within 365 days
+#| fig-cap-location: top
+#| fig-width: 10
+#| fig-height: 5
+plot2 <- pain %>%
+  group_by(pid) %>%
+  arrange(time) %>%
+  fill(surgery_type) %>%
+  filter(pain_score != "baseline",
+         time < 366) %>%
+  mutate(pain_score = as.numeric(pain_score)) %>%
+  filter(pain_score < 10) %>%
+  ungroup() %>%
+  ggplot(aes(x = time, y = pain_score, 
+             group = pid, 
+             color = surgery_type)) +
+  geom_line(alpha = 0.3) +
+  geom_smooth(aes(group = surgery_type), 
+              method = "loess", color = "black") +
+  theme(legend.position = "none") +
+  facet_wrap(~surgery_type) 
+
+plot2 + theme_bw() + theme(legend.position = "none")
+
+# ggsave(paste0("figure/tsa_pain_score_365day_", Sys.Date(), ".png"))
+```
+
+## Quantiles for the outcomes {#sec-5-quantiles}
+
+To compare the quantiles in `outcome` and `pain` datasets, see @sec-3-quantiles.
+
+```{r "quantiles"}
+p = c(0, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 1)
+rbind(Q_outcome = quantile(base_pain$outcome_n, probs = p),
+      Q_time = quantile(base_pain$timemax, probs = p))
+```
+
+```{r "hist_time_pain"}
+#| fig-cap: "Pain outcome histograms"
+#| fig-cap-location: top
+#| fig-subcap:
+#| - "histogram outcome number"
+#| - "histogram for max follow-up time"
+#| warning: false
+#| layout-ncol: 1
+
+hist_outcome <- base_pain %>%
+  ggplot(aes(x = outcome_n)) +
+  geom_histogram(alpha = 0.5) +
+  # xlim(c(0, 100)) +
+  theme_bw() + 
+  xlab("pain") +
+  # geom_vline(xintercept = 100,
+  #            linetype = "dotted") +
+  theme(legend.position = "bottom") 
+
+hist_time <- base_pain %>%
+  ggplot(aes(x = timemax)) +
+  geom_histogram(alpha = 0.5) +
+  # xlim(c(0, 100)) +
+  theme_bw() + 
+  # geom_vline(xintercept = 100,
+  #            linetype = "dotted") +
+  theme(legend.position = "bottom") 
+
+hist_outcome
+hist_time
+```
+
+## Comparison between Pain and Outcome dataset
+
+Here is the comparison between the `clean_pain` and `clean_outcome` datasets. Details of variabels, see @sec-5-pain-table1 and @sec-1.2-table1-baseline and @sec-3-outcome-table1.
+
+```{r "number of patient"}
+pain_id <- base_pain$id %>% unique() %>% unlist()
+outcome_id <- base_outcome$id %>% unique() %>% unlist()
+```
+
+The number of observations in `clean_pain` dataset: `r nrow(pain)`;\
+The number of observations in `clean_outcome` dataset: `r nrow(outcome)`.
+
+The number of patients in `clean_pain` dataset: `r length(pain_id)`;\
+The number of patients in `clean_pain` dataset: `r length(outcome_id)`.
+
+Here are the different individual patients in each dataset.
+
+```{r "setdiff"}
+setdiff(pain_id, outcome_id)
+setdiff(outcome_id, pain_id)
+```
+
+```{r merge_out_pain}
+pain_outcome <- full_join(pain, outcome,
+                          by = c("id", "patient_age", "empi_deidentified", 
+                                 "patient_gender", "primary_payer", 
+                                 "surgery_max", "surgery_type", "bmi", 
+                                 "adi_value", "adi_quintile", "charlson_comorbidity_count", 
+                                 "charlson_comorbidity_index_value",
+                                 "surgery_dt", "pain_dt" = "outcome_dt"),
+                          suffix = c(".pain", ".outcome")) %>%
+  select(id, sid, pid, contains("dt"), contains("score"), contains("time."), everything())  %>%
+  rename(outcome_dt = pain_dt)
+
+```
+
+::: callout-important
+Is it possible to do the DASH/QDASH on the same day of surgery?
+:::
+
+```{r "special", class.output="scroll-100"}
+pain_outcome %>% filter(pain_score == "baseline", !is.na(outcome_score))
+```

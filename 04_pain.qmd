@@ -1,0 +1,247 @@
+---
+title: "Pain Cleaning"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      warnings = FALSE,
+                      message = FALSE,
+                      comment = "#>",
+                      #results = "hide",
+                      digits = 4,
+                      error = FALSE)
+
+## clean the R environment
+graphics.off()
+rm(list = ls())
+freshr::freshr()
+
+## load packages
+library(here, quietly = TRUE)
+library(tidyverse, quietly = TRUE)
+library(gtsummary, quietly = TRUE)
+library(flextable, quietly = TRUE)
+
+## check the directory for the file
+# here::dr_here()
+here::set_here()
+
+## the figure or results should be saved 
+# paste0("foldername/Sfilename_workingresult_", 
+#      Sys.Date(), ".filetype")
+```
+
+```{css, "css_setup", echo=FALSE}
+.scroll-100 {
+  max-height: 300px;
+  max-width: 1000px;
+  overflow-y: auto;
+  background-color: inherit;
+}
+```
+
+## Cleaning pain dataset
+
+For both dataset `id` is based on the `base` dataset, so the patients in both `outcome` and `pain` datasets share the same `id` (`sid` and `pid` may vary due to the surgery and data collecting time).
+
+::: callout-important
+The `id` does not have problem because the factor-numeric is based on the `baseline` dataset, which has the most number of the patients (all `outcome` and `pain` patients are in the `baseline` dataset).
+
+The `sid` (surgery outcome id) and `pid` (pain outcome id) are under the same `id`. However the number of surgery and the order of the surgery may be different, due to the differece of `outcome_dt` and `pain_dt`.
+:::
+
+```{r "loading_data"}
+load("data/tsa_all_data_2023-10-11.rdata")
+## pull out the ids in each dataset
+tsa_base_id <- unique(tsa_base$empi_deidentified)
+tsa_pain_id <- unique(tsa_pain$empi_deidentified)
+
+## filter and manipulate the data 
+## give it a newname as data1
+
+tsa_base1 <- tsa_base %>%
+  group_by(empi_deidentified) %>%
+  arrange(surgery_dt) %>%
+  mutate(surgeryn = n(),
+         surgeryt = row_number()) %>%
+  ungroup() %>%
+  dplyr::select(-adi_quintile,
+                -primary_payer) 
+  
+# names(tsa_pain1)
+# baseline1 <- read.csv("newdata/tsa_clean_baseline_2023-11-07.csv", 
+#                       row.names = 1) %>%
+#   as.data.frame()
+# baseline1_id <- unique(baseline1$empi_deidentified)
+tsa_base1_id <- unique(tsa_base1$empi_deidentified)
+
+# length(tsa_pain_id)
+# length(tsa_base1_id)
+# length(baseline1_id)
+```
+
+```{r "basepain"}
+# Check that it doesn't match any non-letter
+letters_only <- function(x) !grepl("[^A-Za-z]", x)
+# Check that it doesn't match any non-number
+numbers_only <- function(x) !grepl("\\D", x)
+
+tsa_pain$surgery_max = NA
+tsa_basepain <- 
+  ## change the baseline into outcome format
+  data.frame(empi_deidentified = factor(tsa_base1$empi_deidentified), 
+             pain_dt = tsa_base1$surgery_dt,
+             pain_score = letters[tsa_base1$surgeryt],
+             surgery_max = tsa_base1$surgeryn) %>% 
+  ## augment the outcome with baseline
+  rbind(tsa_pain) %>%
+  as.data.frame() %>%
+  mutate(id = as.integer(empi_deidentified)) %>%
+  arrange(empi_deidentified, pain_dt) %>% 
+  group_by(empi_deidentified) %>%
+  ## use lead() to shift the rows one line ahead
+  arrange(pain_dt) %>%
+  mutate(pain_n = row_number() - 1,
+         pain_max = n() - 1) %>%
+  mutate(surgery_dt = ifelse(numbers_only(pain_score), NA, pain_dt),
+         pain_n = ifelse(numbers_only(pain_score), pain_n, pain_score)) %>%
+  fill(surgery_dt) %>%
+  mutate(pain_m = lead(pain_n)) %>%
+  select(id, empi_deidentified, pain_n, pain_m, everything()) %>%
+  mutate(keep = ifelse(letters_only(pain_m) & 
+                         letters_only(pain_n), FALSE, TRUE),
+         pain_score = ifelse(numbers_only(pain_score), pain_score, "baseline"),
+         time = as.Date(pain_dt) - as.Date(surgery_dt)) %>%
+  ## now only keep the keep == TRUE,
+  ## if both visitn and visitm are surgery time, remove it
+  ## if the last time of outcome is visitm, which means 
+  ## after the last surgery there is no outcomes, remove it
+  filter(keep == TRUE) %>%
+  select(-keep, -pain_m, -surgery_max) %>%
+  group_by(empi_deidentified) %>%
+  arrange(pain_dt) 
+```
+
+```{r "tsa_basepain"}
+pain_base0 <- tsa_basepain %>%
+  filter(pain_score == "baseline") %>%
+  group_by(id) %>%
+  arrange(pain_dt) %>%
+  mutate(surgeryn = row_number(),
+         surgerymax = n())
+pain_base0$surgeryn = letters[pain_base0$surgeryn]
+
+tsa_basepain <- pain_base0 %>% 
+  mutate(surgery_max = surgerymax,
+         surgery_n = surgeryn) %>%
+  unite(surgery, c("surgerymax", "surgeryn"), sep = "") %>%
+  unite(pid, c("id", "surgery"), sep = "_") %>%
+  right_join(tsa_basepain) %>%
+  group_by(empi_deidentified) %>%
+  arrange(pain_dt) %>%
+  fill(pid) 
+
+pain_base1 <- tsa_basepain %>%
+  ungroup() %>%
+  filter(pain_score == "baseline") %>% 
+  select(pid, id, pain_max, surgery_dt, empi_deidentified, surgery_max, surgery_n)
+
+```
+
+```{r "example_pain0", class.output="scroll-100"}
+pain_base1 
+tsa_basepain %>% as.data.frame() %>% select(-empi_deidentified) %>% arrange(id, pain_dt)
+```
+
+## Removeing for the pain observations before surgery
+
+Then we look at how many patients having outcomes before their first surgery. Here shown:
+
+-   `a` as the number of the first surgery
+
+-   `b` as the number of the second surgery
+
+-   `c` as the number of the third surgery
+
+========================================================
+
+-   `1` as the number of patients with one surgery
+
+-   `2` as (the number of patients $\times 2$) with two surgeries
+
+-   `3` as (the number of patients $\times 3$) with three surgeries
+
+```{r "table_pain_surgery"}
+pain_id0 <- tsa_basepain %>%
+  as.data.frame() %>%
+  filter(is.na(pid)) %>%
+  arrange(empi_deidentified) %>%
+  select(empi_deidentified) %>%
+  unique()
+## 1057 patients having outcomes before surgery
+
+table(pain_base1$surgery_n) 
+table(pain_base1$surgery_max)
+```
+
+There are `r nrow(pain_id0)` patients having test outcomes before their first surgery.\
+There are `r table(pain_base1$surgery_n) %>% sum()` number of surgeries for `r unique(tsa_basepain$id) %>% length()` patients.
+
+-   2111 patients having one surgery
+-   172 patients having two surgery
+-   7 patients having three surgery
+
+```{r "complex_id", class.output="scroll-100"}
+tsa_basepain %>% filter(empi_deidentified %in% c("0B42B91B3D076ABE846CF23F69B796EAE10B3166", 
+                                             "47869E3956E405B267ACACC40B9982EB38A55ACA"))
+```
+
+## Saving dataset
+
+There are two datasets for this step cleaning
+
+```{r "save_clean1"}
+#| warning: false
+
+clean_basepain1 <- tsa_basepain %>%
+  mutate(surgery_dt = pain_dt) %>%
+  ## remove outcomes before the first surgery
+  filter(!is.na(pid)) %>%
+  as.data.frame() %>%
+  left_join(tsa_base %>% mutate(baseline = surgery_dt),
+            by = c("empi_deidentified", "surgery_dt")) %>%
+  select(empi_deidentified, id, pid, pain_dt, surgery_dt = baseline,
+         pain_score, patient_age, patient_gender, 
+         primary_payer, surgery_max,
+         surgery_type, bmi, contains(c("adi", "cha"))) %>% 
+  group_by(pid) %>%
+  arrange(pain_dt) %>%
+  fill(surgery_dt) %>%
+  mutate(outcome_n = n() - 1,
+         time = as.Date(pain_dt) - as.Date(surgery_dt),
+         timemax = max(time)) %>% 
+  ungroup()
+
+## 2512 unique surgeries
+pain_base1 <- clean_basepain1 %>%
+  filter(pain_score == "baseline") %>%
+  select(id, pid, names(tsa_base), surgery_max, outcome_n, timemax)
+
+clean_pain1 <- tsa_basepain %>%
+  mutate(surgery_dt = pain_dt) %>%
+  mutate(pid = case_when(is.na(pid) ~ paste0(id, "_0"),
+                        .default = pid)) %>%
+  as.data.frame() %>%
+  # left_join(clean_base1, by = c("empi_deidentified", "surgery_dt")) %>%
+  dplyr::select(empi_deidentified, pain_dt, pid, surgery_max, pain_score, id)
+  
+
+# write.csv(clean_basepain1, file = paste0("newdata/tsa_clean_basepain_", Sys.Date(), ".csv"))
+# write.csv(pain_base1, file = paste0("newdata/tsa_clean_baseline_for_pain", Sys.Date(), ".csv"))
+# write.csv(clean_pain1, file = paste0("newdata/tsa_clean_pain_", Sys.Date(), ".csv"))
+```
+
+```{r "example_pain1", class.output="scroll-100"}
+pain_base1 %>% select(-empi_deidentified)
+clean_pain1 %>% select(-empi_deidentified)
+```
