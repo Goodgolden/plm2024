@@ -126,7 +126,7 @@ linear_impute <- function(lm_formula,
     outcome_var <- ensym(outcome_var)
     time_var <- ensym(time_var)
     id_var <- ensym(id_var)
-    formula = paste0(lm_formula, "+ baseline")
+    formula = paste0(lm_formula)
 
     # browser()
     lm_bks <- lm(as.formula(formula),
@@ -134,8 +134,9 @@ linear_impute <- function(lm_formula,
     # Tue Jul 25 22:30:34 2023 ------------------------------
     data_test[paste0("anchor_", anchor_time)] <- NA
 
+    # View(data_test)
     data_test1 <- data_test %>%
-      dplyr::select(-!!time_var) %>%
+      # dplyr::select(-!!time_var) %>%
       group_by(!!id_var) %>%
       pivot_longer(cols = contains("anchor_"),
                    names_to = "time0",
@@ -160,11 +161,62 @@ linear_impute <- function(lm_formula,
       as.data.frame() %>%
       rename(!!outcome_var := lm_bks_target)
 
-    results <- list(testing = lp_test, training = lp_train)
-    attr(results, "lm_summary") <- summary(lm_bks)
+    results <- list(testing = lp_test, training = lp_train, summary = summary(lm_bks))
 
     return(results)
     }
+
+
+multiple_impute <- function(lm_formula,
+                          data_impute,
+                          data_test,
+                          id_var,
+                          outcome_var,
+                          time_var,
+                          anchor_time,
+                          ...) {
+  # browser()
+  outcome_var <- ensym(outcome_var)
+  time_var <- ensym(time_var)
+  id_var <- ensym(id_var)
+  formula = paste0(lm_formula)
+
+  lm_bks <- data_impute %>%
+    group_by(time) %>%
+    group_split() %>%
+    map(~lm(as.formula(formula), .x))
+  
+  lp_test <- map_dfc(lm_bks, ~predict(., newdata = data_test) %>%
+                   cbind())
+  
+  lp_train <- map_dfc(lm_bks, ~predict(.) %>%
+                       cbind())
+  
+  results <- list(testing = lp_test, training = lp_train, summary = lm_bks)
+  
+  return(results)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,0 +1,101 @@
+---
+title: "kappa selection"
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      warnings = FALSE,
+                      message = FALSE,
+                      comment = "#>",
+                      #results = "hide",
+                      digits = 4,
+                      error = FALSE)
+
+## clean the R environment
+graphics.off()
+rm(list = ls())
+freshr::freshr()
+
+## load packages
+library(here, quietly = TRUE)
+library(tidyverse, quietly = TRUE)
+library(gtsummary, quietly = TRUE)
+library(flextable, quietly = TRUE)
+
+library(devtools, quietly = TRUE)
+load_all()
+
+## check the directory for the file
+# here::dr_here()
+here::set_here()
+
+## the figure or results should be saved 
+# paste0("foldername/Sfilename_workingresult_", 
+#      Sys.Date(), ".filetype")
+```
+
+
+```{css, echo=FALSE}
+.scroll-100 {
+  max-height: 300px;
+  max-width: 1000px;
+  overflow-y: auto;
+  background-color: inherit;
+}
+```
+
+## Cross-validation for different $\kappa$ values
+
+remember to change the kappa each time
+
+```{r}
+anchor <- c(30, 90, 200)
+bsk_knots <- c(50, 100, 150)
+
+kappa1 <- seq(10, 100, by = 10)
+mlmf <- "log_outcome ~ surgery_type + patient_gender + adi_value +
+                      adi_value:log_baseline + primary_payer + 
+                      bmi + patient_age +
+                      patient_age:log_baseline + log_baseline + t0"
+gf <- "log_outcome ~ cs(time, df = 3)"
+gs <- "~ cs(time, df = 1)"
+
+lmf <- "log_outcome ~ as.factor(time) + surgery_type + patient_gender +
+                      adi_value + adi_value:log_baseline + primary_payer +
+                      bmi + patient_age +
+                      patient_age:log_baseline + log_baseline + t0"
+```
+
+```{r}
+## change the slm and kappa number
+e_kcv_kappa1 <- map(kappa1, 
+                 ~people_like_us(train_data = tsa_train,
+                        test_data = tsa_test,
+                        anchor_time = anchor,
+                        brokenstick_knots = bsk_knots,
+                        linear_model = "lm",
+                        linear_formula = lmf,
+                        gamlss_formula = gf,
+                        gamlss_sigma = gs,
+                        tmin = 0,
+                        tmax = 100,
+                        id_var = "id",
+                        outcome_var = "log_outcome",
+                        time = "time",
+                        weight = FALSE,
+                        match_plot = FALSE,
+                        predict_plot = FALSE,
+                        match_methods = "euclidean",
+                        match_number = .x))
+
+save(e_kcv_kappa1, file = "figure/tsa_kappa1_cross_validation_", Sys.time(), ".Rdata")
+```
+
+
+```{r, class.output="scroll-100"}
+
+```
+
+
+

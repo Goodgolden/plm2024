@@ -40,13 +40,13 @@ distance_df <- function(lb_train,
   if (match_methods == "euclidean") {
     dist_df <<- euclidean_df(Dmatrix = lb_sub1,
                              center = center)
-    cat("\n using euclidean distance\n")
+    # cat("\n using euclidean distance\n")
   }
 
   if (match_methods == "mahalanobis") {
       dist_df <<- mahalanobis_df(Dmatrix = lb_sub1,
                                  center = center)
-      cat("\n using mahalanobis distance\n")
+    #  cat("\n using mahalanobis distance\n")
   }
 
   if (match_methods == "single") {
@@ -56,7 +56,7 @@ distance_df <- function(lb_train,
     dist_df <<- single_df(Dmatrix = lb_sub1,
                           match_time = match_time,
                           center = center)
-    cat("\n using single critical time point matching \n")
+    # cat("\n using single critical time point matching \n")
   }
 
   return(distance = dist_df)
@@ -161,13 +161,13 @@ dis_match <- function(lb_train,
   if (match_methods == "euclidean") {
     dist_df <<- euclidean_df(Dmatrix = lb_sub1,
                              center = center)
-    cat("\n using euclidean distance\n")
+    # cat("\n using euclidean distance\n")
   }
 
   if (match_methods == "mahalanobis") {
     dist_df <<- mahalanobis_df(Dmatrix = lb_sub1,
                                center = center)
-    cat("\n using mahalanobis distance\n")
+    # cat("\n using mahalanobis distance\n")
   }
 
   if (match_methods == "single") {
@@ -177,7 +177,7 @@ dis_match <- function(lb_train,
     dist_df <<- single_df(Dmatrix = lb_sub1,
                           match_time = match_time,
                           center = center)
-    cat("\n using single critical time point matching \n")
+    # cat("\n using single critical time point matching \n")
   }
 
   if (is.null(match_alpha)) {

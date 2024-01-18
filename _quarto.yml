@@ -32,8 +32,10 @@ book:
     - 04_pain.qmd
     - 05_pain2.qmd
     - 06_final_outcome.qmd
-    # - 07_plm.qmd
     - 07_clean_insurance.qmd
+    - 08_plm2024.qmd
+    - 09_plm_steps.qmd
+    - 10_linear_extension.qmd
     - summary.qmd
     - references.qmd
 

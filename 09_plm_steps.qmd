@@ -1,0 +1,480 @@
+---
+title: "EDA PLM"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      warnings = FALSE,
+                      message = FALSE,
+                      comment = "#>",
+                      #results = "hide",
+                      digits = 2,
+                      error = FALSE)
+
+## clean the R environment
+graphics.off()
+rm(list = ls())
+freshr::freshr()
+
+## load packages
+library(here, quietly = TRUE)
+library(tidyverse, quietly = TRUE)
+library(gtsummary, quietly = TRUE)
+library(flextable, quietly = TRUE)
+
+library(devtools, quietly = TRUE)
+load_all()
+
+## check the directory for the file
+# here::dr_here()
+here::set_here()
+
+## the figure or results should be saved 
+# paste0("foldername/Sfilename_workingresult_", 
+#      Sys.Date(), ".filetype")
+```
+
+```{css "css_setup", echo=FALSE}
+.scroll-100 {
+  max-height: 300px;
+  max-width: 1000px;
+  overflow-y: auto;
+  background-color: inherit;
+}
+```
+
+## Step by Step people-like-me
+
+Here is the functions for brokenstick and linear model imputations
+
+First step is the brokenstick imputation with log transformed data
+
+```{r}
+#| label: imputation
+
+anchor_time <- c(30, 90, 120, 150)
+log_tsa_impute <- impute_brokenstick(outcome_var = "log_outcome",
+                                          # outcome_var = "outcome_score",
+                                          time_var = "time",
+                                          id_var = "sid",
+                                          bs_knots = c(50, 100, 150),
+                                          anchor_time = anchor_time,
+                                          data = tsa_train)
+
+# View(log_tsa_impute)
+
+test_baseline <- tsa_test %>%
+    group_by(sid) %>%
+    arrange(time) %>%
+    slice(1L) %>%
+    ## change the baseline outcome_vars as new variable
+    # dplyr::select(baseline = !!outcome_var, everything()) %>%
+    ## move the original time_var as all ZEROs
+    dplyr::select(-time)
+
+# transform the data in log outcome
+# tsa_impute <- impute_brokenstick(# outcome_var = "log_outcome",
+#                                           outcome_var = "outcome_score",
+#                                           time_var = "time",
+#                                           id_var = "sid",
+#                                           bs_knots = c(50, 150, 250),
+#                                           anchor_time = anchor_time,
+#                                           data = tsa_train)
+```
+
+Here is the brokenstick for the next step
+
+```{r "tsa_brokenstick", class.output="scroll-100"}
+log_tsa_impute %>% as.data.frame()
+```
+
+baseline: later we could see the dash and qdash but not now.
+
+-   baseline outcome:
+
+-   baseline time: this is only one time visit (removed at least XX visits) see how many people have two visit. so now i cut off the time for 500 days remove the two visits. three-visit is good
+
+-   surgery time: baseline and surgery time too long
+
+using the estimated values for the baseline... (still need to consider carefully)
+
+## Linear model setup `slm` and `mlm`
+
+Here is the single linear (original `lm()`), the detailed setup seen in codes below; specific covariates need to be checked later with **Jeremy**
+
+
+\tiny
+
+```{r "tsa_linear"}
+lmf <- "log_outcome ~ as.factor(time) + surgery_type + patient_gender +
+                      adi_value:log_baseline + primary_payer + bmi +
+                      patient_age:log_baseline + log_baseline + t0"
+mlmf <- "log_outcome ~ surgery_type + patient_gender +
+                      adi_value:log_baseline + primary_payer + bmi +
+                      patient_age:log_baseline + log_baseline + t0"
+
+tsa_linear <- linear_impute(lm_formula = lmf,
+                        data_impute = log_tsa_impute,
+                        data_test = test_baseline,
+                        id_var = "sid",
+                        outcome_var = "log_outcome",
+                        time = "time",
+                        anchor_time = anchor_time)
+
+tsa_linear$summary
+```
+
+ \normalsize
+
+Here is the multiple `lm()`, here we only change the formula by removing the `time` variable; in this example, we fit four linear model at $anchor(30, 90, 120, 150)$, equal time-gap to facilitate `gls(corAR)`
+
+
+\tiny
+```{r "tsa_multiple_linear"}
+tsa_multiple <- multiple_impute(lm_formula = mlmf,
+                        data_impute = log_tsa_impute,
+                        data_test = test_baseline,
+                        id_var = "sid",
+                        outcome_var = "log_outcome",
+                        time = "time",
+                        anchor_time = anchor_time)
+
+map(tsa_multiple$summary, summary)
+```
+
+\normalsize
+
+## Ideas for linear model step
+
+::: callout-important
+A few notes on the linear model step:
+
+1.  time as factor is not flexible enough
+2.  assumption is not reasonable to use
+3.  gls() or other independent lm() should have been considered
+4.  need to talk with Stef about this step
+:::
+
+linear model problems
+
+-   i: correlation between individuals -\> sandwich estimators and gls() with Kronecker product... this also still require the gls() anyway
+
+-   ii: correlation within individuals -\> gls() can address both ii and iii problems
+
+-   iii: variance change over time... -\> multiple lm() for each anchor time
+
+## People-Like-Us with `slm` and `mlm`
+
+```{r "people_like_us"}
+#| include: true
+#| eval: false
+
+mlmf <- "log_outcome ~ surgery_type + patient_gender +
+                      adi_value:log_baseline + primary_payer + bmi +
+                      patient_age:log_baseline + log_baseline + t0"
+gf <- "log_outcome ~ cs(time, df = 3)"
+gs <- "~ cs(time, df = 1)"
+
+lmf <- "log_outcome ~ as.factor(time) + surgery_type + patient_gender +
+                      adi_value:log_baseline + primary_payer + bmi +
+                      patient_age:log_baseline + log_baseline + t0"
+
+e_k10_slm <- people_like_us(train_data = tsa_train,
+                        test_data = tsa_test,
+                        anchor_time = anchor,
+                        brokenstick_knots = bsk_knots,
+                        linear_model = "lm",
+                        linear_formula = lmf,
+                        gamlss_formula = gf,
+                        gamlss_sigma = gs,
+                        tmin = 0,
+                        tmax = 100,
+                        id_var = "id",
+                        outcome_var = "log_outcome",
+                        time = "time",
+                        weight = FALSE,
+                        match_plot = FALSE,
+                        predict_plot = FALSE,
+                        match_methods = "euclidean",
+                        match_number = 10)
+
+e_k10_mlm <- people_like_us(train_data = tsa_train,
+                        test_data = tsa_test,
+                        anchor_time = anchor,
+                        brokenstick_knots = bsk_knots,
+                        linear_model = "mlm",
+                        linear_formula = mlmf,
+                        gamlss_formula = gf,
+                        gamlss_sigma = gs,
+                        tmin = 0,
+                        tmax = 100,
+                        id_var = "id",
+                        outcome_var = "log_outcome",
+                        time = "time",
+                        weight = FALSE,
+                        match_plot = FALSE,
+                        predict_plot = FALSE,
+                        match_methods = "euclidean",
+                        match_number = 10)
+
+m_k10_slm <- people_like_us(train_data = tsa_train,
+                        test_data = tsa_test,
+                        anchor_time = anchor,
+                        brokenstick_knots = bsk_knots,
+                        linear_model = "lm",
+                        linear_formula = lmf,
+                        gamlss_formula = gf,
+                        gamlss_sigma = gs,
+                        tmin = 0,
+                        tmax = 100,
+                        id_var = "id",
+                        outcome_var = "log_outcome",
+                        time = "time",
+                        weight = FALSE,
+                        match_plot = FALSE,
+                        predict_plot = FALSE,
+                        match_methods = "mahalanobis",
+                        match_number = 10)
+
+m_k10_mlm <- people_like_us(train_data = tsa_train,
+                        test_data = tsa_test,
+                        anchor_time = anchor,
+                        brokenstick_knots = bsk_knots,
+                        linear_model = "mlm",
+                        linear_formula = mlmf,
+                        gamlss_formula = gf,
+                        gamlss_sigma = gs,
+                        tmin = 0,
+                        tmax = 100,
+                        id_var = "id",
+                        outcome_var = "log_outcome",
+                        time = "time",
+                        weight = FALSE,
+                        match_plot = FALSE,
+                        predict_plot = FALSE,
+                        match_methods = "mahalanobis",
+                        match_number = 10)
+```
+
+## Exploration for $M_\alpha$
+
+Here we only tries two $\alpha$ values, $0.80$ and $0.95$, this should be good enough to see the reasonable critiria and over-restrict critiria.
+
+```{r}
+#| include: true
+#| eval: false
+m_a80_slm <- people_like_us(train_data = tsa_train,
+                        test_data = tsa_test,
+                        anchor_time = anchor,
+                        brokenstick_knots = bsk_knots,
+                        linear_model = "lm",
+                        linear_formula = lmf,
+                        gamlss_formula = gf,
+                        gamlss_sigma = gs,
+                        tmin = 0,
+                        tmax = 100,
+                        id_var = "id",
+                        outcome_var = "log_outcome",
+                        time = "time",
+                        weight = FALSE,
+                        match_plot = FALSE,
+                        predict_plot = FALSE,
+                        match_methods = "mahalanobis",
+                        match_alpha = 0.80)
+
+m_a80_mlm <- people_like_us(train_data = tsa_train,
+                        test_data = tsa_test,
+                        anchor_time = anchor,
+                        brokenstick_knots = bsk_knots,
+                        linear_model = "mlm",
+                        linear_formula = mlmf,
+                        gamlss_formula = gf,
+                        gamlss_sigma = gs,
+                        tmin = 0,
+                        tmax = 100,
+                        id_var = "id",
+                        outcome_var = "log_outcome",
+                        time = "time",
+                        weight = FALSE,
+                        match_plot = FALSE,
+                        predict_plot = FALSE,
+                        match_methods = "mahalanobis",
+                        match_alpha = 0.80)
+
+
+m_a95_slm <- people_like_us(train_data = tsa_train,
+                        test_data = tsa_test,
+                        anchor_time = anchor,
+                        brokenstick_knots = bsk_knots,
+                        linear_model = "lm",
+                        linear_formula = lmf,
+                        gamlss_formula = gf,
+                        gamlss_sigma = gs,
+                        tmin = 0,
+                        tmax = 100,
+                        id_var = "id",
+                        outcome_var = "log_outcome",
+                        time = "time",
+                        weight = FALSE,
+                        match_plot = FALSE,
+                        predict_plot = FALSE,
+                        match_methods = "mahalanobis",
+                        match_alpha = 0.95)
+
+
+
+m_a95_mlm <- people_like_us(train_data = tsa_train,
+                        test_data = tsa_test,
+                        anchor_time = anchor,
+                        brokenstick_knots = bsk_knots,
+                        linear_model = "mlm",
+                        linear_formula = mlmf,
+                        gamlss_formula = gf,
+                        gamlss_sigma = gs,
+                        tmin = 0,
+                        tmax = 100,
+                        id_var = "id",
+                        outcome_var = "log_outcome",
+                        time = "time",
+                        weight = FALSE,
+                        match_plot = FALSE,
+                        predict_plot = FALSE,
+                        match_methods = "mahalanobis",
+                        match_alpha = 0.95)
+
+```
+
+```{r "save_data"}
+#| include: true
+#| eval: false
+
+save(e_k10_slm, e_k10_mlm,
+     m_k10_slm, m_k10_mlm,
+     m_a80_slm, m_a80_mlm,
+     m_a95_slm, m_a95_mlm,
+     file = paste0("figure/tsa_09_euclidean_mahalanobis_slm_vs_mlm_", Sys.Date(), ".Rdata"))
+```
+
+## Final result for $E_\kappa$, $M_\kappa$, and $M_\alpha$ with `mlm` and `slm`.
+
+```{r "final_result"}
+#| echo: true
+#| results: "hide"
+#| include: true
+
+load("figure/tsa_09_euclidean_mahalanobis_slm_vs_mlm_2024-01-12.Rdata")
+
+meanout <- function(dataset){
+  # browser()
+  result0 <- dataset %>%
+    as.data.frame() %>%
+    mutate(mse = bias^2) 
+  result1 <- result0 %>%
+    colMeans() %>%
+    unlist()
+  return(result1)}
+
+result_ek10s <- map(e_k10_slm, "centiles_observed") %>%
+  map_dfr(~try(meanout(.))) %>%
+  dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+  colMeans()
+
+result_ek10m <- map(e_k10_mlm, "centiles_observed") %>%
+  map_dfr(~try(meanout(.))) %>%
+  dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+  colMeans()
+
+result_mk10s <- map(m_k10_slm, "centiles_observed") %>%
+  map_dfr(~try(meanout(.))) %>%
+  dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+  colMeans()
+
+result_mk10m <- map(m_k10_mlm, "centiles_observed") %>%
+  map_dfr(~try(meanout(.))) %>%
+  dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+  colMeans()
+
+## there is no target without any matches
+result_ma80s <- map(m_a80_slm, "centiles_observed") %>%
+  map_dfr(~try(meanout(.))) %>%
+  dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+  colMeans()
+  
+## there are 8 targets without any matches
+result_ma80m <- map(m_a80_mlm, "centiles_observed") %>%
+  map(~try(meanout(.)) %>% unlist()) 
+result_ma80m[grep("Error", result_ma80m)] <- NULL
+result_ma80m <- result_ma80m %>%
+  map_dfr(~t(.) %>% as.data.frame()) %>%
+  dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+  colMeans()
+
+## there is 3 target without any matches
+result_ma95s <- map(m_a95_slm, "centiles_observed") %>%
+  map(~try(meanout(.)) %>% unlist()) 
+## there are 22 patients do not have any matches
+result_ma95s[grep("Error", result_ma95s)] <- NULL
+result_ma95s <- result_ma95s %>%
+  map_dfr(~t(.) %>% as.data.frame()) %>%
+  dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+  colMeans()
+  
+## there are 22 targets without any matches
+result_ma95m <- map(m_a95_mlm, "centiles_observed") %>%
+  map(~try(meanout(.)) %>% unlist()) 
+## there are 22 patients do not have any matches
+# View(result_ma95m)
+result_ma95m[grep("Error", result_ma95m)] <- NULL
+result_ma95m <- result_ma95m %>%
+  map_dfr(~t(.) %>% as.data.frame()) %>%
+  dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+  colMeans()
+```
+
+```{r "final_table",  class.output="scroll-100"}
+rbind(Ek10_SLM = result_ek10s, 
+      Ek10_MLM = result_ek10m,
+      Mk10_SLM = result_mk10s, 
+      Mk10_MLM = result_mk10m,
+      Ma80_SLM = result_ma80s,
+      Ma80_MLM = result_ma80m,
+      Ma95_SLM = result_ma95s,
+      Ma95_MLM = result_ma95m) %>%
+  as.data.frame() %>% 
+  rownames_to_column("methods") %>%
+  separate("methods", into = c("Criteria", "LM"))
+```
+
+### Summary
+
+1.  The TSA data shows similar trend as EPIC data, over all consistent with SLM methods
+
+2.  For Single linear model (SLM):
+
+-   $E_\kappa$ performs similar to $M_\kappa$, under-estimate the CR to the true setting
+
+-   $M_\alpha$ performs the better compare with $\kappa$, with $\alpha >= 0.8$
+
+-   larger $\alpha$ means more restrict selection for matches, ***particularly, we see the target without any matches***, and the performance is better with larger $\alpha$
+
+3.  For Multiple linear models (MLM)
+
+-   the same setting for $E_\kappa$ and $M_\kappa$, MLM is better than SLM in all the aspects
+
+-   overall improvement for $\kappa$ and lower level $\alpha$, in MLM over SLM
+
+-   the improvement is limited with lower $\alpha$, $M_{\alpha = 0.95} + MLM$ performs worse than $M_{\alpha = 0.95} + SLM$ or even $M_{\alpha = 0.8} + MLM$
+
+-   the peak performance of large value $M_\alpha + MLM$ need to be investigated, **number of matches**
+
+Other topics
+
+the matching step:
+
+1.  whether we directly use the log as the outcome
+
+2.  push into later using the inversed distance as weights (mahalanobis distance)
+
+3.  **if we use the transformation the sandwich estimator is hard to get** **(if we want to update)**
+
+4.  the $\chi^2$ distribution would not hold in this case

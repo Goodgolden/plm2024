@@ -20,12 +20,12 @@ predict_gamlss <- function(matching,
                            id_var,
                            time_var,
                            outcome_var,
-                           tmin = 0,
-                           tmax = 17,
-                           gamlss_formula = "ht ~ cs(time, df = 5)",
-                           gamsigma_formula = "~ cs(time, df = 1)",
+                           tmin,
+                           tmax,
+                           gamlss_formula,
+                           gamsigma_formula,
                            weight = FALSE,
-                           predict_plot = TRUE) {
+                           predict_plot) {
 
 
   outcome_var <- ensym(outcome_var)
@@ -53,11 +53,11 @@ predict_gamlss <- function(matching,
                         # tau.formula = ~cs(time^0.5, df=1),
                         weights = w,
                         method = RS(100),
+                        trace = FALSE,
                         data = matching2,
                         family = NO)
 
-  centiles_obs <-  gamlss::centiles.pred(plm,
-                                         type = c("centiles"),
+  centiles_obs <-  gamlss::centiles.pred(plm, type = c("centiles"),
                                          xname = as.character({{time_var}}),
                                          xvalues = test_one$time ,
                                          cen = c(5, 10, 25, 50, 75, 90, 95)) %>%
@@ -70,8 +70,6 @@ predict_gamlss <- function(matching,
            # biassq = bias^2,
            # var = mse - bias^2,
            bias = abs(actual - `C50`))
-
-  cat("\n gamlss model prediction for observed time points are done \n")
 
   centiles_pred <-
     centiles.pred(plm,
@@ -93,7 +91,7 @@ predict_gamlss <- function(matching,
            cfint80 = q90 - q10,
            cfint50 = q75 - q25)
 
-  cat("\n gamlss model prediction for predicted time points are done \n")
+  # cat("\n gamlss model prediction is done \n")
 
   if (predict_plot == TRUE) {
     plm_plot <- plm_ind_plot(quantile = centiles_pred,
@@ -163,44 +161,5 @@ plm_ind_plot <- function(quantile,
   plot
 }
 
-
-## 3.3 dis_match_pred ----------------------------------------------------------
-
-
-# all_people <- linear$testing %>%
-#   group_by("id") %>%
-#   group_map(data.frame) %>%
-#   map(~ .x[[as_label(enquo(outcome_var))]]) %>%
-#   map(~distance_df(lb_train = linear$training,
-#                   lb_test_ind = .,
-#                   match_methods = "mahalanobis",
-#                   id_var = "id",
-#                   time_var = "time",
-#                   outcome_var = "ht"))
-
-
-
-# test_103104 <- test %>% filter(id == 156392)
-#
-# plm_individual <- people_like_me(train_data = train,
-#                                  test_data = test_103104,
-#                                  outcome_var = "ht",
-#                                  time_var = "time",
-#                                  id_var = "id",
-#                                  brokenstick_knots = c(5, 12, 15),
-#                                  anchor_time = c(5, 10, 11, 12),
-#                                  linear_formula = "ht ~ as.factor(time) * sex + ethnic + genotype + baseline",
-#                                  match_methods = "mahalanobis",
-#                                  match_alpha = 0.99,
-#                                  match_number = NULL,
-#                                  weight = FALSE,
-#                                  match_plot = TRUE)
-#
-#
-# View(plm_individual)
-# View(plm_individual$gamlss_data)
-# View(test)
-#
-# attributes(plm_individual)
 
 

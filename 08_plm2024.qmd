@@ -1,0 +1,228 @@
+---
+title: "plm2024 package"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      warnings = FALSE,
+                      message = FALSE,
+                      comment = "#>",
+                      #results = "hide",
+                      digits = 4,
+                      error = FALSE)
+
+## clean the R environment
+graphics.off()
+rm(list = ls())
+freshr::freshr()
+
+## load packages
+library(here, quietly = TRUE)
+library(tidyverse, quietly = TRUE)
+library(gtsummary, quietly = TRUE)
+library(flextable, quietly = TRUE)
+library(devtools, quietly = TRUE)
+load_all()
+
+## check the directory for the file
+# here::dr_here()
+here::set_here()
+
+## the figure or results should be saved 
+# paste0("foldername/Sfilename_workingresult_", 
+#      Sys.Date(), ".filetype")
+```
+
+```{css, echo=FALSE}
+.scroll-100 {
+  max-height: 300px;
+  max-width: 1000px;
+  overflow-y: auto;
+  background-color: inherit;
+}
+```
+
+## the result from the package
+
+How we setup the plm methods
+
+1.  brokenstick model piecewise linear $knots = (50, 100, 200)$
+2.  linear model \log(outcome) \sim factor(time) + surgery_type + patient_gender + adi_value:\log(baseline) + primary_payer + bmi + age:\log(baseline) + \log(baseline) + t_0
+3.  anchor time $t = (30, 60, 180)$
+4.  testing four different methods $E_{\kappa = 10}$, $M_{\kappa = 10}$, $M_{\alpha = 0.95}$, $M_{\alpha = 0.99}$
+
+The new function `plm2024:::people_like_us()` will include a new argument `linear_model_type`
+
+```{r}
+#| label: plm2024_package
+#| include: true
+#| eval: false
+
+lmf <- "log_outcome ~ as.factor(time) + surgery_type + patient_gender +
+                      adi_value:log_baseline + primary_payer + bmi +
+                      patient_age:log_baseline + log_baseline + t0"
+gf <- "log_outcome ~ cs(time, df = 3)"
+gs <- "~ cs(time, df = 1)"
+
+anchor <- c(30, 60, 180)
+bsk_knots <- c(50, 100, 200)
+
+e_k10 <- people_like_us(train_data = tsa_train,
+                        test_data = tsa_test,
+                        anchor_time = anchor,
+                        brokenstick_knots = bsk_knots,
+                        linear_formula = lmf,
+                        gamlss_formula = gf,
+                        gamlss_sigma = gs,
+                        tmin = 0,
+                        tmax = 100,
+                        id_var = "id",
+                        outcome_var = "log_outcome",
+                        time = "time",
+                        weight = FALSE,
+                        match_plot = FALSE,
+                        predict_plot = FALSE,
+                        match_methods = "euclidean",
+                        match_number = 10)
+
+m_k10 <- people_like_us(train_data = tsa_train,
+                        test_data = tsa_test,
+                        anchor_time = anchor,
+                        brokenstick_knots = bsk_knots,
+                        linear_formula = lmf,
+                        gamlss_formula = gf,
+                        gamlss_sigma = gs,
+                        tmin = 0,
+                        tmax = 100,
+                        id_var = "id",
+                        outcome_var = "log_outcome",
+                        time = "time",
+                        weight = FALSE,
+                        match_plot = FALSE,
+                        predict_plot = FALSE,
+                        match_methods = "mahalanobis",
+                        match_number = 10)
+
+m_a95 <- people_like_us(train_data = tsa_train,
+                        test_data = tsa_test,
+                        anchor_time = anchor,
+                        brokenstick_knots = bsk_knots,
+                        linear_formula = lmf,
+                        gamlss_formula = gf,
+                        gamlss_sigma = gs,
+                        tmin = 0,
+                        tmax = 100,
+                        id_var = "id",
+                        outcome_var = "log_outcome",
+                        time = "time",
+                        weight = FALSE,
+                        match_plot = FALSE,
+                        predict_plot = FALSE,
+                        match_methods = "mahalanobis",
+                        match_alpha = 0.95)
+
+m_a99 <- people_like_us(train_data = tsa_train,
+                        test_data = tsa_test,
+                        anchor_time = anchor,
+                        brokenstick_knots = bsk_knots,
+                        linear_formula = lmf,
+                        gamlss_formula = gf,
+                        gamlss_sigma = gs,
+                        tmin = 0,
+                        tmax = 100,
+                        id_var = "id",
+                        outcome_var = "log_outcome",
+                        time = "time",
+                        weight = FALSE,
+                        match_plot = FALSE,
+                        predict_plot = FALSE,
+                        match_methods = "mahalanobis",
+                        match_alpha = 0.99)
+
+
+meanout <- function(dataset){
+  # browser()
+  result0 <- dataset %>%
+    as.data.frame() %>%
+    mutate(mse = bias^2) 
+  
+  result1 <- result0 %>%
+    colMeans() %>%
+    unlist()
+  
+  return(result1)
+}
+
+
+save(e_k10, m_k10, m_a95, m_a99, file = "newdata/tsa_results_2024-01-09.Rdata")
+# 16, 19, 25, 38, 49, 51
+```
+
+## Summary
+
+```{r}
+#| label: summary
+#| include: true
+#| eval: false
+# View(e_k10)
+# View(m_k10)
+# View(m_a95)
+# View(m_a99)
+load("newdata/tsa_results_2024-01-09.Rdata")
+
+result_mk10 <- map(m_k10, "centiles_observed") %>%
+  map_dfr(~try(meanout(.))) %>%
+  dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+  colMeans()
+
+result_ek10 <- map(e_k10, "centiles_observed") %>%
+  map_dfr(~try(meanout(.))) %>%
+  dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+  colMeans()
+
+## there are 3 individuals cannot find any matches
+result_a95 <- map(m_a95, "centiles_observed") %>%
+  map(~try(meanout(.)) %>% unlist())
+## find a way to remove all the try-error terms
+## need to be considered in the meanout() function
+result_a95[grep("Error", result_a95)] <- NULL
+result_a95 <- result_a95 %>%
+  map_dfr(~t(.) %>% as.data.frame) %>%
+  dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+  colMeans()
+
+## there are 5 individuals cannot find any matches
+result_a99 <- map(m_a99, "centiles_observed") %>%
+  map(~try(meanout(.)) %>% unlist())
+## find a way to remove all the try-error terms
+## need to be considered in the meanout() function
+result_a99[grep("Error", result_a99)] <- NULL
+result_a99 <- result_a99 %>%
+  map_dfr(~t(.) %>% as.data.frame) %>%
+  dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+  colMeans()
+
+final_result <- rbind(E_k10 = result_ek10, M_k10 = result_mk10, M_a95 = result_a95, M_a99 = result_a99) %>%
+  as.data.frame() 
+
+save(final_result, file = "figure/tsa_results_08_package_2024-01-09.Rdata")
+```
+
+Here is the table for the final results
+
+-   The results are still consistent with the EPIC analysis $M_\alpha$ performs better than $M_{\kappa}$
+
+-   The two $\kappa$ methods perform the same for $E_{\kappa}$ and $M_{\kappa}$
+
+-   The overestimation is still there for the Coverage Rate
+
+-   Increasing the $\alpha$ makes the performance better but not so obvious ($\alpha = 0.95$ to $\alpha = 0.99$)
+
+-   **New** we find the targets without any matches for 3 cases in $\alpha = 0.95$ and 5 cases in $\alpha = 0.99$
+
+```{r}
+#| label: final_result
+load("figure/tsa_results_08_package_2024-01-09.Rdata")
+
+final_result 
+```

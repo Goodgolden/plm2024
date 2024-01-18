@@ -46,9 +46,7 @@ here::set_here()
 
 ## Show Insurance variable
 
-
 Here is the table1 for the variables included in the final model.
-
 
 ```{r}
 #| label: insurance_table1
@@ -84,12 +82,11 @@ The variables will be used in the linear model (the second step for PLM):
 4.  the best knots for brokenstick model
 5.  the best anchor time points
 
-Total tsa id: 981 + 1515 = 2496 ids         
+Total tsa id: 981 + 1515 = 2496 ids
 
-Total missing with either bmi or adi is 209 ids           
+Total missing with either bmi or adi is 209 ids
 
-Total non-missing tsa id: 2287 ids                 
-
+Total non-missing tsa id: 2287 ids
 
 ```{r}
 #| label: insurance_check 
@@ -103,15 +100,16 @@ tsa_ta <- baseline_insurance %>%
 nrow(tsa_ta)
 ```
 
-
 ## Clean the tsa longitudinal and baseline
 
-1. clean the insurance variable into 6 groups (self-pay is in commercial)
-2. remove time over 365 days and visit number fewer than 4 times
-  - visit time with more than 3 times: 2007 ids
-  - visit time with more than 4 times: 1851 ids 
-3. remove second visits from the dataset, sid contains all 2b
-4. log transform the outcomes
+1.  clean the insurance variable into 6 groups (self-pay is in commercial)
+2.  remove time over 365 days and visit number fewer than 4 times
+
+-   visit time with more than 3 times: 2007 ids
+-   visit time with more than 4 times: 1851 ids
+
+3.  remove second visits from the dataset, sid contains all 2b
+4.  log transform the outcomes
 
 ```{r}
 #| label: tsa00
@@ -133,9 +131,8 @@ nrow(tsa02a)
 ```
 
 There are 174 individuals contains two surgeries
-  
-  
-```{r}  
+
+```{r}
 #| label: tsa0
 
 tsa0 <- tsa00 %>%
@@ -177,14 +174,11 @@ tsa02b <- tsa0 %>%
 id_both <- full_join(tsa02a, tsa02b, by = "id")
 ```
 
-some people will lose their first surgery or their second surgery.
-so the people with both surgery 
-
+some people will lose their first surgery or their second surgery. so the people with both surgery
 
 ```{r "1st_2nd_surgeries", class.output="scroll-100"}
 id_both
 ```
-
 
 ```{r}
 #| label: remove_2nd
@@ -202,7 +196,6 @@ sid_ignore <- id_both %>%
 tsa1 <- tsa0 %>%
   filter(sid %!in% sid_ignore)
 ```
-
 
 ```{r}
 #| label: tsa2
@@ -226,7 +219,6 @@ tsa_baseline <- tsa2 %>%
 # View(tsa_baseline)
 ```
 
-
 ```{r}
 #| label: split_data
 
@@ -241,20 +233,20 @@ tsa_train <- tsa2 %>%
   group_by(id) %>%
   fill(log_baseline) %>%
   dplyr::select(-visit_max, -visit_n, -time0) %>%
-  filter()
+  na.omit()
 
 tsa_test <- tsa2 %>%
   filter(id %!in% id_train) %>%
   left_join(tsa_baseline)  %>%
   fill(log_baseline) %>%
-  dplyr::select(-visit_max, -visit_n, -time0)
+  dplyr::select(-visit_max, -visit_n, -time0) %>%
+  na.omit()
 
 id_test <- tsa_test$id %>% unique()
 
 length(id_test)
 length(id_train)
 ```
-
 
 ```{r}
 #| label: final_tsa_baseline
@@ -268,7 +260,6 @@ tsa_baseline <- tsa_baseline %>%
   mutate(group = ifelse(id %in% id_train, 
                         "Training", "Testing"))
 ```
-
 
 ```{r "tsa_final_baseline", class.output="scroll-100"}
 tsa_baseline
@@ -300,8 +291,9 @@ table2 <- tsa_baseline %>%
 table2
 ```
 
-
 ## Saving data
+
+remember to check id4280
 
 ```{r}
 usethis::use_data_raw("tsa_baseline")
@@ -313,4 +305,3 @@ usethis::use_data(tsa_test,
                   internal = TRUE,
                   overwrite = TRUE)
 ```
-
