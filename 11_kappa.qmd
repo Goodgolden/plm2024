@@ -1,7 +1,6 @@
 ---
-title: "kappa selection"
+title: "K-Selection"
 ---
-
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,
@@ -35,7 +34,6 @@ here::set_here()
 #      Sys.Date(), ".filetype")
 ```
 
-
 ```{css, echo=FALSE}
 .scroll-100 {
   max-height: 300px;
@@ -47,9 +45,16 @@ here::set_here()
 
 ## Cross-validation for different $\kappa$ values
 
-remember to change the kappa each time
+Remember to change the kappa each time
+
+The codes are in the file `11_kappa.R` file
 
 ```{r}
+#| label: "plm_euclidean"
+#| include: true
+#| eval: false
+#| echo: false
+
 anchor <- c(30, 90, 200)
 bsk_knots <- c(50, 100, 150)
 
@@ -68,6 +73,11 @@ lmf <- "log_outcome ~ as.factor(time) + surgery_type + patient_gender +
 ```
 
 ```{r}
+#| label: "kappa_saving"
+#| include: true
+#| eval: false
+#| echo: false
+
 ## change the slm and kappa number
 e_kcv_kappa1 <- map(kappa1, 
                  ~people_like_us(train_data = tsa_train,
@@ -89,13 +99,151 @@ e_kcv_kappa1 <- map(kappa1,
                         match_methods = "euclidean",
                         match_number = .x))
 
-save(e_kcv_kappa1, file = "figure/tsa_kappa1_cross_validation_", Sys.time(), ".Rdata")
+save(e_kcv_kappa1, file = "figure/tsa_11_kappa1_cross_validation_", Sys.time(), ".Rdata")
+```
+
+## $\kappa$ from 10 to 350
+
+
+```{r}
+#| label: "kappa_load"
+
+load("figure/tsa_11_table_kappa3_cross_validation_2024-01-18 01:39:53.Rdata")
+load("figure/tsa_11_table_kappa4_cross_validation_2024-01-18 01:17:54.Rdata")
+load("figure/tsa_11_table_kappa1_cross_validation_2024-01-18 01:16:06.Rdata")
+load("figure/tsa_11_table_kappa2_cross_validation_2024-01-18 01:04:16.Rdata")
+
+# map_dfr(result_kappa0, ~unlist(., recursive = FALSE))
+
+kappa350 <- rbind(map_dfr(result_kappa1, ~unlist(., recursive = FALSE)),
+                  map_dfr(result_kappa2, ~unlist(., recursive = FALSE)),
+                  map_dfr(result_kappa3, ~unlist(., recursive = FALSE)),
+                  map_dfr(result_kappa4, ~unlist(., recursive = FALSE))) %>%
+  as.data.frame() %>%
+  mutate(kappa = seq(10, 350, by = 10)) %>%
+  dplyr::select(kappa, everything())
+
+# map_dfr(result_kappa5, ~unlist(., recursive = FALSE))
 ```
 
 
-```{r, class.output="scroll-100"}
+```{r}
+#| label: "kappa350_plot"
+#| fig-cap: Cross validation for kappa
+#| fig-subcap-location: top
+#| fig-width: 4
+#| fig-height: 2
+#| fig-subcap:
+#| - "CV350 bias"
+#| - "CV350 mse"
+#| - "CV350 CR50"
+#| - "CV350 CR80"
+#| - "CV350 CR90"
+#| warning: false
+#| layout-ncol: 2
+
+kappa350_bias <- kappa350 %>%
+  ggplot() +
+  geom_line(aes(x = kappa, y = bias), color = "darkgreen") 
+kappa350_mse <- kappa350 %>%
+  ggplot() +
+  # geom_line(aes(x = kappa, y = bias), color = "blue") +
+  geom_line(aes(x = kappa, y = mse), color = "indianred") 
+  # scale_y_continuous("Bias", 
+  #   sec.axis = sec_axis(~ ., name = "MSE"))
+kappa350_cr50 <- kappa350 %>%
+  ggplot() +
+  geom_line(aes(x = kappa, y = coverage50), color = "blue1") 
+kappa350_cr80<- kappa350 %>%
+  ggplot() +
+  # geom_line(aes(x = kappa, y = bias), color = "blue") +
+  geom_line(aes(x = kappa, y = coverage80), color = "blue3") 
+kappa350_cr90<- kappa350 %>%
+  ggplot() +
+  # geom_line(aes(x = kappa, y = bias), color = "blue") +
+  geom_line(aes(x = kappa, y = coverage90), color = "blue4")
+
+
+kappa350_bias + theme_bw() + theme(legend.position = "none")
+kappa350_mse + theme_bw() + theme(legend.position = "none")
+kappa350_cr50 + theme_bw() + theme(legend.position = "none")
+kappa350_cr80 + theme_bw() + theme(legend.position = "none")
+kappa350_cr90 + theme_bw() + theme(legend.position = "none")
+```
+
+```{r}
+#| label: "kappa5070"
+
+load("figure/tsa_11_table_kappa5070_cross_validation_2024-01-18 09:41:18.Rdata")
+load("figure/tsa_11_table_kappa5171_cross_validation_2024-01-18 11:13:57.Rdata")
+
+kappa5070 <- rbind(map_dfr(result_kappa5070, 
+                           ~unlist(., recursive = FALSE))) %>%
+  as.data.frame() %>%
+  mutate(kappa = seq(50, 70, by = 2)) %>%
+  dplyr::select(kappa, everything())
+
+kappa5171 <- rbind(map_dfr(result_kappa5171, 
+                           ~unlist(., recursive = FALSE))) %>%
+  as.data.frame() %>%
+  mutate(kappa = seq(51, 71, by = 2)) %>%
+  dplyr::select(kappa, everything())
+
+kappa5070 <- rbind(kappa5070, kappa5171) %>%
+  as.data.frame()
+```
+
+```{r}
+#| label: "kappa5070 plot"
+#| fig-cap: Cross validation for kappa
+#| fig-subcap-location: top
+#| fig-width: 4
+#| fig-height: 2
+#| fig-subcap:
+#| - "CV bias"
+#| - "CV mse"
+#| - "CV CR50"
+#| - "CV CR80"
+#| - "CV CR90"
+#| warning: false
+#| layout-ncol: 2
+
+
+kappa5070_bias <- kappa5070 %>%
+  ggplot() +
+  geom_line(aes(x = kappa, y = bias), color = "darkgreen") 
+kappa5070_mse <- kappa5070 %>%
+  ggplot() +
+  # geom_line(aes(x = kappa, y = bias), color = "blue") +
+  geom_line(aes(x = kappa, y = mse), color = "indianred") 
+  # scale_y_continuous("Bias", 
+  #   sec.axis = sec_axis(~ ., name = "MSE"))
+kappa5070_cr50 <- kappa5070 %>%
+  ggplot() +
+  geom_line(aes(x = kappa, y = coverage50), color = "blue1") 
+kappa5070_cr80<- kappa5070 %>%
+  ggplot() +
+  # geom_line(aes(x = kappa, y = bias), color = "blue") +
+  geom_line(aes(x = kappa, y = coverage80), color = "blue3") 
+kappa5070_cr90<- kappa5070 %>%
+  ggplot() +
+  # geom_line(aes(x = kappa, y = bias), color = "blue") +
+  geom_line(aes(x = kappa, y = coverage90), color = "blue4")
+
+kappa5070_bias + theme_bw() + theme(legend.position = "none")
+kappa5070_mse + theme_bw() + theme(legend.position = "none")
+kappa5070_cr50 + theme_bw() + theme(legend.position = "none")
+kappa5070_cr80 + theme_bw() + theme(legend.position = "none")
+kappa5070_cr90 + theme_bw() + theme(legend.position = "none")
 
 ```
+
+
+
+
+
+
+
 
 
 

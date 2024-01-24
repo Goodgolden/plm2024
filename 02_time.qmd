@@ -120,14 +120,15 @@ numbers_only <- function(x) !grepl("\\D", x)
 tsa_sid1 <- tsa_base1 %>% filter(surgeryn == 1) %>% select(empi_deidentified) %>% unlist()
 tsa_sid2 <- tsa_base1 %>% filter(surgeryn > 1) %>% select(empi_deidentified) %>% unlist()
 
-tsa_baseout <- 
+tsa_baseout0 <- 
   ## change the baseline into outcome format
   data.frame(empi_deidentified = factor(tsa_base1$empi_deidentified), 
              outcome_type = "baseline",
              outcome_dt = tsa_base1$surgery_dt,
              outcome_score = NA,
              visitn = letters[tsa_base1$surgeryt]) %>%
-  ## augement the outcome with baseline
+  filter(empi_deidentified %in% tsa_outcome_id) %>%
+  ## augment the outcome with baseline
   rbind(tsa_out1) %>%
   arrange(empi_deidentified, outcome_dt) %>% 
   group_by(empi_deidentified) %>%
@@ -135,11 +136,18 @@ tsa_baseout <-
   mutate(visitm = lead(visitn),
          id = as.integer(empi_deidentified)) %>%
   mutate(keep = ifelse(letters_only(visitm) & 
-                         letters_only(visitn), FALSE, TRUE)) %>% 
+                         letters_only(visitn), FALSE, TRUE)) 
   ## now only keep the keep == TRUE,
   ## if both visitn and visitm are surgery time, remove it
   ## if the last time of outcome is visitm, which means 
   ## after the last surgery there is no outcomes, remove it
+
+# View(tsa_baseout0)
+
+## 2651 total ids for the baseout
+tsa_baseout0$empi_deidentified %>% unique() %>% length()
+
+tsa_baseout <- tsa_baseout0 %>%
   filter(keep == TRUE) %>%
   select(-keep, -visitn, -visitm) %>%
   group_by(empi_deidentified) %>%
@@ -147,18 +155,69 @@ tsa_baseout <-
   mutate(visitm = row_number() - 1,
          visitmax = n() - 1)
 
-# View(tsa_baseout)
+baseout_id <- tsa_baseout$id %>% unique() 
+baseout_id %>% length()
 
+tsa_remove <- tsa_baseout0 %>%
+  filter(keep == FALSE)
+
+## 477 total sids for the remove
+## 109 sids have no outcomes between surgeries
+## 368 sids have no outcomes after the last surgery
+## 155 ids have been fully removed from outcomes dataset
+tsa_remove %>%
+  filter(!is.na(visitm) & !is.na(visitn)) %>%
+  dplyr::select(id) %>% 
+  unique() %>% 
+  nrow()
+
+remove_id <- tsa_remove$id %>% unique()
+
+length(remove_id)
+not_keep <- tsa_remove %>%
+  ungroup() %>%
+  filter(id %in% baseout_id)
+nrow(not_keep)
+
+setdiff(baseout_id, remove_id)  %>% length()
+
+```
+
+Total 477 individuals in the base-outcome, which has ids in the outcome dataset are removed. There are 522 surgeries removed but we do not know the exact number of individuals.
+
+155 individuals are removed because they have no outcome after the last surgery. (we remove the data based on surgery, which it is so hard to get the unique ids from the data).
+
+```{r "table_cleanout"}
+## here is the clean baseline and outcome data
 clean_base0 <- tsa_baseout %>%
-  filter(outcome_type == "baseline") %>%
+  filter(outcome_type == "baseline",
+         empi_deidentified %in% tsa_outcome_id) %>%
   select(-visitm, -visitmax, -outcome_score, -outcome_type) %>%
   group_by(id) %>%
   arrange(outcome_dt) %>%
   mutate(surgeryn = row_number(),
          surgerymax = n())
 clean_base0$surgeryn = letters[clean_base0$surgeryn]
+```
 
-tsa_baseout <- clean_base0 %>% 
+```{r "remove_clean"}
+clean_id <- clean_base0$id %>% unique() 
+remove_clean_id <- setdiff(remove_id, clean_id) 
+remove_clean <- tsa_baseout0 %>%
+  filter(#outcome_type != "baseline",
+         id %in% remove_clean_id) %>%
+  filter(keep == FALSE)
+table(remove_clean$id) %>% table()
+```
+
+Above is the table for the removed ids, which are not in the clean dataset.
+
+-   There are 29 + 1 individuals without any outcomes between surgeries
+
+-   There after 299 individuals have not not outcomes after given surgery
+
+```{r "tsa_baseout2"}
+tsa_baseout2 <- clean_base0 %>% 
   mutate(surgery_max = surgerymax) %>%
   unite(surgery, c("surgerymax", "surgeryn"), sep = "") %>%
   unite(sid, c("id", "surgery"), sep = "_") %>%
@@ -168,6 +227,7 @@ tsa_baseout <- clean_base0 %>%
   fill(sid) %>%
   arrange(id)
 
+tsa_baseout2$id %>% unique() %>% length()
 # tsa_base_surgery2 <- tsa_base_out %>%
 #   filter(empi_deidentified %in% tsa_sid2) %>%
 #   group_by(empi_deidentified) %>%
@@ -181,10 +241,10 @@ After cleaning, the base and outcome dataset look like this:
 
 ```{r "example_clean0", class.output="scroll-100"}
 clean_base0 %>% select(-empi_deidentified)
-tsa_baseout %>% as.data.frame() %>% select(-empi_deidentified)
+tsa_baseout2 %>% as.data.frame() %>% select(-empi_deidentified)
 ```
 
-## Removeing for the visit before surgery
+## Removing for the visit before surgery
 
 Then we look at how many patients having outcomes before their first surgery. Here shown:
 
@@ -203,7 +263,7 @@ Then we look at how many patients having outcomes before their first surgery. He
 -   `3` as (the number of patients $\times 3$) with three surgeries
 
 ```{r "table_surgeryn"}
-clean_id0 <- tsa_baseout %>%
+clean_id0 <- tsa_baseout2 %>%
   filter(is.na(sid)) %>%
   arrange(empi_deidentified) %>%
   select(empi_deidentified) %>%
@@ -245,7 +305,7 @@ There are two datasets for this step cleaning
 
 ## there are 2322 unique patient
 ## there are 2510 unique surgeries
-clean_baseout1 <- tsa_baseout %>%
+clean_baseout1 <- tsa_baseout2 %>%
   mutate(surgery_dt = outcome_dt) %>%
   ## remove outcomes before the first surgery
   filter(!is.na(sid)) %>%
@@ -264,12 +324,13 @@ clean_baseout1 <- tsa_baseout %>%
          timemax = max(time)) %>% 
   ungroup()
 
-## 2512 unique surgeries
+## 2510 unique surgeries
 clean_base1 <- clean_baseout1 %>%
   filter(outcome_type == "baseline") %>%
   select(id, sid, names(tsa_base), surgery_max, outcome_n, timemax)
 
-clean_out1 <- tsa_baseout %>%
+clean_out1 <- tsa_baseout2 %>%
+  filter(id %in% clean_base1$id) %>%
   mutate(surgery_dt = outcome_dt) %>%
   mutate(sid = case_when(is.na(sid) ~ paste0(id, "_0"),
                         .default = sid)) %>%
@@ -277,12 +338,26 @@ clean_out1 <- tsa_baseout %>%
   # left_join(clean_base1, by = c("empi_deidentified", "surgery_dt")) %>%
   dplyr::select(-surgery_dt, -visitm, -visitmax)
 
+# View(clean_out1)
+# View(clean_baseout1)
+clean_base1$id %>% unique() %>% length()
+clean_baseout1$id %>% unique() %>% length()
+clean_out1$id %>% unique() %>% length()
+clean_base1$sid %>% unique() %>% length()
+clean_baseout1$sid %>% unique() %>% length()
+clean_out1$sid %>% unique() %>% length()
+
 # write.csv(clean_baseout1, file = paste0("newdata/tsa_clean_baseout_", Sys.Date(), ".csv"))
 # write.csv(clean_base1, file = paste0("newdata/tsa_clean_baseline_for_outcome_", Sys.Date(), ".csv"))
 # write.csv(clean_out1, file = paste0("newdata/tsa_clean_outcome_", Sys.Date(), ".csv"))
 ```
 
+Here are the working datasets for the next step. All the datasets should be clean for Date 2024-01-22.
+
+The total sample size is 2322 patients with 2510 surgeries.
+
 ```{r "example_clean1", class.output="scroll-100"}
+
 clean_base1 %>% select(-empi_deidentified)
 clean_out1 %>% select(-empi_deidentified)
 ```

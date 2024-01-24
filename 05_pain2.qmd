@@ -64,8 +64,8 @@ There are a few patients with unreasonable scores (outcome \> 100 and pain \> 10
 :::
 
 ```{r "baseline"}
-base_outcome<- read.csv("newdata/tsa_clean_baseline_for_outcome_2023-11-07.csv", row.names = 1)
-outcome <- read.csv("newdata/tsa_clean_baseout_2023-11-07.csv", row.names = 1)
+base_outcome<- read.csv("newdata/tsa_clean_baseline_for_outcome_2024-01-22.csv", row.names = 1)
+outcome <- read.csv("newdata/tsa_clean_baseout_2024-01-22.csv", row.names = 1)
 
 base_pain <- read.csv("newdata/tsa_clean_baseline_for_pain2023-11-07.csv", row.names = 1)
 pain <-  read.csv("newdata/tsa_clean_basepain_2023-11-07.csv", row.names = 1)

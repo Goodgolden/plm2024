@@ -49,8 +49,8 @@ A new `id` given to each unique individual patient, and a new `sid` given to eac
 This page is to further clean the dataset, especially for the patients with more than one surgeries.
 
 ```{r "baseline"}
-baseline0 <- read.csv("newdata/tsa_clean_baseline_for_outcome_2023-11-07.csv", row.names = 1)
-baseout0 <- read.csv("newdata/tsa_clean_baseout_2023-11-07.csv", row.names = 1)
+baseline0 <- read.csv("newdata/tsa_clean_baseline_for_outcome_2024-01-22.csv", row.names = 1)
+baseout0 <- read.csv("newdata/tsa_clean_baseout_2024-01-22.csv", row.names = 1)
 ```
 
 ```{r "surgery_nid"}
@@ -143,11 +143,13 @@ base_sid3 <- base_sid3 %>%
   select(-surgery_dt2, -surgery_gap)
 
 id_keep <- c(base_sid1$sid, base_sid2$sid, base_sid3$sid)
+length(id_keep)
 ```
 
 ```{r "save_data"}
 baseout1 <- baseout0 %>%
   filter(sid %in% id_keep)
+
 baseline1 <- baseline0 %>%
   filter(sid %in% id_keep) %>%
   mutate(primary_payer = case_when(primary_payer %in% c("Medicaid", "MEDICAID", "Medicaid HMO") ~ "Medicaid",
@@ -162,9 +164,17 @@ baseline2 <- baseline0 %>%
   filter(sid %in% id_keep)
 
 
-write.csv(baseout1, file = paste0("newdata/final_tsa_clean_baseout_", Sys.Date(), ".csv"))
-write.csv(baseline2, file = paste0("newdata/final_tsa_clean_baseline_for_insurance", Sys.Date(), ".csv"))
-write.csv(baseline1, file = paste0("newdata/final_tsa_clean_baseline_", Sys.Date(), ".csv"))
+table(baseline2$sid) %>% table()
+table(baseline2$id) %>% table()
+# 
+# unique(baseout1$id) %>% length()
+# unique(baseline1$id) %>% length()
+# unique(baseout1$sid) %>% length()
+# unique(baseline1$sid) %>% length()
+
+# write.csv(baseout1, file = paste0("newdata/final_tsa_clean_baseout_", Sys.Date(), ".csv"))
+# write.csv(baseline2, file = paste0("newdata/final_tsa_clean_baseline_for_insurance_", Sys.Date(), ".csv"))
+# write.csv(baseline1, file = paste0("newdata/final_tsa_clean_baseline_", Sys.Date(), ".csv"))
 ```
 
 ## Table1 verstion 1.1 {#sec-3-outcome-table1}
@@ -174,7 +184,11 @@ The original baseline dataset contains: `RTSA N = 2,371`; `TSA N = 5,092`
 
 The patients having both baseline longitudinal data: `RTSA N = 1,134`; `TSA N = 1,898`
 
-The newly updated baseline longitudinal dataset: `RTSA N = 981`; `TSA N = 1,515`
+The newly updated baseline number of surgeries in longitudinal dataset: `RTSA N = 981`; `TSA N = 1,515`
+
+There are two individuals have wrong input, with both TSA and RTSA surgeries, but only one surgery in the longitudinal dataset.
+
+***That is the reason why we have 2494 ids***
 :::
 
 To see the difference, go to @sec-1.2-table1-baseline;\
@@ -184,8 +198,11 @@ go to @sec-5-pain-table1
 #| tbl-cap: "Table1 new version for DASH"
 #| tbl-cap-location: top
 table1_base <- baseline1 %>%
+  group_by(id) %>%
+  mutate(surgery_max = n()) %>%
+  ungroup() %>%
   select(patient_age, patient_gender,
-         primary_payer, surgery_type, surgery_max,
+         primary_payer, surgery_type,
          bmi, adi_value, outcome_n, timemax) %>%
   # mutate(adi_quintile = as.factor(adi_quintile)) %>% 
   tbl_summary(by = surgery_type,

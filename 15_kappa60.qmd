@@ -1,12 +1,11 @@
 ---
-title: "Extension"
+title: "kappa 60"
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,
                       warnings = FALSE,
                       message = FALSE,
-                      cache = TRUE,
                       comment = "#>",
                       #results = "hide",
                       digits = 4,
@@ -42,100 +41,6 @@ here::set_here()
 }
 ```
 
-## Linear model extension
-
-the original lm() with anchor time as factor
-
-the multiple lm() at each anchor time independently
-
-the gls() model with variance and correlation
-
-```{r "kappa_alpha"}
-load("figure/tsa_09_euclidean_mahalanobis_slm_vs_mlm_2024-01-12.Rdata")
-
-subset_e_k10_mlm <- attr(e_k10_mlm, "subset")
-subset_e_k10_slm <- attr(e_k10_slm, "subset")
-subset_m_k10_mlm <- attr(m_k10_mlm, "subset")
-subset_m_k10_slm <- attr(m_k10_slm, "subset")
-subset_m_a80_mlm <- attr(m_a80_mlm, "subset")
-subset_m_a80_slm <- attr(m_a80_slm, "subset")
-subset_m_a95_mlm <- attr(m_a95_mlm, "subset")
-subset_m_a95_slm <- attr(m_a95_slm, "subset")
-```
-
-```{r "kappa_alpha_table", class.output="scroll-100"}
-
-match_m_k10_mlm  <- subset_m_k10_mlm %>%
-  map("subset") %>%
-  map(~ dplyr::select(., sid) %>%
-        unique() %>%
-        nrow()) %>%
-  unlist() 
-
-match_m_a80_mlm  <- subset_m_a80_mlm %>%
-  map("subset") %>%
-  map(~ dplyr::select(., sid) %>%
-        unique() %>%
-        nrow()) %>%
-  unlist() 
-
-match_m_a80_slm  <- subset_m_a80_slm %>%
-  map("subset") %>%
-  map(~ dplyr::select(., sid) %>%
-        unique() %>%
-        nrow()) %>%
-  unlist() 
-
-match_m_a95_mlm  <- subset_m_a95_mlm %>%
-  map("subset") %>%
-  map(~ dplyr::select(., sid) %>%
-        unique() %>%
-        nrow()) %>%
-  unlist() 
-
-match_m_a95_slm  <- subset_m_a95_slm %>%
-  map("subset") %>%
-  map(~ dplyr::select(., sid) %>%
-        unique() %>%
-        nrow()) %>%
-  unlist()
-
-matching <- 
-  cbind(match_m_k10_mlm, 
-        match_m_a80_slm, 
-        match_m_a95_slm,
-        match_m_a80_mlm,
-        match_m_a95_mlm) %>%
-  as.data.frame() %>%
-  mutate(test_id = 1:570 %>% unique()) %>%
-  dplyr::select(test_id, everything())
-
-```
-
-When matching number less than 2, the gamlss does not work
-
-```{r "alpha_kappa", class.output="scroll-100"}
-matching
-```
-
-```{r "sample_size"}
-#| eval: true
-
-cat("The mean of matches for Ma80 SLM: ", mean(match_m_a80_slm), "\n")
-cat("The mean of matches for Ma95 SLM: ", mean(match_m_a95_slm), "\n")
-cat("The mean of matches for Ma80 MLM: ", mean(match_m_a80_mlm), "\n")
-cat("The mean of matches for Ma95 MLM: ", mean(match_m_a95_mlm), "\n")
-
-cat("The median of matches for Ma80 SLM: ", median(match_m_a80_slm), "\n")
-cat("The median of matches for Ma95 SLM: ", median(match_m_a95_slm), "\n")
-cat("The median of matches for Ma80 MLM: ", median(match_m_a80_mlm), "\n")
-cat("The median of matches for Ma95 MLM: ", median(match_m_a95_mlm), "\n")
-```
-
-Let's see how about we use 167 $M_{\alpha = 0.8}$ with $E_{\kappa = 167}$ and $M_{\kappa = 167}$.
-
-The purpose is to compensate the small sample size for the $\kappa$ criteria, not sure whether we need 500+ sample size.
-
 ```{r "kappa167"}
 #| eval: false
 #| include: true
@@ -154,7 +59,7 @@ lmf <- "log_outcome ~ as.factor(time) + surgery_type + patient_gender +
                       bmi + patient_age +
                       patient_age:log_baseline + log_baseline + t0"
 
-e_k167_slm <- people_like_us(train_data = tsa_train,
+e_k60_slm <- people_like_us(train_data = tsa_train,
                         test_data = tsa_test,
                         anchor_time = anchor,
                         brokenstick_knots = bsk_knots,
@@ -171,9 +76,9 @@ e_k167_slm <- people_like_us(train_data = tsa_train,
                         match_plot = FALSE,
                         predict_plot = FALSE,
                         match_methods = "euclidean",
-                        match_number = 167)
+                        match_number = 60)
 
-e_k167_mlm <- people_like_us(train_data = tsa_train,
+e_k60_mlm <- people_like_us(train_data = tsa_train,
                         test_data = tsa_test,
                         anchor_time = anchor,
                         brokenstick_knots = bsk_knots,
@@ -190,9 +95,9 @@ e_k167_mlm <- people_like_us(train_data = tsa_train,
                         match_plot = FALSE,
                         predict_plot = FALSE,
                         match_methods = "euclidean",
-                        match_number = 167)
+                        match_number = 60)
 
-m_k167_slm <- people_like_us(train_data = tsa_train,
+m_k60_slm <- people_like_us(train_data = tsa_train,
                         test_data = tsa_test,
                         anchor_time = anchor,
                         brokenstick_knots = bsk_knots,
@@ -209,9 +114,9 @@ m_k167_slm <- people_like_us(train_data = tsa_train,
                         match_plot = FALSE,
                         predict_plot = FALSE,
                         match_methods = "mahalanobis",
-                        match_number = 167)
+                        match_number = 60)
 
-m_k167_mlm <- people_like_us(train_data = tsa_train,
+m_k60_mlm <- people_like_us(train_data = tsa_train,
                         test_data = tsa_test,
                         anchor_time = anchor,
                         brokenstick_knots = bsk_knots,
@@ -228,7 +133,7 @@ m_k167_mlm <- people_like_us(train_data = tsa_train,
                         match_plot = FALSE,
                         predict_plot = FALSE,
                         match_methods = "mahalanobis",
-                        match_number = 167)
+                        match_number = 60)
 
 m_a90_mlm <- people_like_us(train_data = tsa_train,
                         test_data = tsa_test,
@@ -268,17 +173,14 @@ m_a90_slm <- people_like_us(train_data = tsa_train,
                         match_methods = "mahalanobis",
                         match_alpha = 0.90)
 
-save(e_k167_mlm, e_k167_slm, 
-     m_k167_mlm, m_k167_slm, 
-     m_a80_mlm, m_a80_slm,
-     m_a95_mlm, m_a95_slm,
-     m_a90_mlm, m_a90_slm,
-     file = paste0("figure/tsa_10_alpha80_kappa167_relationship_", Sys.Date(), ".Rdata"))
+save(e_k60_mlm, e_k60_slm, 
+     m_k60_mlm, m_k60_slm, 
+     file = paste0("figure/tsa_12_kappa60_relationship_", Sys.Date(), ".Rdata"))
 ```
 
-```{r "summarization_k167"}
+```{r "summarization_k60"}
 
-load("figure/tsa_10_alpha80_kappa167_relationship_2024-01-14.Rdata")
+load("figure/tsa_12_kappa60_relationship_2024-01-14.Rdata")
 
 meanout <- function(dataset){
   # browser()
@@ -291,22 +193,22 @@ meanout <- function(dataset){
   return(result1)}
 
 
-result_ek167s <- map(e_k167_slm, "centiles_observed") %>%
+result_ek60s <- map(e_k60_slm, "centiles_observed") %>%
   map_dfr(~try(meanout(.))) %>%
   dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
   colMeans()
 
-result_ek167m <- map(e_k167_mlm, "centiles_observed") %>%
+result_ek60m <- map(e_k60_mlm, "centiles_observed") %>%
   map_dfr(~try(meanout(.))) %>%
   dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
   colMeans()
 
-result_mk167s <- map(m_k167_slm, "centiles_observed") %>%
+result_mk60s <- map(m_k60_slm, "centiles_observed") %>%
   map_dfr(~try(meanout(.))) %>%
   dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
   colMeans()
 
-result_mk167m <- map(m_k167_mlm, "centiles_observed") %>%
+result_mk60m <- map(m_k60_mlm, "centiles_observed") %>%
   map_dfr(~try(meanout(.))) %>%
   dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
   colMeans()
@@ -365,10 +267,10 @@ result_ma95m <- result_ma95m %>%
 ```
 
 ```{r "final_table",  class.output="scroll-100"}
-rbind(Ek167_SLM = result_ek167s, 
-      Ek167_MLM = result_ek167m,
-      Mk167_SLM = result_mk167s, 
-      Mk167_MLM = result_mk167m,
+rbind(Ek60_SLM = result_ek60s, 
+      Ek60_MLM = result_ek60m,
+      Mk60_SLM = result_mk60s, 
+      Mk60_MLM = result_mk60m,
       Ma80_SLM = result_ma80s,
       Ma90_SLM = result_ma90s,
       Ma95_SLM = result_ma95s,
@@ -379,31 +281,3 @@ rbind(Ek167_SLM = result_ek167s,
   rownames_to_column("methods") %>%
   separate("methods", into = c("Criteria", "LM"))
 ```
-
-We see with MLM the best performance is around $M_{\alpha = 0. 80}$
-
-We also see with SLM the best performance is around $M_{\alpha = 0.95}$
-
-3 missing matching $M_{\alpha = 0.8}$ is still reasonable to use
-
-performance of $M_{\alpha = 0.90}$ is the worst among the MLM $M_{\alpha}$
-
-20 missing matching $M_{\alpha = 95}$ improves the performance
-
-SLM is not as bad as I thought, the direction of improving PLM linear model goes towards two direction:
-
--   SLM with larger $\alpha$ values, which is our original setting
-
--   MLM with reasonable $\alpha$ values, I guess this would be similar to GLS
-
--   large $\kappa$ value can compensate the disadvantages, but still not as good as $\alpha = 0.95$\
-
--   there are certain patients, would have really good prediction... others really bad...
-
--   for missing matches, slm with extreme large $\alpha > 0.95$ but mlm with medium $\alpha > 0.80$
-
--   not sure whether mlm $M_{\alpha}$ is sensitive for this specific dataset
-
--   one hypothesis we have earlier is Mahalnaobis is not the best to use for heterogeneous data, because it shrinks the time interval with highest varibilites. weighted Euclidean is more reasonable, instead we divided the variance, we multiply the variance as weights.
-
--   the last we need to try is to use the inverted distance as weights, or penalization.

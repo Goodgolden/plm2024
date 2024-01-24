@@ -1,0 +1,175 @@
+---
+title: "Flowchart (Publication)"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      warnings = FALSE,
+                      message = FALSE,
+                      comment = "#>",
+                      #results = "hide",
+                      digits = 4,
+                      error = FALSE)
+
+## clean the R environment
+graphics.off()
+rm(list = ls())
+freshr::freshr()
+
+## load packages
+library(here, quietly = TRUE)
+library(tidyverse, quietly = TRUE)
+
+## the packages for the flowchart
+library(DiagrammeR)
+library(DiagrammeRsvg)
+library(rsvg, quietly = TRUE)
+
+## check the directory for the file
+# here::dr_here()
+here::set_here()
+
+## the figure or results should be saved 
+# paste0("foldername/Sfilename_workingresult_", 
+#      Sys.Date(), ".filetype")
+```
+
+```{css "css-setup", echo=FALSE}
+.scroll-100 {
+  max-height: 300px;
+  max-width: 1000px;
+  overflow-y: auto;
+  background-color: inherit;
+}
+```
+
+## The Flowchart
+
+What should we clarify in the flowchart?
+
+-   Outcome cleaning
+
+-   Variable cleaning
+
+-   Time variable cleaning
+
+```{r}
+#| label: flowchart_code
+
+flowchart1 <- DiagrammeR::grViz("
+digraph graph2 {
+
+graph [layout = dot]
+
+# node definitions with substituted label text
+node [shape = rectangle, width = 4, fillcolor = Biege]
+a [label = <Raw Data<br ALIGN = 'CENTER'/>
+ Total number of patient (N = 2651):<br ALIGN = 'CENTER'/>
+   Total number of surgeries (S = 3032):<br ALIGN = 'CENTER'/>
+ &nbsp; &#8226; 2304 patients have one surgery<br ALIGN = 'LEFT'/>
+ &nbsp; &#8226; 316 patients have two surgeries<br ALIGN = 'LEFT'/>
+ &nbsp; &#8226; 28 patients have three surgeries<br ALIGN = 'LEFT'/>
+ &nbsp; &#8226; 3 patients have four surgeries<br ALIGN = 'LEFT'/>
+>]
+
+# These are the main nodes at top of graph
+  a -> b
+  [label = 
+  <        Outcomes Cleaning:<br ALIGN = 'LEFT'/> 
+      &nbsp; &#8226; Remove 30 outcomes before their first surgery <br ALIGN = 'LEFT'/>
+       &nbsp; &#8226; Remove 299 patient without outcome after surgery <br ALIGN = 'LEFT'/> 
+      &nbsp; &#8226; Total of 329 patients with 567 surgeries removed <br ALIGN = 'LEFT'/>>]
+
+b [label = <Data<br ALIGN = 'CENTER'/>
+ Total number of patient (N = 2322):<br ALIGN = 'CENTER'/>
+    Total number of surgeries (S = 2510):<br ALIGN = 'CENTER'/>
+ &nbsp; &#8226; 2141 patients have one surgery<br ALIGN = 'LEFT'/>
+ &nbsp; &#8226; 174 patients have two surgeries<br ALIGN = 'LEFT'/>
+ &nbsp; &#8226; 7 patients have three surgeries<br ALIGN = 'LEFT'/>
+>]
+
+ 
+ b -> c
+ [label =
+ <            Variable Cleaning:<br ALIGN = 'LEFT'/> 
+         &nbsp;     &#8226; ADI missing values: 178 <br ALIGN = 'LEFT'/>
+          &nbsp;     &#8226; BMI missing values: 41 <br ALIGN = 'LEFT'/>
+          &nbsp;     &#8226; Insurance elimination: 2 <br ALIGN = 'LEFT'/> 
+         &nbsp;     &#8226; Total of 203 patients and 213 surgeries removed<br ALIGN = 'LEFT'/>>]
+ 
+
+c [label = 
+< Data <br ALIGN = 'CENTER'/>
+\n Total number of patient (N = 2119):<br ALIGN = 'CENTER'/>
+\n Total number of surgeries (S = 2297):<br ALIGN = 'CENTER'/>
+\n &nbsp; &#8226; 1948 patients have one surgery<br ALIGN = 'LEFT'/>
+\n &nbsp; &#8226; 164 patients have two surgeries<br ALIGN = 'LEFT'/>
+\n &nbsp; &#8226; 7 patients have three surgeries<br ALIGN = 'LEFT'/>>]
+
+
+ c -> d
+ 
+ [label =
+ <
+             Time Variable Cleaning:<br ALIGN = 'LEFT'/> 
+         &nbsp;     &#8226; Remove outcomes over 365 days <br ALIGN = 'LEFT'/>
+          &nbsp;     &#8226; Remove patients with 3 surgeries: 7 patients <br ALIGN = 'LEFT'/>
+          &nbsp;     &#8226; Remove patient with fewer than 4 outcomes: 394 patients <br ALIGN = 'LEFT'/>
+          &nbsp;     &#8226; Keep only the first available surgeries: 118 surgeris <br ALIGN = 'LEFT'/>
+          &nbsp;     &#8226; Total of 401 patients removed <br ALIGN = 'LEFT'/>>]
+
+
+d [label = 
+<Working Data: (N = 1718)<br ALIGN = 'CENTER'/>
+Model building with total <br ALIGN = 'LEFT'/> 
+Stratified split dataset into two subsets<br ALIGN = 'LEFT'/> >]
+  
+e [label = 
+<Training Data: (N = 1144)<br ALIGN = 'CENTER'/> 
+Serving as a pool for selecting <br ALIGN = 'LEFT'/>
+The set of information donors <br ALIGN = 'LEFT'/>
+>]\
+
+f [label = 
+<Testing Data:  (N = 574)<br ALIGN = 'CENTER'/> 
+Serving as targets for prediction validation <br ALIGN = 'LEFT'/>
+Evaluation for model performance <br ALIGN = 'LEFT'/>
+>]
+
+d -> {e f}
+
+
+}")
+```
+
+```{r}
+#| label: flowchart
+#| include: true
+#| eval: true
+#| figure-caption: Flowchart
+
+## see the flowchart
+flowchart1
+# flowchart1 %>%
+#   export_svg() %>%
+#   read_xml() %>%
+#   write_xml(paste0("~/Desktop/project/plmlmm/paper/figure/00_plmlmm_data_cleaning", Sys.Date(), ".svg"))
+```
+
+```{r}
+#| label: flowchart_save
+
+## save the flowchart
+flowchart1 %>%
+  export_svg() %>% 
+  charToRaw() %>% 
+  rsvg_png(paste0("figure/tsa_14_flowchart_data_cleaning_", Sys.Date(), ".png"))
+# export_graph(flowchart,
+# file_name = "final/flowchart_graph.png",
+# file_type = "png")
+```
+
+```{r}
+#| label: sessionInfo
+sessionInfo()
+```

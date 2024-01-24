@@ -13,3 +13,10 @@
 /_book/
 /figure/
 .png
+.docx
+*.docx
+*.rda
+.rdata
+*_cache
+*_files
+R/sysdata.rda

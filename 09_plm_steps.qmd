@@ -6,6 +6,7 @@ title: "EDA PLM"
 knitr::opts_chunk$set(echo = TRUE,
                       warnings = FALSE,
                       message = FALSE,
+                      cache = TRUE,
                       comment = "#>",
                       #results = "hide",
                       digits = 2,
@@ -19,8 +20,6 @@ freshr::freshr()
 ## load packages
 library(here, quietly = TRUE)
 library(tidyverse, quietly = TRUE)
-library(gtsummary, quietly = TRUE)
-library(flextable, quietly = TRUE)
 
 library(devtools, quietly = TRUE)
 load_all()
@@ -52,16 +51,15 @@ First step is the brokenstick imputation with log transformed data
 ```{r}
 #| label: imputation
 
-anchor_time <- c(30, 90, 120, 150)
+anchor_time <- c(30, 90, 120)
 log_tsa_impute <- impute_brokenstick(outcome_var = "log_outcome",
-                                          # outcome_var = "outcome_score",
-                                          time_var = "time",
-                                          id_var = "sid",
-                                          bs_knots = c(50, 100, 150),
-                                          anchor_time = anchor_time,
-                                          data = tsa_train)
+                                     # outcome_var = "outcome_score",
+                                     time_var = "time",
+                                     id_var = "sid",
+                                     bs_knots = c(50, 100, 150),
+                                     anchor_time = anchor_time,
+                                     data = tsa_train)
 
-# View(log_tsa_impute)
 
 test_baseline <- tsa_test %>%
     group_by(sid) %>%
@@ -102,7 +100,6 @@ using the estimated values for the baseline... (still need to consider carefully
 
 Here is the single linear (original `lm()`), the detailed setup seen in codes below; specific covariates need to be checked later with **Jeremy**
 
-
 \tiny
 
 ```{r "tsa_linear"}
@@ -124,12 +121,12 @@ tsa_linear <- linear_impute(lm_formula = lmf,
 tsa_linear$summary
 ```
 
- \normalsize
+\normalsize
 
 Here is the multiple `lm()`, here we only change the formula by removing the `time` variable; in this example, we fit four linear model at $anchor(30, 90, 120, 150)$, equal time-gap to facilitate `gls(corAR)`
 
-
 \tiny
+
 ```{r "tsa_multiple_linear"}
 tsa_multiple <- multiple_impute(lm_formula = mlmf,
                         data_impute = log_tsa_impute,
@@ -260,7 +257,7 @@ m_k10_mlm <- people_like_us(train_data = tsa_train,
 
 Here we only tries two $\alpha$ values, $0.80$ and $0.95$, this should be good enough to see the reasonable critiria and over-restrict critiria.
 
-```{r}
+```{r "slm_mlm"}
 #| include: true
 #| eval: false
 m_a80_slm <- people_like_us(train_data = tsa_train,

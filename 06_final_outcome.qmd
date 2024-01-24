@@ -1,5 +1,5 @@
 ---
-title: "Final Outcome"
+title: "DASH Outcome"
 ---
 
 ```{r setup, include=FALSE}
@@ -65,7 +65,7 @@ It would be interesting to do a multi-outcome joint model.
 ## Further cleaning for the outcome dataset
 
 ```{r}
-tsa_baseout <- read.csv("newdata/tsa_clean_baseout_2023-11-07.csv", row.names = 1) %>%
+tsa_baseout <- read.csv("newdata/tsa_clean_baseout_2024-01-22.csv", row.names = 1) %>%
   separate(sid, into = c(NA, "sid")) %>%
   separate(sid, into = c("S", "s"), sep = 1) %>%
   filter(S != 3) %>%

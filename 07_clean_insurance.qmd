@@ -1,5 +1,5 @@
 ---
-title: "Final Cleaning"
+title: "Variables"
 ---
 
 ```{r setup, include=FALSE}
@@ -48,18 +48,20 @@ here::set_here()
 
 Here is the table1 for the variables included in the final model.
 
+This is very confusing, that we have 2322 patients with eligible 2494 surgeries total. Then we will remove the patients with 3 surgeries left all together, and we will keep only the first available one of two surgeries for the patients.
+
 ```{r}
 #| label: insurance_table1
 #| tbl-cap: "Original Table1"
 
-
-baseline_insurance <- read_csv("newdata/final_tsa_clean_baseline_for_insurance2023-12-04.csv")
+baseline_insurance <- read_csv("newdata/final_tsa_clean_baseline_for_insurance_2024-01-22.csv") %>%
+  mutate(primary_payer = ifelse(primary_payer %in% c("SELF PAY", "Self Pay"), NA, primary_payer)) 
 
 table1_base <- baseline_insurance %>%
   dplyr::select(patient_age, patient_gender,
          primary_payer, surgery_type, adi_value, bmi) %>%
   # mutate(adi_quintile = as.factor(adi_quintile)) %>% 
-  tbl_summary(by = surgery_type,
+  tbl_summary(# by = surgery_type,
               statistic = all_continuous() ~ c("{median} ({p25}, {p75})",
                                                "({min}, {max})"),
               type = all_continuous() ~ "continuous2") %>%
@@ -67,7 +69,7 @@ table1_base <- baseline_insurance %>%
   modify_header(label = "**Characteristics**") %>%
   # update the column header
   bold_labels() %>%
-  add_p() %>%
+  # add_p() %>%
   italicize_labels() %>%
   as_flex_table()
 
@@ -92,8 +94,8 @@ Total non-missing tsa id: 2287 ids
 #| label: insurance_check 
 
 tsa_na <- baseline_insurance %>%
-  filter(is.na(bmi) | is.na(adi_value))
-
+  filter(is.na(bmi) | is.na(adi_value) | is.na(primary_payer))
+tsa_na %>% nrow()
 tsa_ta <- baseline_insurance %>%
   filter(!is.na(bmi), !is.na(adi_value))
 
@@ -115,7 +117,7 @@ nrow(tsa_ta)
 #| label: tsa00
 
 set.seed(555)
-tsa00 <- read.csv("newdata/tsa_clean_baseout_2023-11-07.csv", 
+tsa00 <- read.csv("newdata/tsa_clean_baseout_2024-01-22.csv", 
                  row.names = 1) %>%
   dplyr::select(id, sid, outcome_type, outcome_score, surgery_type,
                 patient_age, patient_gender, adi_value,
@@ -126,8 +128,13 @@ tsa02a <- tsa00 %>%
   filter(grepl('2a', sid)) %>%
   dplyr::select(sid, id) %>%
   unique()
+tsa03a <- tsa00 %>%
+  filter(grepl('3b', sid)) %>%
+  dplyr::select(sid, id) %>%
+  unique()
 
 nrow(tsa02a)
+nrow(tsa03a)
 ```
 
 There are 174 individuals contains two surgeries
@@ -147,20 +154,25 @@ tsa0 <- tsa00 %>%
                                    primary_payer %in% c("Medicare", "MEDICARE") ~ "Medicare",
                                    primary_payer %in% c("Medicare Advantage") ~ "Medicare Advantage",
                                    primary_payer %in% c("Workers Comp/Liability") ~ "Workers comp / liability",
-                                   primary_payer %in% c("Select Health", "SELECTHEALTH") ~ "Select health",
+                                   # Fri Jan 19 13:53:38 2024 ------------------------------
+                                   ## select health is in commercial, and remove the self pay
+                                   # primary_payer %in% c("Select Health", "SELECTHEALTH") ~ "Select health",
                                    primary_payer %in% c("SELF PAY", "Self Pay") ~ "Self paid",
                                    primary_payer %in% c("Auto/TPL", "AETNA", "Commercial", "PEHP", "Regence Blue Cross",
                                                         # "SELF PAY", "Self Pay",
+                                                        "Select Health", "SELECTHEALTH",
                                                         "Tricare", "United HealthCare") ~ "Commercial")) %>% 
     fill(patient_age, patient_gender, surgery_type,
          primary_payer, bmi, adi_value) %>%
-  filter(time < 365) %>%
+  filter(time < 365,
+         primary_payer != "Self paid") %>%
   group_by(sid) %>%
   mutate(visit_max = n() - 1,
          visit_n = row_number() - 1) %>%
   filter(!is.na(adi_value),
          !is.na(bmi),
-         visit_max >= 4) 
+         visit_max >= 4) %>%
+  filter(!grepl('3a', sid), !grepl('3b', sid), !grepl('3c', sid))
 
 tsa02a <- tsa0 %>%
   filter(grepl('2a', sid)) %>%
@@ -193,8 +205,12 @@ sid_ignore <- id_both %>%
   na.omit() %>% 
   unlist()
 
+`%!in%` <- Negate(`%in%`)
+
 tsa1 <- tsa0 %>%
   filter(sid %!in% sid_ignore)
+
+
 ```
 
 ```{r}
@@ -216,13 +232,13 @@ tsa_baseline <- tsa2 %>%
   slice(1L) %>%
   mutate(log_baseline = log_outcome,
          time0 = time) 
-# View(tsa_baseline)
+table(tsa_baseline$id) %>% table()
 ```
 
 ```{r}
 #| label: split_data
 
-set.seed(555)
+set.seed(5555)
 library(splitstackshape)
 tsa_train <- stratified(tsa_baseline, c('primary_payer'), 2/3)
 id_train <- tsa_train$id %>% unique()
@@ -259,10 +275,8 @@ tsa_baseline <- tsa_baseline %>%
   ungroup() %>%
   mutate(group = ifelse(id %in% id_train, 
                         "Training", "Testing"))
-```
-
-```{r "tsa_final_baseline", class.output="scroll-100"}
-tsa_baseline
+length(unique(tsa_baseline$id))
+# table(tsa_baseline$id)
 ```
 
 ## Final Table1 for Analysis
@@ -295,13 +309,14 @@ table2
 
 remember to check id4280
 
-```{r}
-usethis::use_data_raw("tsa_baseline")
-usethis::use_data_raw("tsa_test")
-usethis::use_data_raw("tsa_train")
+```{r "save_data"}
+# usethis::use_data_raw("tsa_baseline")
+# usethis::use_data_raw("tsa_test")
+# usethis::use_data_raw("tsa_train")
 
-usethis::use_data(tsa_test,
-                  tsa_train,
-                  internal = TRUE,
-                  overwrite = TRUE)
+# usethis::use_data(tsa_test,
+#                   tsa_train,
+#                   tsa_baseline,
+#                   internal = TRUE,
+#                   overwrite = TRUE)
 ```

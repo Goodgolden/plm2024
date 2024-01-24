@@ -36,6 +36,10 @@ book:
     - 08_plm2024.qmd
     - 09_plm_steps.qmd
     - 10_linear_extension.qmd
+    - 11_kappa.qmd
+    - 12_data_clean.qmd
+    - 13_table1.qmd
+    - 14_flowchart.qmd
     - summary.qmd
     - references.qmd
 

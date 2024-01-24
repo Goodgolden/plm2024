@@ -76,9 +76,9 @@ tsa_pain <- files[[3]] %>%
 tsa_rom <- files[[4]] %>% 
   janitor::clean_names()
 
-save(tsa_base, tsa_outcome, tsa_pain, tsa_rom,
-     file = paste0("data/tsa_all_data_", 
-                   Sys.Date(), ".rdata"))
+# save(tsa_base, tsa_outcome, tsa_pain, tsa_rom,
+#      file = paste0("data/tsa_all_data_", 
+#                    Sys.Date(), ".rdata"))
 ```
 
 ```{r counting_id}

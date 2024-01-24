@@ -1,9 +1,9 @@
-## clean the R environment
+## clean the R environment --------------------
 graphics.off()
 rm(list = ls())
 freshr::freshr()
 
-## load packages
+## load packages -----------------------------
 library(here, quietly = TRUE)
 library(tidyverse, quietly = TRUE)
 library(gtsummary, quietly = TRUE)
@@ -15,16 +15,15 @@ load_all()
 # here::dr_here()
 here::set_here()
 
+## setup for plm ------------------------------
+
 anchor <- c(30, 90, 200)
 bsk_knots <- c(50, 100, 150)
 
-# kappa6 <- seq(10, 100, by = 10)
-# kappa6 <- seq(110, 200, by = 10)
-# kappa6 <- seq(210, 300, by = 10)
-# kappa6 <- seq(310, 400, by = 10)
-# kappa6 <- seq(410, 500, by = 10)
-kappa6 <- seq(510, 600, by = 10)
-kappa6
+kappa5171 <- seq(51, 71, by = 2)
+# kappa6 <- seq(410, 450, by = 10)
+kappa5171
+
 mlmf <- "log_outcome ~ surgery_type + patient_gender + adi_value +
                       adi_value:log_baseline + primary_payer + 
                       bmi + patient_age +
@@ -37,8 +36,9 @@ lmf <- "log_outcome ~ as.factor(time) + surgery_type + patient_gender +
                       bmi + patient_age +
                       patient_age:log_baseline + log_baseline + t0"
 
+## euclidean kappa ---------------------------------
 ## change the slm and kappa number
-e_kcv_kappa6 <- map(kappa6, 
+e_kcv_kappa5171 <- map(kappa5171, 
                     ~people_like_us(train_data = tsa_train,
                                     test_data = tsa_test,
                                     anchor_time = anchor,
@@ -56,10 +56,10 @@ e_kcv_kappa6 <- map(kappa6,
                                     match_plot = FALSE,
                                     predict_plot = FALSE,
                                     match_methods = "euclidean",
-                                    match_number = .x))
+                                    match_number = .x),
+                    .progress = TRUE)
 
-save(e_kcv_kappa6, file = "figure/tsa_kappa6_cross_validation_", Sys.time(), ".Rdata")
-
+## summary ------------------------------------------
 
 meanout <- function(dataset){
   # browser()
@@ -72,11 +72,19 @@ meanout <- function(dataset){
   return(result1)}
 
 
-result_kappa6 <- map(e_kcv_kappa6,
+result_kappa5171 <- map(e_kcv_kappa5171,
                 ~map(.x, "centiles_observed") %>%
                   map_dfr(~try(meanout(.))) %>%
                   dplyr::select(coverage50, coverage80, 
                                 coverage90, bias, mse) %>%
                   colMeans())
 
-save(result_kappa6, file = "figure/tsa_table_kappa6_cross_validation_", Sys.time(), ".Rdata")
+## saving the results --------------------------------
+
+save(e_kcv_kappa5171, file = paste0("figure/tsa_11_kappa5171_cross_validation_", Sys.time(), ".Rdata"))
+
+save(result_kappa5171, file = paste0("figure/tsa_11_table_kappa5171_cross_validation_", Sys.time(), ".Rdata"))
+
+
+return(e_kcv_kappa5171)
+return(result_kappa5171)

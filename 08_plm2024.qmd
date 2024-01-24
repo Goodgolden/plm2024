@@ -1,5 +1,5 @@
 ---
-title: "plm2024 package"
+title: "Package PLM2024"
 ---
 
 ```{r setup, include=FALSE}
@@ -33,7 +33,7 @@ here::set_here()
 #      Sys.Date(), ".filetype")
 ```
 
-```{css, echo=FALSE}
+```{css "setup_css", echo=FALSE}
 .scroll-100 {
   max-height: 300px;
   max-width: 1000px;
