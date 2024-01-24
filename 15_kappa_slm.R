@@ -6,8 +6,6 @@ freshr::freshr()
 ## load packages -----------------------------
 library(here, quietly = TRUE)
 library(tidyverse, quietly = TRUE)
-library(gtsummary, quietly = TRUE)
-library(flextable, quietly = TRUE)
 library(devtools, quietly = TRUE)
 load_all()
 
@@ -17,12 +15,10 @@ here::set_here()
 
 ## setup for plm ------------------------------
 
-anchor <- c(30, 90, 200)
-bsk_knots <- c(50, 100, 150)
+anchor <- c(14, 30, 60, 90)
+bsk_knots <- c(seq(10, 100, by = 10), seq(120, 300, by = 20))
 
-kappa5171 <- seq(51, 71, by = 2)
-# kappa6 <- seq(410, 450, by = 10)
-kappa5171
+kappa2 <- seq(110, 200, by = 10)
 
 mlmf <- "log_outcome ~ surgery_type + patient_gender + adi_value +
                       adi_value:log_baseline + primary_payer + 
@@ -38,7 +34,7 @@ lmf <- "log_outcome ~ as.factor(time) + surgery_type + patient_gender +
 
 ## euclidean kappa ---------------------------------
 ## change the slm and kappa number
-e_kcv_kappa5171 <- map(kappa5171, 
+e_kcv_kappa2 <- map(kappa2, 
                     ~people_like_us(train_data = tsa_train,
                                     test_data = tsa_test,
                                     anchor_time = anchor,
@@ -72,7 +68,7 @@ meanout <- function(dataset){
   return(result1)}
 
 
-result_kappa5171 <- map(e_kcv_kappa5171,
+result_kappa2 <- map(e_kcv_kappa2,
                 ~map(.x, "centiles_observed") %>%
                   map_dfr(~try(meanout(.))) %>%
                   dplyr::select(coverage50, coverage80, 
@@ -81,10 +77,7 @@ result_kappa5171 <- map(e_kcv_kappa5171,
 
 ## saving the results --------------------------------
 
-save(e_kcv_kappa5171, file = paste0("figure/tsa_11_kappa5171_cross_validation_", Sys.time(), ".Rdata"))
+save(e_kcv_kappa2, file = paste0("figure/tsa_15_kappa2_cross_validation_", Sys.time(), ".Rdata"))
 
-save(result_kappa5171, file = paste0("figure/tsa_11_table_kappa5171_cross_validation_", Sys.time(), ".Rdata"))
+save(result_kappa2, file = paste0("figure/tsa_15_table_kappa2_cross_validation_", Sys.time(), ".Rdata"))
 
-
-return(e_kcv_kappa5171)
-return(result_kappa5171)

@@ -176,6 +176,7 @@ people_like_us <- function(train_data,
   time_var <- ensym(time_var)
   id_var <- ensym(id_var)
   
+  # browser()
   # id_train <- dplyr::select(train_data, !!id_var) %>% 
   # unique() %>% unlist()
   id_test <- dplyr::select(test_data, !!id_var) %>%

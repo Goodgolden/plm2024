@@ -90,7 +90,7 @@ Things need to be fixed
 
 1.  including weights into the final model
 
-2.   \*\*to be checked\*\* remove the self paid, and the select health and workers comp.
+2.  \*\*to be checked\*\* remove the self paid, and the select health and workers comp.
 
 3.  how did we calculate the coverage and bias and all the things, the symmetric
 
@@ -100,10 +100,13 @@ Things need to be fixed
 
 6.  14 days is the anchor 30 60 90
 
-7.  bsk using another setup for the boudary. seq(10, 120, by =10), 120 200 every 40.
+7.  bsk using another setup for the boundary. seq(10, 120, by =10), 120 300 every 40.
 
-8.  the curve in the region, the portion instead of mean of protions
+8.  the curve in the region, the portion instead of mean of means
 
 9.  the entire trajectory, take the portion across the individuals, 0.5, 0.85 or 0.9, 0.95
 
 10. coverage and the kappa60 rerun and see how things go
+
+
+## 20240
