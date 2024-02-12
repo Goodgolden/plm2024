@@ -1,11 +1,9 @@
-##-----------------------##
-## SELF WRITTEN FUCTIONS ## 
-##-----------------------##
+# Miscellaneous function -------------------------------------------------------
 
 ## this file contains some of the functions used in this project
 ## be careful use in other situations, not sure for correctness
 
-# read_excel_allsheets ---------------------------------------------------------
+## read_excel_allsheets --------------------------------------------------------
 #' Title Read Multiple Sheets of Excel file
 #'
 #' @param filename the directory location of the excel file
@@ -25,7 +23,7 @@ read_excel_allsheets <- function(filename, tibble = FALSE) {
   return(x)
 }
 
-# letters_only -----------------------------------------------------------------
+## letters_only -----------------------------------------------------------------
 #' Title Check whether the object is letters-only
 #'
 #' @param x the string element
@@ -36,18 +34,18 @@ read_excel_allsheets <- function(filename, tibble = FALSE) {
 letters_only <- function(x) {!grepl("[^A-Za-z]", x)}
 
 
-# numbers_only -----------------------------------------------------------------
+## numbers_only ----------------------------------------------------------------
 #' Title Check whether the object is number-only
 #'
 #' @param x the string element
 #'
 #' @return a Boolean result as TRUE or FALSE
-#' @export
+#' @export 
 #'
 numbers_only <- function(x) {!grepl("\\D", x)}
 
 
-# Discription ------------------------------------------------------------------
+## package info ----------------------------------------------------------------
 .onAttach <- function(libname, pkgname) {
   packageStartupMessage("\n Welcome to my package; this is a package
                         developed for Randy Jin's MS thesis")
@@ -104,8 +102,6 @@ euclidean_n <- function(Dmatrix,
   return(matching)
 }
 
-
-# Miscellious ------------------------------------------------------------------
 
 ## 0.1 norm L2 {{{--------------------------------------------------------------
 #' Title L2 or other norms

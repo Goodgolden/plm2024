@@ -15,7 +15,7 @@ book:
     search: true
     tools:
       - icon: github
-        href: https://github.com/
+        href: https://github.com/Goodgolden/tsa
         aria-label: GitHub
       - icon: share
         aria-label: Email
@@ -40,6 +40,10 @@ book:
     - 12_data_clean.qmd
     - 13_table1.qmd
     - 14_flowchart.qmd
+    - 15_cross_validation.qmd
+    - 16_coverage_rate.qmd
+    - 17_gamlss.qmd
+    - 18_kappa50.qmd
     - summary.qmd
     - references.qmd
 

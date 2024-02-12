@@ -104,7 +104,6 @@ save(e_kcv_kappa1, file = "figure/tsa_11_kappa1_cross_validation_", Sys.time(), 
 
 ## $\kappa$ from 10 to 350
 
-
 ```{r}
 #| label: "kappa_load"
 
@@ -125,7 +124,6 @@ kappa350 <- rbind(map_dfr(result_kappa1, ~unlist(., recursive = FALSE)),
 
 # map_dfr(result_kappa5, ~unlist(., recursive = FALSE))
 ```
-
 
 ```{r}
 #| label: "kappa350_plot"
@@ -237,13 +235,3 @@ kappa5070_cr80 + theme_bw() + theme(legend.position = "none")
 kappa5070_cr90 + theme_bw() + theme(legend.position = "none")
 
 ```
-
-
-
-
-
-
-
-
-
-

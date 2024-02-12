@@ -18,7 +18,7 @@ here::set_here()
 anchor <- c(14, 30, 60, 90)
 bsk_knots <- c(seq(10, 100, by = 10), seq(120, 300, by = 20))
 
-kappa2 <- seq(110, 200, by = 10)
+kappa1 <- seq(110, 200, by = 10)
 
 mlmf <- "log_outcome ~ surgery_type + patient_gender + adi_value +
                       adi_value:log_baseline + primary_payer + 
@@ -34,7 +34,7 @@ lmf <- "log_outcome ~ as.factor(time) + surgery_type + patient_gender +
 
 ## euclidean kappa ---------------------------------
 ## change the slm and kappa number
-e_kcv_kappa2 <- map(kappa2, 
+e_kcv_kappa1 <- map(kappa1, 
                     ~people_like_us(train_data = tsa_train,
                                     test_data = tsa_test,
                                     anchor_time = anchor,
@@ -68,7 +68,7 @@ meanout <- function(dataset){
   return(result1)}
 
 
-result_kappa2 <- map(e_kcv_kappa2,
+result_kappa1 <- map(e_kcv_kappa1,
                 ~map(.x, "centiles_observed") %>%
                   map_dfr(~try(meanout(.))) %>%
                   dplyr::select(coverage50, coverage80, 
@@ -77,7 +77,6 @@ result_kappa2 <- map(e_kcv_kappa2,
 
 ## saving the results --------------------------------
 
-save(e_kcv_kappa2, file = paste0("figure/tsa_15_kappa2_cross_validation_", Sys.time(), ".Rdata"))
-
-save(result_kappa2, file = paste0("figure/tsa_15_table_kappa2_cross_validation_", Sys.time(), ".Rdata"))
+save(e_kcv_kappa1, file = paste0("figure/tsa_15_kappa1_cross_validation_", Sys.time(), ".Rdata"))
+save(result_kappa1, file = paste0("figure/tsa_15_table_kappa1_cross_validation_", Sys.time(), ".Rdata"))
 

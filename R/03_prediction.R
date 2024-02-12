@@ -32,20 +32,26 @@ predict_gamlss <- function(matching,
   time_var <- ensym(time_var)
   id_var <- ensym(id_var)
 
-  # browser()
-  if (is.null(matching$pvalue)) {
-    matching2 <<- matching %>% dplyr::select(-diff)
-  } else {
-    matching2 <<- matching %>% dplyr::select(-diff, -pvalue)
-    # test_one[[as.character({{ time_var }})]]
-  }
-
-
+  ## Here is the current setup for the weights 
   if (weight == FALSE) {
     w = NULL
-  } else {
+  } 
+  
+  if (weight == TRUE){
+    w = matching$ww
+  }
+  
+  if (weight == "pvalue"){
     w = matching$pvalue
   }
+  
+  if (is.null(matching$pvalue)) {
+    matching2 <<- matching %>% dplyr::select(-diff, -ww)
+  } else {
+    matching2 <<- matching %>% dplyr::select(-diff, -pvalue, -ww)
+    # test_one[[as.character({{ time_var }})]]
+  }
+  
 
   plm <- gamlss::gamlss(as.formula(gamlss_formula),
                         sigma.formula = as.formula(gamsigma_formula),

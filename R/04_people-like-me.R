@@ -281,6 +281,7 @@ people_like_us <- function(train_data,
                   data = brokenstick)
     
   }
+  
   ## end of 01_impute.R file ------------------------
   
   if (match_methods == "euclidean") {

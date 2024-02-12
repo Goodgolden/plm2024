@@ -149,13 +149,14 @@ dis_match <- function(lb_train,
   outcome_var <- ensym(outcome_var)
   time_var <- ensym(time_var)
   id_var <- ensym(id_var)
+  
   ## the matching subset
   lb_sub1 <- lb_train %>%
     pivot_wider(names_from = {{ id_var }},
                 values_from = {{ outcome_var }}) %>%
     column_to_rownames(var = as.character({{ time_var }})) %>%
     mutate_all(as.numeric)
-  # browser()
+ 
   center = as.numeric(unlist(lb_test_ind[, outcome_var]))
 
   if (match_methods == "euclidean") {
@@ -183,6 +184,7 @@ dis_match <- function(lb_train,
   if (is.null(match_alpha)) {
     data1 <- dist_df %>%
       as.data.frame() %>%
+      mutate(ww = 1 / diff) %>%
       slice(1:match_number) %>%
       inner_join(train, by = as.character({{ id_var }}))
   }
@@ -190,6 +192,7 @@ dis_match <- function(lb_train,
   if (is.null(match_number)) {
     data1 <- dist_df %>%
       as.data.frame() %>%
+      mutate(ww = 1 / diff) %>%
       filter(pvalue >= match_alpha) %>%
       inner_join(train, by = as.character({{ id_var }}))
   }

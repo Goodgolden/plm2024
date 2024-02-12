@@ -1,0 +1,138 @@
+---
+title: Extension of People-Like-Me Methods Penalization, Prediction, and Beyond
+
+author: 
+- name: Randy Jin
+  affiliation: Department of Biostatistics and Bioinformatics, University of Colorado Anschutz Medical Campus
+  email: xin.2.jin@cuanschutz.edu
+  
+- name: Elizabeth Juarez-Colunga 
+  affiliation: Department of Biostatistics and Bioinformatics, University of Colorado Anschutz Medical Campus
+  email: elizabeth.juarez-colunga@cuanschutz.edu
+
+keywords:
+- inversed-distance weight
+- curve matching
+- predictive interval
+- 
+
+abstract: |
+  The text of your summary.  Should not exceed 225 words.
+
+bibliography: bibliography.bib
+output: rticles::biometrics_article
+month: "`r format(Sys.Date(), '%b')`"
+year: "`r format(Sys.Date(), '%Y')`"
+referee: true # Papers submitted to Biometrics should ALWAYS be prepared
+              # using the referee option!!!! Turn off only to preview
+              # two column-format
+---
+
+# 1. Introduction {#intro}
+
+Your text comes here. Separate text sections with
+
+# 2. Methods {#s:methods}
+
+Text with citations by @heagerty2000time, [@pepe2003statistical].
+
+The prediction horizon extends to the 
+
+
+
+## 2.2 The predictive coverage interval{#ss:pcr}
+
+The problem for the predictive interval with gamlss model:
+
+Q1. The predictive interval is symmetric, but in fact is a not a requirement for the prediction interval based on our selected matches.
+The systematic bias introduced by the asymmetric distribution for the matches observations;
+The systematic bias introduced by the density of the given time points.
+
+(using weights can be a solution for the systematic bias, but we need to be careful about the weights we used.) for example, imagine the tallest person in the study, that all the other people served as matches would be shorter than this target. The prediction based on such matches would be still underestimated. However, we can use the weights to adjust the prediction based on the distance. which means the prediction will be more close too potentially the second tallest individual (the tallest one in the training set). Even though, we cannot accurately predict for the target, but we can extract certain information which provided by what we know, other than nothing. But we still need to find a way to quantify such limitation.
+
+**This means for the distance calculation, we need to identify the targets with certain matching patterns . What would those patterns be? Does them need to be time point-wised, or individual level?**
+
+
+
+For this problem we propose a new method to calculate the prediction interval for the response variable. 
+Do not based on the gamlss prediction but based on a new method to calculate the prediction interval for the response variable. such as the quantile regression methods or other interval estimation methods.
+
+A calibration for the internal validation? We split the training set again into a training set and a validation set. We use the training set to fit the model and the validation set to calibrate interval we get. We can use the residuals from validation set to calibrate the prediction interval for the response variable. Should this be more accurate than the prediction interval based on the training set solely?
+
+Use the weights from the distance, however we can only weight on the individual level. 
+the weights from the time points to calculate the prediction interval for the response variable.
+
+Q2. The prediction interval is not a point-wise prediction interval, but a trajectory-wise prediction interval. What does it mean for the point-wise prediction interval and the trajectory-wise prediction interval?
+
+How to quantify and avoid systematic bias in the predictions?
+
+The point-wise, the trajectory-wise, and the population level prediction interval.
+we probably need to do a simulation test to see how things going. and Say for example our methods have the same over-estimated coverage rate for the prediction interval, just the same as our simulated results.
+
+- the point-wise coverage probability, which is described as the probability that the interval contains the true value of the response at a given time point. let's say for the 10th day, what is the coverage rate for the prediction interval for the response variable. This is similar to the coverage for the parameters, which is the most commonly used one.
+The problem rises because we do not have balanced data. we cannot find a same time point for everybody.
+
+- the segmented coverage probability of intervals
+
+piece-wised time segments for coverage rate of the prediction interval. for example, for 10 - 20 days, what is the coverage rate for the prediction interval for the response variable.
+the piece-wised methods can be used for the population level prediction interval. we can use the piece-wised methods to calculate the prediction interval for the response variable.
+
+But still given each individual or for the population level. what if for certain individual there is no observation in this interval at all. 
+
+- the trajectory-wise prediction interval
+
+We can calculate the prediction interval for each trajectory first. The data will be grouped in each individual trajectory, so a proportion of the coverage is calculated for that individual. Then we can calculate the average coverage rate for the whole population.
+
+- the population level prediction interval
+
+This is the methods we currently used, we calculated the predictive interval for each observation whether it is contained in its own predictive interval. Then we take the average of the predictive coverage rate for each observation in each .
+
+
+The problem is getting more complex when we consider the size of the confidence set. The matches unimodial and with shortest among all intervals that satisfy the interval set.
+
+as required [@hoerl1970ridge; @zou2005regularization]. Don't forget to give each section and subsection a unique label (see Sect. \ref{sec:1}).
+
+#### Paragraph headings
+
+Use paragraph headings as needed.
+
+inversed-distance weight, 
+
+
+
+## 3. Equations
+
+Here is an equation:
+
+$$ f_{X}(x) = \left(\frac{\alpha}{\beta}\right)\left(\frac{x}{\beta}\right)^{\alpha-1}e^{-\left(\frac{x}{\beta}\right)^{\alpha}}; \alpha,\beta,x > 0 $$
+
+Here is another: \begin{align}
+a^2+b^2=c^2
+\end{align}
+
+Inline equations: $\sum_{i = 2}^\infty\{\alpha_i^\beta\}$
+
+# Figures and tables {#s:fig}
+
+## Figures coming from R
+
+#### Normal figure embedded in text 
+
+```{r fig2, fig.width = 4, fig.height = 4, fig.cap = "Output from `pdf()`", echo = FALSE, dev = "pdf"}
+plot(runif(25) ~ runif(25))
+```
+
+\clearpage
+
+## Tables coming from R
+
+```{r tab1, results = 'asis'}
+print(xtable::xtable(head(mtcars)[,1:4], 
+caption = "Caption centered under table", label = "tab1"), 
+comment = FALSE, timestamp = FALSE, caption.placement = "top")
+```
+
+Table \ref{tab1} shows these numbers. Some of those numbers are plotted in Figure \ref{fig2}.
+
+
+# References

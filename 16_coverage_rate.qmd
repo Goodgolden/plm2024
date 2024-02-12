@@ -1,0 +1,260 @@
+---
+title: "Coverage Rate"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      warnings = FALSE,
+                      message = FALSE,
+                      comment = "#>",
+                      #results = "hide",
+                      digits = 4,
+                      error = FALSE)
+
+## clean the R environment
+graphics.off()
+rm(list = ls())
+freshr::freshr()
+
+## load packages
+library(here, quietly = TRUE)
+library(tidyverse, quietly = TRUE)
+library(devtools, quietly = TRUE)
+load_all()
+
+## check the directory for the file
+# here::dr_here()
+here::set_here()
+
+## the figure or results should be saved 
+# paste0("foldername/Sfilename_workingresult_", 
+#      Sys.Date(), ".filetype")
+```
+
+```{css "css-setup", echo=FALSE}
+.scroll-100 {
+  max-height: 300px;
+  max-width: 1000px;
+  overflow-y: auto;
+  background-color: inherit;
+}
+```
+
+## Coverage Rate Investigation
+
+Here we aim to find a better cutoff score for each coverage rate 50%, 80%, and 90%. We will use the kappa results from the simple linear model and the multiple linear model to find the cutoff score. The cutoff score is the score that has the closest coverage rate to the real one.
+
+```{r}
+#| label: "loading data 17"
+
+## loading kappa results need to find 
+## a reasonable way for coverage rate
+## what's the distribution of the CR
+load("figure/tsa_17_simple_bks_slm_cross_validation_2024-01-24 22:39:01.Rdata")
+load("figure/tsa_17_simple_bsk_mlm_cross_validation_2024-01-24 22:36:16.Rdata")
+```
+
+So there are two setups for SLM amd MLM, each subtitle has the $\kappa$ from 10 to 200:
+
+-   first, each individual id coverage rate is calculated, whether the coverage rate (id) reaches the cutoff is reported.
+-   second, the binary outcomes, from whether the coverage rate (id) reaches the cutoff, are taken the average to calculate a coverage rate for the whole dataset.
+
+```{r "ugly functions"}
+cr_out <- function(dataset){
+  # browser()
+  result0 <- dataset %>%
+    as.data.frame() %>%
+    mutate(mse = bias^2) 
+  return(result0)}
+
+tsa17_k200_slm <- map(e_kcv_kappa1,
+                ~map(.x, "centiles_observed") %>%
+                  map_dfr(~try(cr_out(.)))%>%
+                  dplyr::select(coverage50, coverage80, 
+                                coverage90, bias, mse))
+
+tsa17_k200_mlm <- map(e_kcv_kappa2,
+                ~map(.x, "centiles_observed") %>%
+                  map_dfr(~try(cr_out(.)))%>%
+                  dplyr::select(coverage50, coverage80, 
+                                coverage90, bias, mse))
+
+
+kappa_hist <- function(kappa) {
+  # browser()
+  data1 <- cbind(kappa1 = kappa,
+               pid = tsa_test$id,
+             time = tsa_test$time) %>%
+    as.data.frame() %>%
+    mutate(kappa1 = as.numeric(kappa1)) %>%
+    group_by(pid) %>%
+    summarise(n = n(), cov = mean(kappa1)) %>%
+    mutate(co50 = ifelse(cov >= 0.5, 1, 0),
+           co55 = ifelse(cov >= 0.55, 1, 0),
+           co60 = ifelse(cov >= 0.6, 1, 0),
+           co65 = ifelse(cov >= 0.65, 1, 0),
+           co70 = ifelse(cov >= 0.7, 1, 0),
+           co75 = ifelse(cov >= 0.75, 1, 0),
+           co80 = ifelse(cov >= 0.8, 1, 0),
+           c090 = ifelse(cov >= 0.9, 1, 0)) %>%
+    as.data.frame()
+  
+  result <- data1 %>% 
+    dplyr::select(co50, co55, co60, co65, co70, co75, co80, c090) %>%
+    colMeans()
+  
+  p <- data1 %>%
+    ggplot() + 
+    geom_histogram(aes(x = cov, y = ..density..)) + 
+    labs(title = paste0("Coverage Rate 50%")) +
+    theme_bw()
+  
+  invisible(list(result = result, plot = p))
+}
+```
+
+## SLM for the coverage rate
+
+### SLM 50% CR
+
+```{r "slm_coverage50"}
+#| fig-width: 4
+#| fig-height: 3
+#| results: "hide"
+#| warning: false
+#| layout-ncol: 4
+cr50_k200_slm <- tsa17_k200_slm %>%
+  map_dfc("coverage50") %>%
+  as.data.frame()
+names(cr50_k200_slm) <- paste0("kappa", seq(10, 200, by = 10)) 
+cr50 <- cr50_k200_slm %>%
+  map(kappa_hist) 
+map(cr50, "plot")
+```
+
+```{r, css.hide="scroll-100"}
+map_dfr(cr50, "result") %>%
+  mutate(kappa = seq(10, 200, by = 10)) %>%
+  dplyr::select(kappa, everything())
+```
+
+### SLM 80% CR
+
+```{r "slm_coverage80"}
+#| fig-width: 4
+#| fig-height: 3
+#| results: "hide"
+#| warning: false
+#| layout-ncol: 4
+cr80_k200_slm <- tsa17_k200_slm %>%
+  map_dfc("coverage80") %>%
+  as.data.frame()
+names(cr80_k200_slm) <- paste0("kappa", seq(10, 200, by = 10)) 
+
+cr80 <- cr80_k200_slm %>%
+  map(kappa_hist) 
+map(cr80, "plot")
+```
+
+```{r, css.hide="scroll-100"}
+map_dfr(cr80, "result") %>%
+  mutate(kappa = seq(10, 200, by = 10)) %>%
+  dplyr::select(kappa, everything())
+```
+
+### SLM 90% CR
+
+```{r "slm_coverage90"}
+#| fig-width: 4
+#| fig-height: 3
+#| results: "hide"
+#| warning: false
+#| layout-ncol: 4
+cr90_k200_slm <- tsa17_k200_slm %>%
+  map_dfc("coverage90") %>%
+  as.data.frame()
+names(cr90_k200_slm) <- paste0("kappa", seq(10, 200, by = 10)) 
+cr90 <- cr90_k200_slm %>%
+  map(kappa_hist)
+map(cr90, "plot")
+```
+
+```{r, css.hide="scroll-100"}
+map_dfr(cr90, "result") %>%
+  mutate(kappa = seq(10, 200, by = 10)) %>%
+  dplyr::select(kappa, everything())
+```
+
+## MLM for the coverage rate
+
+### MLM 50% CR
+
+```{r "mlm_coverage50"}
+#| fig-width: 4
+#| fig-height: 3
+#| results: "hide"
+#| warning: false
+#| layout-ncol: 4
+cr50_k200_slm <- tsa17_k200_slm %>%
+  map_dfc("coverage50") %>%
+  as.data.frame()
+names(cr50_k200_slm) <- paste0("kappa", seq(10, 200, by = 10)) 
+cr50 <- cr50_k200_slm %>%
+  map(kappa_hist) 
+map(cr50, "plot")
+```
+
+```{r, css.hide="scroll-100"}
+map_dfr(cr50, "result") %>%
+  mutate(kappa = seq(10, 200, by = 10)) %>%
+  dplyr::select(kappa, everything())
+```
+
+### MLM 80% CR
+
+```{r "mlm_coverage80"}
+#| fig-width: 4
+#| fig-height: 3
+#| results: "hide"
+#| warning: false
+#| layout-ncol: 4
+cr80_k200_slm <- tsa17_k200_slm %>%
+  map_dfc("coverage80") %>%
+  as.data.frame()
+names(cr80_k200_slm) <- paste0("kappa", seq(10, 200, by = 10)) 
+
+cr80 <- cr80_k200_slm %>%
+  map(kappa_hist) 
+map(cr80, "plot")
+```
+
+```{r, css.hide="scroll-100"}
+map_dfr(cr80, "result") %>%
+  mutate(kappa = seq(10, 200, by = 10)) %>%
+  dplyr::select(kappa, everything())
+```
+
+### MLM 90% CR
+
+the coverage rate for the 90% cutoff score;
+
+```{r "mlm_coverage90"}
+#| fig-width: 4
+#| fig-height: 3
+#| results: "hide"
+#| warning: false
+#| layout-ncol: 4
+cr90_k200_slm <- tsa17_k200_slm %>%
+  map_dfc("coverage90") %>%
+  as.data.frame()
+names(cr90_k200_slm) <- paste0("kappa", seq(10, 200, by = 10)) 
+cr90 <- cr90_k200_slm %>%
+  map(kappa_hist)
+map(cr90, "plot")
+```
+
+```{r, css.hide="scroll-100"}
+map_dfr(cr90, "result") %>%
+  mutate(kappa = seq(10, 200, by = 10)) %>%
+  dplyr::select(kappa, everything())
+```
