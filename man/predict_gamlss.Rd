@@ -10,12 +10,12 @@ predict_gamlss(
   id_var,
   time_var,
   outcome_var,
-  tmin = 0,
-  tmax = 17,
-  gamlss_formula = "ht ~ cs(time, df = 5)",
-  gamsigma_formula = "~ cs(time, df = 1)",
+  tmin,
+  tmax,
+  gamlss_formula,
+  gamsigma_formula,
   weight = FALSE,
-  predict_plot = TRUE
+  predict_plot
 )
 }
 \arguments{

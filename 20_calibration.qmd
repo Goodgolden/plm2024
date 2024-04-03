@@ -1,0 +1,310 @@
+---
+title: "Calibration plot (Publication)"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      warnings = FALSE,
+                      message = FALSE,
+                      comment = "#>",
+                      cache = TRUE,
+                      #results = "hide",
+                      digits = 4,
+                      error = FALSE)
+
+## clean the R environment
+# graphics.off()
+# rm(list = ls())
+# freshr::freshr()
+
+## load packages
+library(here, quietly = TRUE)
+library(tidyverse, quietly = TRUE)
+library(devtools, quietly = TRUE)
+
+## check the directory for the file
+# here::dr_here()
+here::set_here()
+
+## the figure or results should be saved 
+# paste0("foldername/Sfilename_workingresult_", 
+#      Sys.Date(), ".filetype")
+```
+
+
+```{css, echo=FALSE}
+.scroll-100 {
+  max-height: 300px;
+  max-width: 1000px;
+  overflow-y: auto;
+  background-color: inherit;
+}
+```
+
+## Calibration Plots
+
+One possible mistake I made here,
+before log transformation, 
+I added 0.001 into the zeros to make the log transformation possible.
+
+However the values is too small that the first 
+decile observations are impossible for people-like-me to capture.
+This results the all predictions with small values 
+dragged towards large negative values.
+
+Probably need to rerun the model???
+
+```{r}
+#| warning: false
+load("figure/tsa_18_kappa50_relationship_2024-01-31.Rdata")
+```
+
+
+```{r}
+calib_plot <- function(data) {
+  data1 <- map(data, "centiles_observed") %>%
+    map_dfr(~try(dplyr::select(., 
+                               time = "time",
+                               prediction = "C50", 
+                               observation = "actual"))) %>%
+    filter(observation >= -1) 
+  
+  (q1 <- quantile(data1$prediction, probs = seq(0.1, 1, by = 0.1)))
+  qt1 <- c(mean(c(min(data1$prediction), q1[1])), 
+           mean(c(q1[1], q1[2])),
+           mean(c(q1[2], q1[3])),
+           mean(c(q1[3], q1[4])),
+           mean(c(q1[4], q1[5])),
+           mean(c(q1[5], q1[6])),
+           mean(c(q1[6], q1[7])),
+           mean(c(q1[7], q1[8])),
+           mean(c(q1[8], q1[9])),
+           mean(c(q1[9], max(data1$prediction))))
+  
+  (q2 <- quantile(data1$observation, probs = seq(0.1, 1, by = 0.1)))
+  qt2 <- c(mean(c(0, q2[1])), 
+           mean(c(q2[1], q2[2])),
+           mean(c(q2[2], q2[3])),
+           mean(c(q2[3], q2[4])),
+           mean(c(q2[4], q2[5])),
+           mean(c(q2[5], q2[6])),
+           mean(c(q2[6], q2[7])),
+           mean(c(q2[7], q2[8])),
+           mean(c(q2[8], q2[9])),
+           mean(c(q2[9], max(data1$observation))))
+  
+  data1 <- data1 %>%
+    mutate(group = case_when(prediction <= q1[1] ~ qt1[1],
+                             prediction > q1[1] & prediction <= q1[2] ~ qt1[2],
+                             prediction > q1[2] & prediction <= q1[3] ~ qt1[3],
+                             prediction > q1[3] & prediction <= q1[4] ~ qt1[4],
+                             prediction > q1[4] & prediction <= q1[5] ~ qt1[5],
+                             prediction > q1[5] & prediction <= q1[6] ~ qt1[6],
+                             prediction > q1[6] & prediction <= q1[7] ~ qt1[7],
+                             prediction > q1[7] & prediction <= q1[8] ~ qt1[8],
+                             prediction > q1[8] & prediction <= q1[9] ~ qt1[9],
+                             prediction > q1[9]  ~ qt1[10])) 
+  sd_ek50m <- group_by(data1, group) %>%
+    summarise(sd_observation = sd(observation),
+              mean_observation = mean(observation)) %>%
+    as.data.frame() 
+  
+  data2 <- cbind(pred = qt1,
+                 obs = qt2,
+                 mean = sd_ek50m$mean_observation,
+                 sd = sd_ek50m$sd_observation) 
+  
+  plot <- data2 %>%
+    ggplot() +
+    geom_abline(intercept = 0,
+                slope = 1,
+                colour = "grey",
+                linetype = "dashed") +
+    geom_errorbar(aes(x = pred,
+                      ymin = mean - 1.96 * sd, 
+                      ymax = mean + 1.96 * sd), 
+                  colour = "red",
+                  alpha = 1,
+                  size = 0.2,
+                  width = 0.1) +
+    geom_point(aes(y = mean,
+                   x = pred),
+               stat = "identity",
+               colour = "indianred",
+               size = 0.5) 
+  
+  return(list(plot = plot,
+         summary = data2))
+}
+
+
+```
+
+
+```{r}
+#| label: calibration_plot
+#| warning: false
+mk50_slm_plot <- calib_plot(data = m_k50_slm)$plot +
+  scale_x_continuous(name = "Prediction", 
+                     limits = c(1, 5),
+                     breaks = seq(1, 5, 0.5)) +
+  scale_y_continuous(name = "Observation", 
+                     limits = c(1, 5),
+                     breaks = seq(1, 5, 0.5)) +
+  theme_bw() +
+  theme(axis.text = element_text(size = 5),
+        axis.ticks.length = unit(.05, "cm"), 
+        axis.title = element_text(size = 6)) 
+
+
+mk50_mlm_plot <- calib_plot(data = m_k50_mlm)$plot +
+  scale_x_continuous(name = "Prediction", 
+                     limits = c(1, 5),
+                     breaks = seq(1, 5, 0.5)) +
+  scale_y_continuous(name = "Observation", 
+                     limits = c(1, 5),
+                     breaks = seq(1, 5, 0.5)) +
+  theme_bw() +
+  theme(axis.text = element_text(size = 5),
+        axis.ticks.length = unit(.05, "cm"), 
+        axis.title = element_text(size = 6)) 
+
+
+ek50_slm_plot <- calib_plot(data = e_k50_slm)$plot +
+  scale_x_continuous(name = "Prediction", 
+                     limits = c(1, 5),
+                     breaks = seq(1, 5, 0.5)) +
+  scale_y_continuous(name = "Observation", 
+                     limits = c(1, 5),
+                     breaks = seq(1, 5, 0.5)) +
+  theme_bw() +
+  theme(axis.text = element_text(size = 5),
+        axis.ticks.length = unit(.05, "cm"), 
+        axis.title = element_text(size = 6)) 
+
+ek50_mlm_plot <- calib_plot(data = e_k50_mlm)$plot +
+  scale_x_continuous(name = "Prediction", 
+                     limits = c(1, 5),
+                     breaks = seq(1, 5, 0.5)) +
+  scale_y_continuous(name = "Observation", 
+                     limits = c(1, 5),
+                     breaks = seq(1, 5, 0.5)) +
+  theme_bw() +
+  theme(axis.text = element_text(size = 5),
+        axis.ticks.length = unit(.05, "cm"), 
+        axis.title = element_text(size = 6)) 
+
+```
+
+
+```{r}
+#| fig-cap: "Calibration plot"
+#| fig-subcap:
+#| - "Ek50 SLM"
+#| - "Ek50 MLM"
+#| - "Mk50 SLM"
+#| - "Mk50 MLM"
+#| fig-height: 3
+#| fig-width: 3
+#| layout-ncol: 2
+#| layout-nrow: 2
+
+
+ek50_slm_plot +
+  ggtitle(expression(paste("Euclidean Distance ",
+                           {kappa}, "= 50"))) +
+  theme(plot.title = element_text(size = 6))
+
+ek50_mlm_plot +
+  ggtitle(expression(paste("Euclidean Distance ",
+                           {kappa}, "= 50"))) +
+  theme(plot.title = element_text(size = 6))
+
+mk50_slm_plot +
+  ggtitle(expression(paste("Mahalanobis Distance ",
+                           {kappa}, "= 50"))) +
+  theme(plot.title = element_text(size = 6))
+
+mk50_mlm_plot +
+  ggtitle(expression(paste("Euclidean Distance ",
+                           {kappa}, "= 50"))) +
+  theme(plot.title = element_text(size = 6))
+```
+
+
+- pred: the deciles for the predictions
+- obs: the deciles for the observations
+- mean: the mean values for the observations in each decile
+- sd: the standard deviation for the observations in each decile
+
+```{r, class.output="scroll-100"}
+calib_plot(data = e_k50_slm)$summary
+calib_plot(data = e_k50_mlm)$summary
+calib_plot(data = m_k50_slm)$summary
+calib_plot(data = m_k50_mlm)$summary
+
+```
+
+
+
+## Interval range
+
+```{r}
+
+ci_ek50_slm <- map_dfr(e_k50_slm, "centiles_predicted") %>%
+  dplyr::select(contains("cfint")) %>% 
+  colMeans()
+
+ci_ek50_mlm <- map_dfr(e_k50_mlm, "centiles_predicted") %>%
+  dplyr::select(contains("cfint")) %>% 
+  colMeans()
+
+ci_mk50_slm <- map_dfr(m_k50_slm, "centiles_predicted") %>%
+  dplyr::select(contains("cfint")) %>% 
+  colMeans()
+
+ci_mk50_mlm <- map_dfr(m_k50_mlm, "centiles_predicted") %>%
+  dplyr::select(contains("cfint")) %>% 
+  colMeans()
+  
+```
+
+### Predictive interval range for Ek50 SLM
+
+```{r class.output="scroll-100"}
+ci_ek50_slm
+```
+
+### Predictive interval range for Ek50 MLM
+
+
+```{r class.output="scroll-100"}
+ci_ek50_mlm
+```
+
+
+
+### Predictive interval range for Mk50 SLM
+
+```{r class.output="scroll-100"}
+ci_mk50_slm
+```
+
+### Predictive interval range for Mk50 MLM
+
+
+```{r class.output="scroll-100"}
+ci_mk50_mlm
+```
+
+
+
+
+
+
+
+
+
+
+
+

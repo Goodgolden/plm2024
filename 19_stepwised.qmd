@@ -1,0 +1,304 @@
+---
+title: "Merging BS & LM"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      warnings = FALSE,
+                      message = FALSE,
+                      comment = "#>",
+                      #results = "hide",
+                      digits = 4,
+                      error = FALSE)
+
+## clean the R environment
+graphics.off()
+rm(list = ls())
+freshr::freshr()
+
+## load packages
+library(here, quietly = TRUE)
+library(tidyverse, quietly = TRUE)
+library(devtools)
+library(tictoc)
+
+## linear mixed model
+library(lme4)
+library(nlmeU)
+library(nlme)
+
+## lmm prediction counterpart of JMbayes
+library(merTools)
+
+load_all()
+
+## check the directory for the file
+# here::dr_here()
+here::set_here()
+
+## the figure or results should be saved 
+# paste0("foldername/Sfilename_workingresult_", 
+#.       Sys.Date(), ".filetype")
+```
+
+
+```{css "css-setup", echo=FALSE}
+.scroll-100 {
+  max-height: 300px;
+  max-width: 1000px;
+  overflow-y: auto;
+  background-color: inherit;
+}
+```
+
+The formula is the part affecting the performance a lot. 
+Here are the formula used for the old version of PLM:
+
+```
+mlmf <- "log_outcome ~ surgery_type + patient_gender + adi_value +
+                      adi_value:log_baseline + primary_payer + 
+                      bmi + patient_age +
+                      patient_age:log_baseline + log_baseline + t0"
+lmf <- "log_outcome ~ as.factor(time) + surgery_type + patient_gender +
+                      adi_value + adi_value:log_baseline + primary_payer +
+                      bmi + patient_age +
+                      patient_age:log_baseline + log_baseline + t0"
+```
+                      
+                      
+
+```{r "model-setup"}
+set.seed(555)
+test_baseline <-
+  tsa_test %>%
+  group_by(id) %>%
+  slice(1L)
+
+id_train <- unique(tsa_train$id)
+id_test <- unique(tsa_test$id)
+
+anchor <- c(10, 12, 15)
+bsk_knots <- c(5, 10, 12, 15)
+anchor <- c(14, 30, 60, 90)
+bsk_knots <- c(10, 30, 60, 90, 150, 300)
+
+gf <- "log_outcome ~ cs(time, df = 3)"
+gs <- "~ cs(time, df = 1)"
+
+mlmf <- "log_outcome ~ surgery_type + patient_gender + adi_value +
+                      adi_value:log_baseline + primary_payer + 
+                      bmi + patient_age +
+                      patient_age:log_baseline + log_baseline + t0"
+lmf <- "log_outcome ~ as.factor(time) + surgery_type + patient_gender +
+                      adi_value + adi_value:log_baseline + primary_payer +
+                      bmi + patient_age +
+                      patient_age:log_baseline + log_baseline + t0"
+```
+
+But in lmer, that (or a "boundary (singular) fit" warning) can also be also triggered in quite simple models when a random effect variance is estimated very near zero and (very loosely) the data is not sufficiently informative to drag the estimate away from the zero starting value.
+
+The formal answer is broadly similar either way; drop terms that estimate as zero. And that remains sensible at least until you know which term is causing the problem. But there are times when a negligible variance is reasonably likely but you'd like to retain it in the model; for example because you're quite deliberately looking for intervals on possibly small variances or maybe doing multiple similar experiments and would prefer to extract all the variances consistently. If you're sure of what's going on, you can suppress these warnings via lmerControl, which can be set not to use the relevant tests. But that's a bit like turning off the smoke alarm because you're sure the house isn't on fire. It's not a good idea unless you're sure.
+
+Here we give it a try for the merTools::predictInterval package function, however it does not provide conditional prediction but the marginal.
+
+## Example with Bilirubin data
+
+The merTools does not work
+
+```{r "example-Mertools"}
+#| error: TRUE
+
+time_vec <- c(4, 6, 8, 10, 20, 100)
+
+fitLME <- lme(log(serBilir) ~ drug * ns(year, 2), data = subset(pbc2, id != 2), 
+        random = ~ ns(year, 2) | id)
+DF <- IndvPred_lme(fitLME,
+                   newdata = subset(pbc2, id == 2), 
+                   timeVar = "year", 
+                   times = time_vec,
+                   all_times = FALSE,
+                   M = 500,
+                   # level = 0.95,
+                   return_data = TRUE)
+# require(lattice)
+# xyplot(pred + low + upp ~ year | id, data = DF,
+#     type = "l", col = c(2,1,1), lty = c(1,2,2), lwd = 2,
+#     ylab = "Average log serum Bilirubin")
+
+
+fitLMER <- lmer(log(serBilir) ~ drug * ns(year, 2) + (ns(year, 2) | id),
+                data = subset(pbc2, id != 2))
+# extract_lmeComponents() extract the required components from the lme object
+# that are required to calculate the predictions;
+# this is a light weight version of the object, e.g.,
+PI <- predictInterval(merMod = fitLMER,
+                      newdata = pbc2,
+                      level = 0.95,
+                      n.sims = 1000,
+                      stat = "median",
+                      type="linear.prediction",
+                      include.resid.var = TRUE)
+
+```
+
+
+## Trying the `lme4::lmer()` and `nlme::lme()`
+
+Stef used the lme4::lmer() function, which is faster and more reliable with complicated random effects.
+However the JMbayes package can only take nlme:lme() function for prediction by Drizopoulos.
+
+```{r}
+#| eval: FALSE
+#| include: TRUE
+
+ctl <- lmerControl(check.conv.singular = .makeCC(action = "ignore",  
+                                                 tol = 1e-12))
+tic()
+bks_lmer <- lmer(log_outcome ~ 1 + bs(time, knots = c(14, 30, 60, 90), degree = 1) +
+              surgery_type + patient_gender + 
+              (1 + bs(time, knots = c(14, 30, 60, 90), degree = 1)|id), 
+           na.action = na.exclude, 
+           control = ctl,
+           data = tsa_train)
+toc()
+## total time is 4.4 sec for c(14, 60, 90)
+## total time is 77.139 sec for c(14, 30, 60, 90)
+
+## this is very aweful to use, talk with Elizabeth about it.
+## The lme4:lmer is still possible to work with.
+ctl <- lmeControl(opt = "optim")
+tic()
+bks_nlme <- lme(log_outcome ~ 1 + bs(time, knots = c(14, 30, 60, 90), degree = 1) +
+                  surgery_type + patient_gender,
+              random = ~1 + bs(time, knots = c(14, 30, 60, 90), degree = 1)|id,
+           na.action = na.exclude,
+           control = ctl,
+           data = tsa_train)
+toc()
+## total time is 1207.78 sec for c(14, 30, 60, 90)
+## reaching to singularity, is it a problem?
+
+save(bks_lmer, bks_nlme, file = paste0("newdata/19_dynamic_prediction_bks_lmer_nlme_", Sys.Date(),".RData"))
+```
+
+
+```{r, css.hide="scroll-100"}
+load("newdata/19_dynamic_prediction_bks_lmer_nlme_2024-02-28.RData")
+# summary(bks_lmer)
+# summary(bks_nlme)
+
+## the results are pretty similar, 
+## but the lmer is much faster than nlme
+tidy(bks_nlme) %>% dplyr::select(-1, -2)
+tidy(bks_lmer) %>% dplyr::select(-1, -2)
+```
+
+
+## Dynamic Prediction PLM
+
+Here we can use more than the first time visit value, how about we use the first 10 days.
+If the person does not have any visit in ten days we just ignore that patient.
+Probably use EPIC data or other data with more observations at the beginning.
+
+```{r}
+time_vec <- c(14, 30, 90, 120)
+
+train_baseline <- tsa_train %>%
+  group_by(id) %>%
+  slice(1L)
+
+test_baseline <- tsa_test%>%
+  group_by(id) %>%
+  slice(1L)
+  # dplyr::select(-time) %>%
+  # dplyr::select(baseline = log_outcome,
+  #              everything())
+# View(train_baseline)
+
+train_pred <- IndvPred_lme(lmeObject = bks_nlme,
+                           newdata = train_baseline,
+                           timeVar = "time",
+                           M = 500,
+                           times = c(29, 31, 53, 67, 74, 81, 88, 70, 90, 95),
+                           all_times = TRUE,
+                           return_data = TRUE,
+                           level = 0.5,
+                           interval = "prediction",
+                           seed = 555) 
+
+# test_pred <- IndvPred_lme(lmeObject = bks_nlme,
+#                            newdata = test_baseline,
+#                            timeVar = "time",
+#                            M = 500,
+#                            all_times = TRUE,
+#                            return_data = TRUE,
+#                            level = 0.5,
+#                            interval = "prediction",
+#                            seed = 555) 
+```
+
+We need to see how good the JMbayes prediction is for the interval
+
+```{r, css.hide="scroll-100"}
+train_clean <- tsa_train %>%
+  dplyr::select(-t0, -log_baseline)
+
+train_joint <- train_pred %>%
+  dplyr::select(-log_baseline, -log_outcome, -t0) %>%
+  inner_join(train_clean) %>% 
+  na.omit() %>%
+  mutate(bias = pred - log_outcome)
+  
+train_joint
+mean(train_joint$bias)
+
+```
+
+## Now we have the function of PLM-Dyn
+
+```{r}
+#| eval: FALSE
+test_eld <- people_like_us_dyn(train_data = tsa_train,
+                              test_data = tsa_test,
+                              anchor_time = anchor,
+                              brokenstick_knots = bsk_knots,
+                              gamlss_formula = gf,
+                              gamlss_sigma = gs,
+                              tmin = 0,
+                              tmax = 100,
+                              id_var = "id",
+                              outcome_var = "log_outcome",
+                              time = "time",
+                              weight = FALSE,
+                              match_plot = FALSE,
+                              predict_plot = FALSE,
+                              match_methods = "euclidean",
+                              match_number = 50)
+
+save(test_eld, file = paste0("figure/tsa_19_dynamic_prediction_test_eld_k50_", Sys.Date(), ".RData"))
+```
+
+Here are the examples for the dynamic prediction of PLM
+
+The results are not good, the prediction is not good at all.
+Even compare to the old ones.
+
+
+```{r, css.hide="scroll-100"}
+load("figure/tsa_19_dynamic_prediction_test_eld_k50_2024-02-29.RData")
+
+example <- map(test_eld, "centiles_observed")
+
+example[[111]]
+example[[500]]
+example[[333]]
+```
+
+
+```{r}
+mean_dyn_eld <- meanall(test_eld)
+mean_dyn_eld
+```
+
+
+

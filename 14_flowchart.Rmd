@@ -169,9 +169,3 @@ flowchart1 %>%
 # file_name = "final/flowchart_graph.png",
 # file_type = "png")
 ```
-
-```{r}
-#| label: sessionInfo
-sessionInfo()
-```
-

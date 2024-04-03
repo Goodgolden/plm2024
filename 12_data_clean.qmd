@@ -405,6 +405,7 @@ tsa_baseout6 <- tsa_baseout6 %>%
 tsa_base6 <- tsa_baseout6 %>%
   filter(outcome_type == "baseline")
 table(tsa_base6$id) %>% table()
+
 ```
 
 We filter out visit time larger than 3 times, the follow up time is less than 365 days, and no missing values for adi and bmi, and we keep the first available surgery for the patients with two surgeries.
@@ -446,7 +447,6 @@ tsa_base7 <- tsa_baseout7 %>%
   
 table(tsa_base7$id) %>% table()
 
-# View(tsa_baseout7)
 ```
 
 ```{r}

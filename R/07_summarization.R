@@ -3,10 +3,7 @@ meanout <- function(dataset,
                     term = c("bias", "mse", "coverage50",
                              "coverage80", "coverage90"),
                     ...){
-
   result <- dataset %>%
-    # output_eld_n10 %>%
-    # unlist(recursive = FALSE) %>%
     map("centiles_observed")
 
   if (term != "mse") {
@@ -30,6 +27,7 @@ meanout <- function(dataset,
 ## 7.2 meanout -----------------------------------------------------------------
 meanall <- function(dataset,
                     ...){
+
   bias <- meanout(dataset, "bias")
   mse <- meanout(dataset, "mse")
   cov50 <- meanout(dataset, "coverage50")

@@ -40,8 +40,16 @@ here::set_here()
 }
 ```
 
-
 ## Weighted PLM
+
+The first time trying the weighted PLM, which is similar to penalize the distance in the log-Likelihood.
+
+Still need to figure it out what is the best way to do it.
+
+The direct inverted distance is too big to apply into the final model.
+
+Without tuning the weights the result is not good.
+
 
 ```{r}
 #| eval: false
@@ -156,6 +164,9 @@ save(e_k50_mlm,
      file = paste0("figure/tsa_18_kappa50_relationship_", Sys.Date(), ".Rdata"))
 ```
 
+## Weighted methods comparison
+
+Here we directly using the inverted distance as the weights for the GAMLSS model.
 
 ```{r}
 load("figure/tsa_18_kappa50_relationship_2024-02-01.Rdata")
@@ -210,29 +221,7 @@ result19_nw <-
   separate("methods", into = c("Criteria", "LM"))
 ```
 
-
-
 ```{r}
 options(scipen=1, digits=4)
 result19_nw
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

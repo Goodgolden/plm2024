@@ -108,5 +108,24 @@ Things need to be fixed
 
 10. coverage and the kappa60 rerun and see how things go
 
+## 20240212-22
 
-## 20240
+1.  the coverage and the kappa50 rerun and for ST and Euclidean
+
+2.  ask EJC whether we want to publish the package with the paper
+
+3.  merge the brokenstick and lm into lmm, and use JMbayes dynamic prediction
+
+4.  add the true single time ST people-like-me methods
+
+
+
+## 20240320
+
+1. add the surgical date and follow-up time into the table1
+(for the descriptives)
+
+2. linear model used the single linear model or multiple model. 
+
+3. 
+

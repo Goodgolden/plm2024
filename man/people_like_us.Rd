@@ -10,13 +10,14 @@ people_like_us(
   outcome_var = "ht",
   time_var = "time",
   id_var = "id",
-  tmin = 0,
-  tmax = 17,
+  tmin,
+  tmax,
   brokenstick_knots,
   anchor_time,
-  linear_formula = "ht ~ as.factor(time) * sex + ethnic + genotype + baseline",
-  gamlss_formula = "ht ~ cs(time, df = 3)",
-  gamlss_sigma = "~ cs(time, df = 1)",
+  linear_model = c("lm", "mlm", "gls"),
+  linear_formula,
+  gamlss_formula,
+  gamlss_sigma,
   match_methods = c("euclidean", "mahalanobis", "single"),
   weight = FALSE,
   match_alpha = NULL,
@@ -25,6 +26,47 @@ people_like_us(
   predict_plot = TRUE,
   ...
 )
+}
+\arguments{
+\item{train_data}{The training dataset for brokenstick model and linear model fitting; This training dataset also serves as the pool for matching process.}
+
+\item{test_data}{The testing dataset for the personalized prediction.}
+
+\item{outcome_var}{The outcome variable of interest.}
+
+\item{time_var}{The time variable of interest.}
+
+\item{id_var}{The id variable of interest.}
+
+\item{tmin}{The minimum time point for the prediction.}
+
+\item{tmax}{The maximum time point for the prediction.}
+
+\item{brokenstick_knots}{The knots for the brokenstick model, which does not need to be equal distanced.}
+
+\item{anchor_time}{The time point for the anchor time for the matching process.}
+
+\item{linear_model}{The type of linear model, which can be "lm", "mlm", "gls".}
+
+\item{linear_formula}{The formula for the linear model.}
+
+\item{gamlss_formula}{The mean formula for the GAMLSS model, mainly used as a smoothing process only include the function of time. Here we use the GAMLSS model as a non-parametric / semi-parametric functional process.}
+
+\item{gamlss_sigma}{The sigma formula for the GAMLSS model, mainly used as a smoothing process only include the function of time. Here we use the GAMLSS model as a non-parametric / semi-parametric functional process.}
+
+\item{match_methods}{The methods for matching, which can be "euclidean" for multiple time point matching with Euclidean distance, "mahalanobis" for multiple time point mathcing with Mahalanobis distance, "single" for single time point predictive mean matching.}
+
+\item{weight}{The weight for the final predictive GAMLSS model, which can be FALSE for no weight, TRUE for the weight from the matching process, "p-value" for the weight from the p-value of the Mahalanobis distance \chi-square distribution.}
+
+\item{match_alpha}{The alpha level for the matching process based only on Mahalnobis distance, which can be NULL for no alpha level, or a numeric value for the alpha level.}
+
+\item{match_number}{The number of matches for the matching process, which can be NULL for no number of matches, or a numeric value for the number of matches.}
+
+\item{match_plot}{The logical value for the matching plot, which can be TRUE for the plot, FALSE for no plot.}
+
+\item{predict_plot}{The logical value for the prediction plot, which can be TRUE for the plot, FALSE for no plot.}
+
+\item{...}{}
 }
 \description{
 Title People-Like-Me methods for multiple testing dataset individuals

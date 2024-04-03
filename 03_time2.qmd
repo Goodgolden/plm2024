@@ -51,6 +51,7 @@ This page is to further clean the dataset, especially for the patients with more
 ```{r "baseline"}
 baseline0 <- read.csv("newdata/tsa_clean_baseline_for_outcome_2024-01-22.csv", row.names = 1)
 baseout0 <- read.csv("newdata/tsa_clean_baseout_2024-01-22.csv", row.names = 1)
+
 ```
 
 ```{r "surgery_nid"}

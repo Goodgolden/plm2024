@@ -82,6 +82,7 @@ It’s a good idea to store the code that generates your individual internal dat
 ```{r}
 use_package("brokenstick", type = "Depends")
 use_package("broom.mixed", type = "Depends")
+?use_package
 
 use_package("dplyr", type = "Depends")
 use_package("forcats", type = "Depends")
@@ -188,7 +189,7 @@ test()
 
 
 ## build up a readme file and push into github
-# use_readme_rmd()
+use_readme_rmd()
 build_readme()
 
 usethis::use_roxygen_md()

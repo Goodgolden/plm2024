@@ -82,6 +82,7 @@ library(plm2024)
 #> Loading required package: rstan
 #> Loading required package: StanHeaders
 #> Loading required package: ggplot2
+#> Warning: package 'ggplot2' was built under R version 4.2.3
 #> rstan (Version 2.21.8, GitRev: 2e1f913d3ca3)
 #> For execution on a local, multicore CPU with excess RAM we recommend calling
 #> options(mc.cores = parallel::detectCores()).
@@ -115,8 +116,10 @@ library(plm2024)
 #> Linked to JAGS 4.3.2
 #> Loaded modules: basemod,bugs
 #> Loading required package: shiny
+#> Warning: package 'shiny' was built under R version 4.2.3
 #> Loading required package: tibble
 #> Loading required package: tidyr
+#> Warning: package 'tidyr' was built under R version 4.2.3
 #> 
 #> Attaching package: 'tidyr'
 #> The following objects are masked from 'package:Matrix':
@@ -126,9 +129,10 @@ library(plm2024)
 #> 
 #>     extract
 #> Loading required package: tidyverse
+#> Warning: package 'stringr' was built under R version 4.2.3
 #> ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
-#> ✔ lubridate 1.9.2     ✔ readr     2.1.4
-#> ✔ purrr     1.0.1     ✔ stringr   1.5.0
+#> ✔ lubridate 1.9.3     ✔ readr     2.1.5
+#> ✔ purrr     1.0.2     ✔ stringr   1.5.1
 #> ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
 #> ✖ purrr::accumulate() masks foreach::accumulate()
 #> ✖ nlme::collapse()    masks dplyr::collapse()

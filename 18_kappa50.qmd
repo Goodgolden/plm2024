@@ -1,5 +1,5 @@
 ---
-title: "kappa 50"
+title: "Ek50 and Mk50 (Pulication)"
 ---
 
 ```{r setup, include=FALSE}
@@ -41,9 +41,14 @@ here::set_here()
 }
 ```
 
+## Euclidean distance and Mahalanobis distance
+
 ```{r "kappa167"}
 #| eval: false
 #| include: true
+#| error: true
+#| warning: true
+#| hide: true
 
 anchor <- c(14, 30, 60, 90)
 bsk_knots <- c(50, 100, 150, 200)
@@ -218,6 +223,10 @@ save(e_k50_mlm, e_k50_slm,
      file = paste0("figure/tsa_18_kappa50_relationship_", Sys.Date(), ".Rdata"))
 ```
 
+For Mahalanobis distance, we have some target with no matches at all. This is not include due to we would not include the results of Mahalanobis distance into this paper.
+
+## Summary for the Results
+
 ```{r "summarization_k50"}
 
 load("figure/tsa_18_kappa50_relationship_2024-01-31.Rdata")
@@ -241,6 +250,11 @@ all_out <- function(dataset){
 ```
 
 ```{r "mean_all"}
+#| include: false
+#| error: true
+#| warning: false
+#| hide: true
+
 mean_result_ek50s <- map(e_k50_slm, "centiles_observed") %>% 
   map_dfr(~try(meanout(.))) %>%
   dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
@@ -337,13 +351,13 @@ all_result_ma95s <- all_result_ma95s %>%
 options(scipen=1, digits=4)
 result18_nw <- 
   rbind(meanEk50_SLM = mean_result_ek50s, 
-        allEk50_SLM = all_result_ek50s, 
+        # allEk50_SLM = all_result_ek50s, 
         meanEk50_MLM = mean_result_ek50m,
-        allEk50_MLM = all_result_ek50m,
+        # allEk50_MLM = all_result_ek50m,
         meanMk50_SLM = mean_result_mk50s,
-        allMk50_SLM = all_result_mk50s, 
-        meanMk50_MLM = mean_result_mk50m,
-        allMk50_MLM = all_result_mk50m) %>%
+        # allMk50_SLM = all_result_mk50s, 
+        meanMk50_MLM = mean_result_mk50m) %>%
+        # allMk50_MLM = all_result_mk50m) %>%
   as.data.frame() %>% 
   rownames_to_column("methods") %>%
   separate("methods", into = c("Methods", "LM"))
@@ -351,15 +365,15 @@ result18_nw <-
 
 result19_nw <- 
   rbind(meanEk50_SLM = mean_result_ek50s, 
-        meanEk50_MLM = mean_result_ek50m,
+        meanEk50_MLM = mean_result_ek50m) %>%
         # mean_Ma90_SLM = mean_result_ma90s,
-        meanMa90_MLM = mean_result_ma90m,
-        allMa90_MLM = all_result_ma90m,
-        meanMa95_SLM = mean_result_ma95s,
+        # meanMa90_MLM = mean_result_ma90m,
+        # allMa90_MLM = all_result_ma90m,
+        # meanMa95_SLM = mean_result_ma95s,
         # mean_Ma95_MLM = mean_result_ma95m,
         # all_Ma90_SLM = all_result_ma90s,
         # all_Ma95_MLM = all_result_ma95m,
-        allMa95_SLM = all_result_ma95s)%>%
+        # allMa95_SLM = all_result_ma95s)%>%
   as.data.frame() %>% 
   rownames_to_column("methods") %>%
   separate("methods", into = c("Methods", "LM"))
@@ -368,19 +382,22 @@ result18_nw
 result19_nw
 ```
 
-This is very confusing, that the $ALL$ and $MEAN$ are performed differently in $\kappa$ and $\alpha$
+<!-- This is very confusing, that the $ALL$ and $MEAN$ are performed differently in $\kappa$ and $\alpha$ -->
 
-The $ALL$ has lower MSE and comparable MAD to the best of $E_{\kappa=50}$
+<!-- The $ALL$ has lower MSE and comparable MAD to the best of $E_{\kappa=50}$ -->
 
-Currently we have so many things to compare:
+<!-- Currently we have so many things to compare: -->
 
--   $\kappa$ and $\alpha$
--   $\alpha$ large or small
--   $ALL$ or $MEAN$
--   $E$ and $M$, $ST$ is out
--   single and multiple linear model
--   weighted and unweighted
+<!-- -   $\kappa$ and $\alpha$ -->
 
-This is a lot of things to compare, and we need to be careful about the interpretation of the results.
+<!-- -   $\alpha$ large or small -->
 
+<!-- -   $ALL$ or $MEAN$ -->
 
+<!-- -   $E$ and $M$, $ST$ is out -->
+
+<!-- -   single and multiple linear model -->
+
+<!-- -   weighted and unweighted -->
+
+<!-- This is a lot of things to compare, and we need to be careful about the interpretation of the results. -->

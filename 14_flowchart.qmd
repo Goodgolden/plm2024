@@ -137,8 +137,6 @@ Evaluation for model performance <br ALIGN = 'LEFT'/>
 >]
 
 d -> {e f}
-
-
 }")
 ```
 
@@ -146,7 +144,6 @@ d -> {e f}
 #| label: flowchart
 #| include: true
 #| eval: true
-#| figure-caption: Flowchart
 
 ## see the flowchart
 flowchart1
@@ -167,9 +164,4 @@ flowchart1 %>%
 # export_graph(flowchart,
 # file_name = "final/flowchart_graph.png",
 # file_type = "png")
-```
-
-```{r}
-#| label: sessionInfo
-sessionInfo()
 ```

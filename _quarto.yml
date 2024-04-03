@@ -44,13 +44,15 @@ book:
     - 16_coverage_rate.qmd
     - 17_gamlss.qmd
     - 18_kappa50.qmd
+    # - 19_stepwised.qmd
+    - 20_calibration.qmd
     - summary.qmd
     - references.qmd
 
 bibliography: references.bib
 
 format: 
-  html: 
+  html:
     code-fold: true
     code-tools: true
     code-link: true
