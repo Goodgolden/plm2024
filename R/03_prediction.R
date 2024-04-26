@@ -32,36 +32,31 @@ predict_gamlss <- function(matching,
   time_var <- ensym(time_var)
   id_var <- ensym(id_var)
 
-  ## Here is the current setup for the weights 
+  ## Here is the current setup for the weights
+  ## There is a problem when we use the weights
   if (weight == FALSE) {
     w = NULL
-  } 
-  
-  if (weight == TRUE){
-    w = matching$ww
-  }
-  
-  if (weight == "pvalue"){
+  } else {
     w = matching$pvalue
   }
-  
+
   if (is.null(matching$pvalue)) {
-    matching2 <<- matching %>% dplyr::select(-diff, -ww)
+    matching <<- matching %>% dplyr::select(-diff)
   } else {
-    matching2 <<- matching %>% dplyr::select(-diff, -pvalue, -ww)
+    matching <<- matching %>% dplyr::select(-diff, -pvalue)
     # test_one[[as.character({{ time_var }})]]
   }
-  
 
   plm <- gamlss::gamlss(as.formula(gamlss_formula),
                         sigma.formula = as.formula(gamsigma_formula),
                         # nu.formula = ~cs(time^0.1, df=1),
                         # tau.formula = ~cs(time^0.5, df=1),
-                        weights = w,
+                        # weights = w,
                         method = RS(100),
                         trace = FALSE,
-                        data = matching2,
+                        data = matching,
                         family = NO)
+
 
   centiles_obs <-  gamlss::centiles.pred(plm, type = c("centiles"),
                                          xname = as.character({{time_var}}),
@@ -69,13 +64,13 @@ predict_gamlss <- function(matching,
                                          cen = c(5, 10, 25, 50, 75, 90, 95)) %>%
     cbind(actual = test_one[[as.character({{ outcome_var }})]]) %>%
     as.data.frame() %>%
-    mutate(coverage50 = ifelse(actual >= `C25` & actual <= `C75`, 1, 0),
-           coverage80 = ifelse(actual >= `C10` & actual <= `C90`, 1, 0),
-           coverage90 = ifelse(actual >= `C5` & actual <= `C95`, 1, 0),
+    mutate(coverage50 = ifelse(actual >= `25` & actual <= `75`, 1, 0),
+           coverage80 = ifelse(actual >= `10` & actual <= `90`, 1, 0),
+           coverage90 = ifelse(actual >= `5` & actual <= `95`, 1, 0),
            # mse = (actual - `50`)^2,
            # biassq = bias^2,
            # var = mse - bias^2,
-           bias = abs(actual - `C50`))
+           bias = abs(actual - `50`))
 
   centiles_pred <-
     centiles.pred(plm,
@@ -101,7 +96,10 @@ predict_gamlss <- function(matching,
 
   if (predict_plot == TRUE) {
     plm_plot <- plm_ind_plot(quantile = centiles_pred,
-                             observation = test_one)
+                             observation = test_one,
+                             outcome_var = outcome_var,
+                             id_var = id_var,
+                             time_var = time_var)
   } else {
     plm_plot <- NULL
   }
@@ -122,9 +120,16 @@ predict_gamlss <- function(matching,
 #' @export
 plm_ind_plot <- function(quantile,
                          observation,
-                         title = NULL) {
+                         title = NULL,
+                         outcome_var,
+                         id_var,
+                         time_var,
+                         ...) {
+  observation <- observation %>%
+    mutate(time = !!time_var,
+                  outcome = !!outcome_var)
 
-  plot <- ggplot() +
+  plot1 <- ggplot() +
     geom_line(data = quantile, aes(x = time, y = q05),
               color = "dodgerblue", linetype = "dashed",
               alpha = 0.5) +
@@ -154,17 +159,18 @@ plm_ind_plot <- function(quantile,
                 fill = "dodgerblue3", alpha = 0.8) +
     geom_line(data = quantile, aes(x = time, y = q50),
               color = "dodgerblue4", linetype = "dashed") +
-    geom_point(data = observation, aes(x = time, y = ht),
-               color = "black", size = 1) +
+    geom_point(data = observation, 
+               aes(x = time, 
+                   y = outcome),
+               color = "black", 
+               size = 1) +
     theme_bw() +
-    xlab("Time (yr)") +
-    ylab("Height (cm)") +
-    ggtitle(title) +
-    xlim(0, 17) +
-    ylim(50, 250)
+    xlab("Time") +
+    ylab("Outcome") +
+    ggtitle(title)
 
   # print(range(observation$time))
-  plot
+  plot1
 }
 
 

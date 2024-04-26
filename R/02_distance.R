@@ -27,7 +27,6 @@ distance_df <- function(lb_train,
   outcome_var <- ensym(outcome_var)
   time_var <- ensym(time_var)
   id_var <- ensym(id_var)
-
   ## the matching subset
   lb_sub1 <- lb_train %>%
     pivot_wider(names_from = {{ id_var }},
@@ -35,7 +34,7 @@ distance_df <- function(lb_train,
     column_to_rownames(var = as.character({{ time_var }})) %>%
     mutate_all(as.numeric)
 
-  center = as.numeric(unlist(lb_test_ind[, outcome_var]))
+  center = as.numeric(unlist(lb_test_ind[, 3]))
 
   if (match_methods == "euclidean") {
     dist_df <<- euclidean_df(Dmatrix = lb_sub1,
@@ -145,6 +144,7 @@ dis_match <- function(lb_train,
                       match_time = NULL,
                       match_plot,
                       ...) {
+
 
   outcome_var <- ensym(outcome_var)
   time_var <- ensym(time_var)

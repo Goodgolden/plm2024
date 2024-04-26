@@ -1,0 +1,121 @@
+---
+title: "Cross Validation"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      warnings = FALSE,
+                      message = FALSE,
+                      comment = "#>",
+                      #results = "hide",
+                      digits = 4,
+                      error = FALSE)
+
+## clean the R environment
+# graphics.off()
+# rm(list = ls())
+# freshr::freshr()
+
+## load packages
+library(here, quietly = TRUE)
+library(tidyverse, quietly = TRUE)
+library(gtsummary, quietly = TRUE)
+library(flextable, quietly = TRUE)
+
+library(devtools, quietly = TRUE)
+load_all()
+
+## check the directory for the file
+# here::dr_here()
+here::set_here()
+
+## the figure or results should be saved 
+# paste0("foldername/Sfilename_workingresult_", 
+#      Sys.Date(), ".filetype")
+```
+
+```{css, echo=FALSE}
+.scroll-100 {
+  max-height: 300px;
+  max-width: 1000px;
+  overflow-y: auto;
+  background-color: inherit;
+}
+```
+
+## Cross-validation for different $\kappa$ values larger brokenstick knots
+
+Remember to change the kappa each time
+
+The codes are in the file `16_mlm_kappa_cv.R` and `16_slm_kappa_cv.R`file
+
+## $\kappa$ from 4 to 100 (currently 2024-01-24 19:22:05 update to 2024-04-04)
+
+### The MLM
+
+The setup for this PLM:
+
+-   anchor \<- c(14, 30, 60, 90) including 14 as the anchor
+-   bsk_knots \<- c(seq(10, 100, by = 10), seq(120, 300, by = 20)) extreme
+-   kappa1 \<- seq(4, 100, by = 2), it may seems not big enough to see the pattern
+
+```{r}
+#| label: "kappa_load_15"
+
+load("results/tsa_22_table_mlm_cv_2024-04-12 09:45:59.Rdata")
+
+kappa200_mlm <- rbind(map_dfr(result_kappa1, ~unlist(., recursive = FALSE))) %>%
+  as.data.frame() %>%
+  mutate(kappa = seq(4, 200, by = 1)) %>%
+  dplyr::select(kappa, everything())
+# map_dfr(result_kappa5, ~unlist(., recursive = FALSE))
+```
+
+The trade-off is not very obvious, the MSE is still around 50, but BIAS is hard to see. The coverage is not very good, but it is not very bad either.
+
+not sure whether the result is due to the brokenstick model or not
+
+```{r}
+#| label: "kappa200_mlm plot_15"
+#| fig-cap: Cross validation for kappa
+#| fig-subcap-location: top
+#| fig-width: 4
+#| fig-height: 2
+#| fig-subcap:
+#| - "CV_kappa200MLM_BIAS"
+#| - "CV_kappa200MLM_MSE"
+#| - "CV_kappa200MLM_CR50"
+#| - "CV_kappa200MLM_CR80"
+#| - "CV_kappa200MLM_CR90"
+#| warning: false
+#| layout-ncol: 2
+
+
+kappa200_mlm_bias <- kappa200_mlm %>%
+  ggplot() +
+  geom_line(aes(x = kappa, y = bias), color = "darkgreen") 
+kappa200_mlm_mse <- kappa200_mlm %>%
+  ggplot() +
+  # geom_line(aes(x = kappa, y = bias), color = "blue") +
+  geom_line(aes(x = kappa, y = mse), color = "indianred") 
+  # scale_y_continuous("Bias", 
+  #   sec.axis = sec_axis(~ ., name = "MSE"))
+kappa200_mlm_cr50 <- kappa200_mlm %>%
+  ggplot() +
+  geom_line(aes(x = kappa, y = coverage50), color = "blue1") 
+kappa200_mlm_cr80<- kappa200_mlm %>%
+  ggplot() +
+  # geom_line(aes(x = kappa, y = bias), color = "blue") +
+  geom_line(aes(x = kappa, y = coverage80), color = "blue3") 
+kappa200_mlm_cr90<- kappa200_mlm %>%
+  ggplot() +
+  # geom_line(aes(x = kappa, y = bias), color = "blue") +
+  geom_line(aes(x = kappa, y = coverage90), color = "blue4")
+
+kappa200_mlm_bias + theme_bw() + theme(legend.position = "none")
+kappa200_mlm_mse + theme_bw() + theme(legend.position = "none")
+kappa200_mlm_cr50 + theme_bw() + theme(legend.position = "none")
+kappa200_mlm_cr80 + theme_bw() + theme(legend.position = "none")
+kappa200_mlm_cr90 + theme_bw() + theme(legend.position = "none")
+
+```

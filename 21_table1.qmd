@@ -1,0 +1,339 @@
+---
+title: "Table1"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      warnings = FALSE,
+                      message = FALSE,
+                      comment = "#>",
+                      cache = TRUE,
+                      #results = "hide",
+                      digits = 4,
+                      error = FALSE)
+
+## clean the R environment
+graphics.off()
+rm(list = ls())
+freshr::freshr()
+
+## load packages
+library(here, quietly = TRUE)
+library(tidyverse, quietly = TRUE)
+library(gtsummary, quietly = TRUE)
+library(flextable, quietly = TRUE)
+library(devtools, quietly = TRUE)
+library(chron, quietly = TRUE)
+library(lubridate, quietly = TRUE)
+
+## check the directory for the file
+# here::dr_here()
+here::set_here()
+
+load_all()
+## the figure or results should be saved 
+# paste0("foldername/Sfilename_workingresult_", 
+#      Sys.Date(), ".filetype")
+```
+
+```{css, "css-setup", echo=FALSE}
+.scroll-100 {
+  max-height: 300px;
+  max-width: 1000px;
+  overflow-y: auto;
+  background-color: inherit;
+}
+```
+
+## Goals for this chapter
+
+-   [x] cleaning data:
+
+    -   [x] with minimum 7 or 8 visits per patient
+
+    -   [x] with time max down to 180 days (half year seems good enough)
+
+    -   [x] with time min up to 31 days (no point to predict over 1 month???)
+
+    -   [x] with no missing values in the key variable
+
+    -   [x] **potentially include the 90% quantiles for the training dataset**
+
+    -   [x] stratified split for the training and testing dataset 4:1
+
+-   [x] making table1
+
+    -   [x] with the date for the surgery date
+
+    -   [x] with the number of visits
+
+if the target predictive values for any anchor time falls out of the training qunatiles, we known that it is possible that this target individual may not have appropriate matches.
+
+like all the matches are falling into one side, then we know that the prediction is definitely biased.
+
+**potentially include the 90% quantiles for the training dataset**
+
+```{r}
+#| label: "cleaning_data"
+
+tbl1_p2 <- rbind(tsa_test,
+                 tsa_train) %>%
+  as.data.frame() %>% 
+  filter(time <= 180) %>%
+  group_by(sid) %>%
+  summarize(time_max = max(time),
+            time_min = min(time),
+            visit_n = n()) %>%
+  filter(visit_n >= 8) %>%
+  ungroup()
+```
+
+```{r}
+#| label: "cleaning_data2"
+#| layout-nrow: 1
+#| fig-cap: "The distribution of the number of visits and the time_min"
+#| subfig-cap: 
+#| - "The number of visits"
+#| - "The time_min"
+
+hist(tbl1_p2$visit_n)
+hist(tbl1_p2$time_min)
+
+# View(tbl1_p2)
+# nrow(tbl1_p2)
+# [1] 1237 for 7 visits
+# [1] 1101 for 8 visits
+# [1] 948 for 9 visits
+# [1] 811 for 10 visits
+```
+
+```{r}
+#| eval: false
+
+tbl1_p3 <- read.csv("newdata/tsa_clean_baseline_for_outcome_2024-01-22.csv",
+                    row.names = 1) %>% 
+  mutate(surgery_dt = as.Date(as.character(as.POSIXct(surgery_dt)), 
+                              format = "%Y-%m-%d")) %>%
+  dplyr::select(-sid, -id, -primary_payer,
+                -charlson_comorbidity_count, 
+                -charlson_comorbidity_index_value,
+                -adi_quintile, -surgery_max, 
+                -outcome_n, -timemax) %>% 
+  mutate(surgery_dt = as.numeric(surgery_dt))
+
+# names(tbl1_p3)
+
+tbl1_p3$surgery_dt <- chron(dates. = tbl1_p3$surgery_dt)
+
+tsa_data0 <- tsa_baseline %>%
+  dplyr::select(-log_outcome, -visit_max, 
+                -visit_n, -t0, -log_baseline,
+                -time0, -group) %>%
+  inner_join(tbl1_p2, by = "sid") %>%
+  left_join(tbl1_p3, by = c("patient_age", 
+                            "patient_gender", 
+                            "bmi", "adi_value", 
+                            "surgery_type")) %>%
+  group_by(sid) %>%
+  slice(1L) %>%
+  ungroup() %>%
+  filter(time_min <= 31)
+
+# [1] 744 for the first time point 31
+# [1] 1010 for the first time point 62
+# View(tsa_data0)
+# 
+# names(tsa_data0)
+# nrow(tsa_data0)
+# table(tsa_data0$patient_gender)
+
+```
+
+```{r}
+#| label: "stratified_split"
+#| eval: false
+
+set.seed(5555)
+library(splitstackshape)
+tsa_test0 <- stratified(tsa_data0,
+                         group = "primary_payer", 
+                         0.25) %>% 
+    mutate(group = "2_Test") %>% 
+  rename(outcome0 = outcome_score) %>%
+  dplyr::select(-time, -empi_deidentified)
+
+id_test <- tsa_test0$id %>% unique()
+
+tsa_train0 <- tsa_data0 %>%
+  filter(id %!in% id_test) %>%
+  mutate(group = "1_Train") %>%
+  rename(outcome0 = outcome_score) %>%
+  dplyr::select(-time, -empi_deidentified)
+  
+id_train <- tsa_train0$id %>% unique()
+
+```
+
+```{r}
+#| label: "tsa_all0"
+
+# identical(names(tsa_test0), names(tsa_train0))
+# View(tsa_train)
+# View(tsa_test)
+
+tsa_all0 <- rbind(tsa_train0, tsa_test0) %>%
+  as.data.frame()
+
+table(tsa_all0$group, tsa_all0$patient_gender)
+table(tsa_all0$group, tsa_all0$primary_payer)
+```
+
+## Table1 with date
+
+```{r, class.output="scroll-100"}
+#| label: "tbl1"
+tbl1 <- tsa_all0 %>%
+  dplyr::select(patient_age, patient_gender, group, 
+                primary_payer, surgery_type, 
+                visit_n,
+                time_max,
+                adi_value,
+                # surgery_dt,
+                bmi) %>%
+  # mutate(surgery_dt = as.Date(surgery_dt)) %>%
+  # mutate(adi_quintile = as.factor(adi_quintile)) %>% 
+  tbl_summary(by = group,
+              label = list(c("patient_age") ~ "Patient Age",
+                           c("patient_gender") ~ "Patient Gender",
+                           c("primary_payer") ~ "Primary Payer",
+                           c("surgery_type") ~ "Surgery Type",
+                           # c("surgery_dt") ~ "Surgery Date",
+                           c("time_max") ~ "Follow-up Time",
+                           c("visit_n") ~ "Number of Visits",
+                           c("adi_value") ~ "ADI Value",
+                           c("bmi") ~ "BMI"),
+              type = list(# c("surgery_dt") ~ "continuous2",
+                          all_continuous() ~ "continuous2"),
+              statistic = list(# c("surgery_dt") ~ c("({min}, {max})"),
+                               all_continuous() ~ c("{median} ({p25}, {p75})",
+                                               "({min}, {max})"))) %>%
+  ## just display all the variables in one column
+  modify_header(label = "**Characteristics**") %>%
+  # update the column header
+  bold_labels() %>%
+  add_p() %>%
+  italicize_labels()
+
+tbl1
+```
+
+\newpage
+
+## The table1 with Date
+
+```{r}
+#| label: "tbl1_date"
+tbl1_date <- tsa_all0 %>%
+  mutate(surgery_dt = as.Date(surgery_dt)) %>%
+  tbl_summary(include = c(patient_age,
+                          patient_gender, group, 
+                          primary_payer, surgery_type, 
+                          surgery_dt, 
+                          visit_n,
+                          time_max,
+                          adi_value, bmi),
+              by = group,
+              label = list(c("patient_age") ~ "Patient Age",
+                           c("patient_gender") ~ "Patient Gender",
+                           c("primary_payer") ~ "Primary Payer",
+                           c("surgery_type") ~ "Surgery Type",
+                           c("surgery_dt") ~ "Surgery Date",
+                           c("time_max") ~ "Follow-up Time",
+                           c("visit_n") ~ "Number of Visits",
+                           c("adi_value") ~ "ADI Value",
+                           c("bmi") ~ "BMI"),
+              type = list(c("surgery_dt") ~ "continuous2"),
+              statistic = list(c("surgery_dt") ~ c("{min}, {max}"))) 
+
+tbl1_date
+
+```
+
+## Plot out every individual trajectory
+
+```{r}
+#| label: "tsa_longitudinal"
+tsa_long1 <- rbind(tsa_test,
+                 tsa_train) %>%
+  as.data.frame() %>% 
+  filter(time <= 180,
+         outcome_score <= 100,
+         sid %in% tsa_all0$sid) %>% 
+  full_join(tsa_all0) %>% 
+  group_by(sid) %>% 
+  fill(time_max, time_min, 
+       visit_n, surgery_dt, 
+       group, outcome0) %>%
+  ungroup() %>% 
+  dplyr::select(group, id, sid, order(names(.))) %>%
+  dplyr::select(-log_baseline, -log_outcome, -surgery_dt,
+                -time_max, -time_min, visit_n)
+
+# nrow(tsa_long1)
+# View(tsa_all0)
+# [1] 9811 there are four obs are wrong
+# [1] 9815
+```
+
+```{r}
+#| label: "individual_trajectories"
+#| eval: false
+#| fig-height: 50
+
+plot0 <- tsa_long1 %>%
+  ggplot(aes(x = time, 
+             y = outcome_score, 
+             group = sid)) +
+  geom_line() +
+  geom_point() +
+  facet_wrap(~sid, ncol = 15) +
+  theme_bw() +
+  theme(legend.position = "none") +
+  ylim(0, 100) +
+  labs(title = "Individual Trajectories",
+       x = "Time",
+       y = "Outcome Score")
+
+ggsave("figure/tsa_21_individual_trajectories.png", 
+       plot0, 
+       width = 20, 
+       height = 45, 
+       units = "in", 
+       dpi = 300)
+
+```
+
+```{r}
+#| label: "plot_trajectories"
+#| fig-cap: "Individual Trajectories"
+knitr::include_graphics("figure/tsa_21_individual_trajectories.png")
+```
+
+## Save data
+
+```{r}
+#| label: "save_data"
+#| eval: false
+tsa_train1 <- tsa_long1 %>%
+  filter(group == "1_Train") 
+
+tsa_test1 <- tsa_long1 %>%
+  filter(group == "2_Test")
+
+usethis::use_data(tsa_train, tsa_test,
+                  tsa_all0, tsa_train0, tsa_test0, 
+                  tsa_long1, tsa_train1, tsa_test1,
+                  internal = TRUE,
+                  overwrite = TRUE)
+
+```

@@ -4,7 +4,15 @@
 \alias{plm_ind_plot}
 \title{Title plot individual matching}
 \usage{
-plm_ind_plot(quantile, observation, title = NULL)
+plm_ind_plot(
+  quantile,
+  observation,
+  title = NULL,
+  outcome_var,
+  id_var,
+  time_var,
+  ...
+)
 }
 \arguments{
 \item{title}{}

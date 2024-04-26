@@ -1,0 +1,393 @@
+---
+title: "Linear comparison"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      warnings = FALSE,
+                      message = FALSE,
+                      comment = "#>",
+                      cache = TRUE,
+                      #results = "hide",
+                      digits = 4,
+                      error = FALSE)
+
+## clean the R environment
+graphics.off()
+rm(list = ls())
+freshr::freshr()
+
+## load packages
+library(here, quietly = TRUE)
+library(tidyverse, quietly = TRUE)
+library(devtools, quietly = TRUE)
+library(lme4)
+library(nlme)
+load_all()
+
+
+## check the directory for the file
+# here::dr_here()
+here::set_here()
+
+## the figure or results should be saved 
+# paste0("foldername/Sfilename_workingresult_", 
+#      Sys.Date(), ".filetype")
+```
+
+## Goal for this Chapter
+
+-   [x] try different linear models and compare
+
+## Linear models
+
+There are five models included:
+
+1.  without any baseline outcome or time
+
+2.  including baseline outcome and time
+
+3.  including baseline interactions with outcome but not time
+
+4.  including baseline interactions with outcome and time
+
+5.  including baseline interactions with outcome and time only for adi and bmi
+
+```{r}
+bsk_knots <- c(25, 50, 75, 100, 125, 150)
+anchor <- c(32, 45, 60, 90)
+
+mlmf0 <- "outcome_score ~ adi_value + 
+                      bmi + 
+                      patient_age + 
+                      patient_gender + 
+                      primary_payer + 
+                      surgery_type"
+
+mlmf1 <- "outcome_score ~ adi_value + 
+                      bmi + 
+                      patient_age + 
+                      patient_gender + 
+                      primary_payer + 
+                      surgery_type + 
+                      outcome0 + t0"
+
+mlmf2 <- "outcome_score ~ adi_value + adi_value:outcome0 +
+                      bmi + bmi:outcome0 + 
+                      patient_age + patient_age:outcome0 +
+                      patient_gender + patient_gender:outcome0 +
+                      primary_payer + primary_payer:outcome0 +
+                      surgery_type + surgery_type:outcome0 +
+                      outcome0"
+
+mlmf3 <- "outcome_score ~ adi_value + adi_value:outcome0 + adi_value:t0 +
+                      bmi + bmi:outcome0 + bmi:t0 +
+                      patient_age + patient_age:outcome0 + patient_age:t0 +
+                      patient_gender + patient_gender:outcome0 + patient_gender:t0 +
+                      primary_payer + primary_payer:outcome0 + primary_payer:t0 +
+                      surgery_type + surgery_type:outcome0 + surgery_type:t0 +
+                      outcome0 + t0"
+
+mlmf4 <- "outcome_score ~ adi_value + adi_value:outcome0 + adi_value:t0 +
+                      bmi + bmi:outcome0 + bmi:t0 +
+                      patient_age +
+                      patient_gender + 
+                      primary_payer + 
+                      surgery_type + 
+                      outcome0 + t0"
+
+
+gf <- "outcome_score ~ cs(time, df = 3)"
+gs <- "~ cs(time, df = 1)"
+
+# lmf <- "outcome_score ~ as.factor(time) + 
+#                       adi_value + adi_value:outcome0 + adi_value:t0 + 
+#                       bmi + bmi:outcome0 + bmi:t0 +
+#                       patient_age + patient_age:outcome0 + patient_age:t0 +
+#                       patient_gender + patient_gender:outcome0 + patient_gender:t0 +
+#                       primary_payer + primary_payer:outcome0 + primary_payer:t0 +
+#                       surgery_type + surgery_type:outcome0 + surgery_type:t0 +
+#                       outcome0 + t0"
+```
+
+```{r}
+#| eval: false
+
+e_k20_0 <- people_like_us(train_data = tsa_train1,
+                        test_data = tsa_test1,
+                        anchor_time = anchor,
+                        brokenstick_knots = bsk_knots,
+                        linear_model = "mlm",
+                        linear_formula = mlmf0,
+                        gamlss_formula = gf,
+                        gamlss_sigma = gs,
+                        tmin = 0,
+                        tmax = 180,
+                        id_var = "id",
+                        outcome_var = "outcome_score",
+                        time = "time",
+                        weight = FALSE,
+                        match_plot = FALSE,
+                        predict_plot = FALSE,
+                        match_methods = "euclidean",
+                        match_number = 20)
+
+e_k20_1 <- people_like_us(train_data = tsa_train1,
+                        test_data = tsa_test1,
+                        anchor_time = anchor,
+                        brokenstick_knots = bsk_knots,
+                        linear_model = "mlm",
+                        linear_formula = mlmf1,
+                        gamlss_formula = gf,
+                        gamlss_sigma = gs,
+                        tmin = 0,
+                        tmax = 180,
+                        id_var = "id",
+                        outcome_var = "outcome_score",
+                        time = "time",
+                        weight = FALSE,
+                        match_plot = FALSE,
+                        predict_plot = FALSE,
+                        match_methods = "euclidean",
+                        match_number = 20)
+
+e_k20_2 <- people_like_us(train_data = tsa_train1,
+                        test_data = tsa_test1,
+                        anchor_time = anchor,
+                        brokenstick_knots = bsk_knots,
+                        linear_model = "mlm",
+                        linear_formula = mlmf2,
+                        gamlss_formula = gf,
+                        gamlss_sigma = gs,
+                        tmin = 0,
+                        tmax = 180,
+                        id_var = "id",
+                        outcome_var = "outcome_score",
+                        time = "time",
+                        weight = FALSE,
+                        match_plot = FALSE,
+                        predict_plot = FALSE,
+                        match_methods = "euclidean",
+                        match_number = 20)
+
+e_k20_3 <- people_like_us(train_data = tsa_train1,
+                        test_data = tsa_test1,
+                        anchor_time = anchor,
+                        brokenstick_knots = bsk_knots,
+                        linear_model = "mlm",
+                        linear_formula = mlmf3,
+                        gamlss_formula = gf,
+                        gamlss_sigma = gs,
+                        tmin = 0,
+                        tmax = 180,
+                        id_var = "id",
+                        outcome_var = "outcome_score",
+                        time = "time",
+                        weight = FALSE,
+                        match_plot = FALSE,
+                        predict_plot = FALSE,
+                        match_methods = "euclidean",
+                        match_number = 20)
+
+e_k20_4 <- people_like_us(train_data = tsa_train1,
+                        test_data = tsa_test1,
+                        anchor_time = anchor,
+                        brokenstick_knots = bsk_knots,
+                        linear_model = "mlm",
+                        linear_formula = mlmf4,
+                        gamlss_formula = gf,
+                        gamlss_sigma = gs,
+                        tmin = 0,
+                        tmax = 180,
+                        id_var = "id",
+                        outcome_var = "outcome_score",
+                        time = "time",
+                        weight = FALSE,
+                        match_plot = FALSE,
+                        predict_plot = FALSE,
+                        match_methods = "euclidean",
+                        match_number = 20)
+
+save(e_k10_0, e_k10_1, e_k10_2, e_k10_3, e_k10_4,
+     file = paste0("results/tsa_26_linear_model_10_", Sys.Date(), ".Rdata"))
+
+save(e_k20_0, e_k20_1, e_k20_2, e_k20_3, e_k20_4,
+     file = paste0("results/tsa_26_linear_model_20_", Sys.Date(), ".Rdata"))
+
+save(e_k25_0, e_k25_1, e_k25_2, e_k25_3, e_k25_4,
+     file = paste0("results/tsa_26_linear_model_25_", Sys.Date(), ".Rdata"))
+```
+
+## Comparison
+
+We try both matching number of 25, 20, and 10
+
+```{r}
+load("results/tsa_26_linear_model_10_2024-04-24.Rdata")
+load("results/tsa_26_linear_model_20_2024-04-24.Rdata")
+load("results/tsa_26_linear_model_25_2024-04-24.Rdata")
+
+meanout <- function(dataset){
+  # browser()
+  result0 <- dataset %>%
+    as.data.frame() %>%
+    mutate(mse = bias^2) 
+  result1 <- result0 %>%
+    colMeans() %>%
+    unlist()
+  return(result1)}
+```
+
+```{r "mean_all"}
+#| include: false
+#| error: true
+#| warning: false
+#| hide: true
+
+ek20_result0 <- map(e_k20_0, "centiles_observed") %>% 
+  map_dfr(~try(meanout(.))) %>%
+  dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+  colMeans()
+
+ek20_result1 <- map(e_k20_1, "centiles_observed") %>% 
+  map_dfr(~try(meanout(.))) %>%
+  dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+  colMeans()
+
+ek20_result2 <- map(e_k20_2, "centiles_observed") %>% 
+  map_dfr(~try(meanout(.))) %>%
+  dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+  colMeans()
+
+ek20_result3 <- map(e_k20_3, "centiles_observed") %>% 
+  map_dfr(~try(meanout(.))) %>%
+  dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+  colMeans()
+
+ek20_result4 <- map(e_k20_4, "centiles_observed") %>% 
+  map_dfr(~try(meanout(.))) %>%
+  dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+  colMeans()
+
+
+ek10_result0 <- map(e_k10_0, "centiles_observed") %>% 
+  map_dfr(~try(meanout(.))) %>%
+  dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+  colMeans()
+
+ek10_result1 <- map(e_k10_1, "centiles_observed") %>% 
+  map_dfr(~try(meanout(.))) %>%
+  dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+  colMeans()
+
+ek10_result2 <- map(e_k10_2, "centiles_observed") %>% 
+  map_dfr(~try(meanout(.))) %>%
+  dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+  colMeans()
+
+ek10_result3 <- map(e_k10_3, "centiles_observed") %>% 
+  map_dfr(~try(meanout(.))) %>%
+  dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+  colMeans()
+
+ek10_result4 <- map(e_k10_4, "centiles_observed") %>% 
+  map_dfr(~try(meanout(.))) %>%
+  dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+  colMeans()
+
+ek25_result0 <- map(e_k25_0, "centiles_observed") %>% 
+  map_dfr(~try(meanout(.))) %>%
+  dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+  colMeans()
+
+ek25_result1 <- map(e_k25_1, "centiles_observed") %>% 
+  map_dfr(~try(meanout(.))) %>%
+  dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+  colMeans()
+
+ek25_result2 <- map(e_k25_2, "centiles_observed") %>% 
+  map_dfr(~try(meanout(.))) %>%
+  dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+  colMeans()
+
+ek25_result3 <- map(e_k25_3, "centiles_observed") %>% 
+  map_dfr(~try(meanout(.))) %>%
+  dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+  colMeans()
+
+ek25_result4 <- map(e_k25_4, "centiles_observed") %>% 
+  map_dfr(~try(meanout(.))) %>%
+  dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+  colMeans()
+
+
+```
+
+### Matching for 25
+
+```{r "final_table_25",  class.output="scroll-100"}
+options(scipen = 1, digits = 4)
+
+result26 <- 
+  rbind(ek25_result0, 
+        ek25_result1,
+        ek25_result2,
+        ek25_result3,
+        ek25_result4) %>%
+  as.data.frame() %>% 
+  mutate(rmse = sqrt(mse))
+
+row.names(result26) <- c("without_time&outcome",
+                         "with_time&outcome",
+                         "interactions-outcome",
+                         "interactions-outcome&time",
+                         "interactions-outcome&time-(adi)")
+
+result26
+```
+
+### Matching for 20
+
+```{r "final_table_20",  class.output="scroll-100"}
+options(scipen = 1, digits = 4)
+
+result26 <- 
+  rbind(ek20_result0, 
+        ek20_result1,
+        ek20_result2,
+        ek20_result3,
+        ek20_result4) %>%
+  as.data.frame() %>% 
+  mutate(rmse = sqrt(mse))
+
+row.names(result26) <- c("without_time&outcome",
+                         "with_time&outcome",
+                         "interactions-outcome",
+                         "interactions-outcome&time",
+                         "interactions-outcome&time-(adi)")
+
+result26
+```
+
+### Matching for 10
+
+```{r "final_table_10",  class.output="scroll-100"}
+options(scipen = 1, digits = 4)
+
+result26 <- 
+  rbind(ek10_result0, 
+        ek10_result1,
+        ek10_result2,
+        ek10_result3,
+        ek10_result4) %>%
+  as.data.frame() %>% 
+  mutate(rmse = sqrt(mse))
+
+row.names(result26) <- c("without_time&outcome",
+                         "with_time&outcome",
+                         "interactions-outcome",
+                         "interactions-outcome&time",
+                         "interactions-outcome&time-(adi)")
+
+result26
+```

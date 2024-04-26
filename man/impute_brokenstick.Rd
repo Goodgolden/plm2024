@@ -25,13 +25,16 @@ impute_brokenstick(
 
 \item{anchor_time}{The anchor time set for imputation,}
 
-\item{data}{A data frame in which to look for variables with which to fit the brokenstick model and predict. Ideally, this is a longitudinal data.frame object in long-format.}
+\item{data}{A data frame in which to look for variables with which to fit
+the brokenstick model and predict. Ideally, this is a longitudinal
+data.frame object in long-format.}
 
 \item{...}{Not used, but required for future extension}
 }
 \description{
 The predictions from a broken stick model coincide with
 the group-conditional means of the random effects.
-This function takes the \code{data} with selected \code{outcome_var}, \code{time_var}, and \code{id_var}.
-The user can calculate prediction (imputation) at given anchor \code{time} set.
+This function takes the \code{data} with selected \code{outcome_var}, \code{time_var},
+and \code{id_var}. The user can calculate prediction (imputation) at
+given anchor \code{time} set.
 }

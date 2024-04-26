@@ -1,160 +1,137 @@
 server <- function(input, output) {
 
-  sid <- reactive({sid <- input$individual})
-  # match_methods <- reactive(input$methods)
-  alpha <- reactive({alpha <- input$alpha})
+  ## the input parameters from the ui.R ----------------------------------------
+  individual <- reactive({individual <- input$individual})
   num <- reactive({num <- input$num})
-  time <- reactive({time <- input$time})
+  anchor_time <- reactive({anchor_time <- input$anchor_time})
+  bsk_knots <- reactive({bsk_knots <- input$bsk_knots})
+  tmax <- reactive({tmax <- input$tmax})
 
   observeEvent(input$run, {  })
-
-  bks_pred <-
-    brokenstick_prediction(
-      outcome = "ht",
-      time = "time",
-      id = "id",
-      train_data = train,
-      knots = c(5, 10, 12),
-      pred_time = c(2, 4, 6, 8, 10, 12, 14, 16),
-      choice = "predicted")
-
-  lb_data <-
-    linear_brokenstick(
-      lm_formula = "`.pred` ~ timef * sex + baseline",
-      bks_pred = bks_pred)
-
-#   tabsetPanel(
-#     tabPanel("Mahalanobis p", plotOutput("mhl_p_plot")),
-#     tabPanel("Mahalanobis n", plotOutput("mhl_n_plot")),
-#     tabPanel("Euclidean n", plotOutput("eld_n_plot")),
-#     tabPanel("single time n", plotOutput("sgl_n_plot")),
-#     tabPanel("Summary Table", tableOutput("table")),
-
-  ## mahalanobis p value matching-----------------------------------------------
-  output$mhl_p_plot <- renderPlot({
-
-    req(input$individual,
-        input$alpha,
-        input$num,
-        input$time,
-        input$run)
-
-    pm_mhl_p <-
-      plmlmm::pred_matching(
-        lb_data = lb_data,
-        lb_test = lb_data,
-        test_data = train,
-        train_data = train,
-        match_methods = "mahalanobis",
-        match_alpha = alpha(),
-        match_num = NULL,
-        gamlss_formula = "ht ~ cs(time, df = 3)",
-        gamsigma_formula = "~ cs(time, df = 1)",
-        match_plot = TRUE,
-        predict_plot = TRUE,
-        sbj = sid())
-
-    gridExtra::grid.arrange(pm_mhl_p$matching_trajectory +
-                              labs(subtitle = "Mahalandobis distance with critical value 'matching'"),
-                            pm_mhl_p$predictive_centiles +
-                              labs(subtitle = "Mahalandobis distance with critical value 'prediction'"),
-                            nrow = 1)
+  val <- reactiveValues()
+  
+  observeEvent(input$run,{
+    val$bsk_knots <- as.numeric(unlist(strsplit(input$bsk_knots, ",")))
+    val$anchor_time <- as.numeric(unlist(strsplit(input$anchor_time, ",")))
+    val$num <- as.numeric(input$num)
+    val$tmax <- as.numeric(input$tmax)
   })
+  
+  test_data <- reactive({tsa_test1 %>%
+    dplyr::filter(id == individual())})
+  
+  mlmf <- "outcome_score ~ adi_value + adi_value:outcome0 + adi_value:t0 +
+                      bmi + bmi:outcome0 + bmi:t0 +
+                      patient_age + patient_age:outcome0 + patient_age:t0 +
+                      patient_gender + patient_gender:outcome0 + patient_gender:t0 +
+                      primary_payer + primary_payer:outcome0 + primary_payer:t0 +
+                      surgery_type + surgery_type:outcome0 + surgery_type:t0 +
+                      outcome0 + t0"
+  
+  gf <- "outcome_score ~ cs(time, df = 3)"
+  gs <- "~ cs(time, df = 1)"
+  
+  lmf <- "outcome_score ~ as.factor(time) + 
+                      adi_value + adi_value:outcome0 + adi_value:t0 + 
+                      bmi + bmi:outcome0 + bmi:t0 +
+                      patient_age + patient_age:outcome0 + patient_age:t0 +
+                      patient_gender + patient_gender:outcome0 + patient_gender:t0 +
+                      primary_payer + primary_payer:outcome0 + primary_payer:t0 +
+                      surgery_type + surgery_type:outcome0 + surgery_type:t0 +
+                      outcome0 + t0"
+  
 
-
-  ## mahalanobis fixed matching number -------------------------------------
-  output$mhl_n_plot <- renderPlot({
-
-    req(input$individual,
-        input$alpha,
-        input$num,
-        input$time,
-        input$run)
-
-    pm_mhl_n <-
-      plmlmm::pred_matching(
-        lb_data = lb_data,
-        lb_test = lb_data,
-        test_data = train,
-        train_data = train,
-        match_methods = "mahalanobis",
-        match_num = num(),
-        match_alpha = NULL,
-        gamlss_formula = "ht ~ cs(time, df = 3)",
-        gamsigma_formula = "~ cs(time, df = 1)",
-        match_plot = TRUE,
-        predict_plot = TRUE,
-        sbj = sid())
-
-    gridExtra::grid.arrange(pm_mhl_n$matching_trajectory +
-                              labs(subtitle = "Mahalandobis distance with matching sample size'matching'"),
-                            pm_mhl_n$predictive_centiles +
-                              labs(subtitle = "Mahalandobis distance with matching sample size 'prediction'"),
-                            nrow = 1)
-  })
-
-
-  ## euclidean fixed matching number -------------------------------------------
-  output$eld_n_plot <- renderPlot({
-
-    req(input$individual,
-        input$alpha,
-        input$num,
-        input$time,
-        input$run)
-
-    pm_eld_n <-
-      plmlmm::pred_matching(
-        lb_data = lb_data,
-        lb_test = lb_data,
-        test_data = train,
-        train_data = train,
-        match_methods = "euclidean",
-        match_num = num(),
-        gamlss_formula = "ht ~ cs(time, df = 3)",
-        gamsigma_formula = "~ cs(time, df = 1)",
-        match_plot = TRUE,
-        predict_plot = TRUE,
-        sbj = sid())
-
-    gridExtra::grid.arrange(pm_eld_n$matching_trajectory +
-                              labs(subtitle = "Euclidean distance with matching sample size 'matching'"),
-                            pm_eld_n$predictive_centiles +
-                              labs(subtitle = "Euclidean distance with matching sample size 'prediction'"),
-                            nrow = 1)
+  ## euclidean fixed matching number -------------------------------------
+  output$eld_plot <- renderPlotly({
+    validate(need(val$num, ""))
+    validate(need(val$anchor_time, ""))
+    validate(need(val$bsk_knots, ""))
+    validate(need(val$tmax, ""))
+    eld_n <- people_like_me(train_data = tsa_train1,
+                            test_data= test_data(),
+                            outcome_var = "outcome_score",
+                            time_var = "time",
+                            id_var = "id",
+                            tmin = 0,
+                            tmax = val$tmax,
+                            brokenstick_knots = val$bsk_knots,
+                            anchor_time = val$anchor_time,
+                            linear_formula = lmf,
+                            gamlss_formula = gf,
+                            gamlss_sigma = gs,
+                            match_methods = "euclidean", 
+                            match_number = val$num,
+                            weight = FALSE,
+                            match_plot = TRUE,
+                            predict_plot = TRUE)
+    p1 <- eld_n$plot +
+      ggtitle("Euclidean Predictive Intervals") +
+      xlab("Time") +
+      ylab("Outcome Score") +
+      xlim(0, val$tmax) +
+      ylim(-10, 110)
+    p2 <- eld_n$matches +
+      xlab("Time") +
+      ylab("Outcome Score") +
+      ggtitle("Euclidean Matching") +
+      xlim(0, val$tmax) +
+      ylim(-10, 110)
+    
+    p <- subplot(p1, p2, nrows = 1,
+                 shareY = TRUE) %>%
+      layout(xaxis = list(title = "Time"), 
+             xaxis2 = list(title = "Time"),
+             yaxis = list(title = "Outcome Score"))
+    p
   })
 
 
 
-  ## single time point matching number -----------------------------------------
-  output$sgl_n_plot <- renderPlot({
-
-    req(input$individual,
-        input$alpha,
-        input$num,
-        input$time,
-        input$run)
-
-    pm_sgl_n <-
-      plmlmm::pred_matching(
-        lb_data = lb_data,
-        lb_test = lb_data,
-        test_data = train,
-        train_data = train,
-        match_methods = "single",
-        match_num = num(),
-        match_time = time(),
-        gamlss_formula = "ht ~ cs(time, df = 3)",
-        gamsigma_formula = "~ cs(time, df = 1)",
-        match_plot = TRUE,
-        predict_plot = TRUE,
-        sbj = sid())
-
-    gridExtra::grid.arrange(pm_sgl_n$matching_trajectory +
-                              labs(subtitle = "Single time with matching sample size 'matching'"),
-                            pm_sgl_n$predictive_centiles +
-                              labs(subtitle = "Single distance with matching sample size 'prediction'"),
-                            nrow = 1)
+  ## mahalanobis fixed matching number -------------------------------------------
+  output$mhl_plot <- renderPlotly({
+    validate(need(val$num, ""))
+    validate(need(val$anchor_time, ""))
+    validate(need(val$bsk_knots, ""))
+    validate(need(val$tmax, ""))
+    mhl_n <- people_like_me(train_data = tsa_train1,
+                            test_data = test_data(),
+                            outcome_var = "outcome_score",
+                            time_var = "time",
+                            id_var = "id",
+                            tmin = 0,
+                            tmax = val$tmax,
+                            brokenstick_knots = val$bsk_knots,
+                            anchor_time = val$anchor_time,
+                            linear_formula = lmf,
+                            gamlss_formula = gf,
+                            gamlss_sigma = gs,
+                            match_methods = "mahalanobis", 
+                            match_number = val$num,
+                            weight = FALSE,
+                            match_plot = TRUE,
+                            predict_plot = TRUE)
+    p1 <- mhl_n$plot +
+      ggtitle("Mahalanobis Predictive Intervals") +
+      xlab("Time") +
+      ylab("Outcome Score") +
+      xlim(0, val$tmax) +
+      ylim(-10, 110)
+    p2 <- mhl_n$matches +
+      xlab("Time") +
+      ylab("Outcome Score") +
+      ggtitle("Mahalanobis Matching") +
+      xlim(0, val$tmax) +
+      ylim(-10, 110)
+    
+    p <- subplot(p1, p2, nrows = 1, 
+                 shareY = TRUE)  %>%
+      layout(xaxis = list(title = "Time"),
+             xaxis2 = list(title = "Time"),
+             yaxis = list(title = "Outcome Score"))
+    
+    p
   })
+
+  
   }
 

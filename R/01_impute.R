@@ -6,15 +6,18 @@
 #' @description
 #' The predictions from a broken stick model coincide with
 #' the group-conditional means of the random effects.
-#' This function takes the `data` with selected `outcome_var`, `time_var`, and `id_var`.
-#' The user can calculate prediction (imputation) at given anchor `time` set.
+#' This function takes the `data` with selected `outcome_var`, `time_var`, 
+#' and `id_var`. The user can calculate prediction (imputation) at 
+#' given anchor `time` set.
 #'
 #' @param outcome_var The outcome_var variable name must include in the dataset
 #' @param time_var The time variable name must be included in the dataset
 #' @param id_var The id variable name must be included in the dataset
 #' @param bs_knots The internal knots for brokenstick model
 #' @param anchor_time The anchor time set for imputation,
-#' @param data A data frame in which to look for variables with which to fit the brokenstick model and predict. Ideally, this is a longitudinal data.frame object in long-format.
+#' @param data A data frame in which to look for variables with which to fit 
+#' the brokenstick model and predict. Ideally, this is a longitudinal 
+#' data.frame object in long-format.
 #' @param ... Not used, but required for future extension
 #'
 #' @return
@@ -48,9 +51,7 @@ impute_brokenstick <- function(outcome_var,
   data_anchor <- predict(model_bks,
                          ## predict at the arg pred_time
                          include_data = FALSE,
-                         x = anchor_time,
-                         ## group by the arg id_var
-                         group = data$`!!id_var`) %>%
+                         x = anchor_time) %>%
     ## remove the variables without values
     select_if(not_all_na)
 
@@ -67,7 +68,7 @@ impute_brokenstick <- function(outcome_var,
 
   ## the joint dataset from anchor prediction and baseline
   ## just join because there is one ID variables
-  data_new <- full_join(data_anchor, data_baseline) %>%
+  data_new <- full_join(data_anchor, data_baseline, by = join_by(!!id_var)) %>%
     ## add one factor time_var variable
     dplyr::mutate(!!time_var := as.factor(!!time_var)) %>%
     rename(!!outcome_var := `.pred`)

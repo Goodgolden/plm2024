@@ -13,7 +13,6 @@ library(usethis)
 library(devtools)
 
 load_all()
-library(plmlmm)
 
 
 # ?testthat::test_file
@@ -64,17 +63,24 @@ usethis::use_git_remote("origin",
 It’s a good idea to store the code that generates your individual internal data objects, as well as the use_data() call that writes all of them into R/sysdata.rda. This is workflow code that belongs below data-raw/, not below R/. usethis::use_data_raw() can be used to initiate the use of data-raw/ or to initiate a new .R script there. If your package is uncomfortably large, experiment with different values of compress in use_data(internal = TRUE).
 
 ```{r}
-# usethis::use_data(epic_train)
-# usethis::use_data(epic_test)
-# usethis::use_data_raw("epic_train")
-# usethis::use_data_raw("epic_test")
+# usethis::use_data(tsa_train)
+# usethis::use_data(tsa_test)
+# usethis::use_data_raw("tsa_train")
+# usethis::use_data_raw("tsa_test")
+
+tsa_test <- tsa_test %>%
+  mutate(baseline0 = baseline) %>%
+  dplyr::select(-baseline)
 # 
-# usethis::use_data(test, 
-#                   # margin_mean,
-#                   train, 
-#                   demog, epic,
-#                   internal = TRUE,
-#                   overwrite = TRUE)
+tsa_train<- tsa_train %>%
+  mutate(baseline0 = baseline) %>%
+  dplyr::select(-baseline)
+
+usethis::use_data(tsa_base, tsa_outcome,
+                  tsa_pain, tsa_rom,
+                  tsa_train, tsa_test,
+                  internal = TRUE,
+                  overwrite = TRUE)
 ```
 
 ## use package
@@ -82,22 +88,16 @@ It’s a good idea to store the code that generates your individual internal dat
 ```{r}
 use_package("brokenstick", type = "Depends")
 use_package("broom.mixed", type = "Depends")
-?use_package
-
-use_package("dplyr", type = "Depends")
-use_package("forcats", type = "Depends")
+use_package("plotly", type = "Depends")
 use_package("gamlss", type = "Depends")
 use_package("here", type = "Depends")
-use_package("janitor", type = "Depends")
 use_package("JMbayes", type = "Depends")
 use_package("lme4", type = "Depends")
 use_package("matrixcalc", type = "Depends")
 use_package("MASS", type = "Depends")
 use_package("nlme", type = "Depends")
 use_package("tidyverse", type = "Depends")
-use_package("tidyr", type = "Depends")
 use_package("tibble", type = "Depends")
-use_package("purrr")
 use_package("readr")
 use_package("rjags", type = "Depends")
 
@@ -208,5 +208,5 @@ Here is a typical sequence of calls when using devtools for package development:
 
 ```{r}
 load_all()
-# plmlmm:::run_shiny()
+plm2024:::plm_shiny()
 ```
