@@ -69,7 +69,7 @@ tbl1_p3 <- read.csv("newdata/tsa_clean_baseline_for_outcome_2024-01-22.csv",
 
 tbl1_p3$surgery_dt <- chron(dates. = tbl1_p3$surgery_dt)
 
-tbl1_data <- tsa_baseline %>%
+tbl1_data <- tsa_baseline %>% 
   inner_join(tbl1_p2, by = "sid") %>%
   left_join(tbl1_p3, by = c("patient_age", "patient_gender", 
                             "bmi", "adi_value", 
@@ -145,32 +145,44 @@ tbl1_date
 
 ```
 
-
-
 <!-- Here is the final table1 for publication in HTML. -->
 
 <!-- ```{r "table1_html"} -->
+
 <!-- #| tbl-cap: "Final Table1" -->
+
 <!-- tbl1  %>% as_flex_table() -->
 
 <!-- library(webshot) -->
+
 <!-- # webshot::install_phantomjs() -->
+
 <!-- flextable::save_as_image(as_flex_table(tbl1),  -->
+
 <!--               path = paste0("figure/tsa_13_final_table1_", Sys.Date(), ".png"), -->
+
 <!--               # zoom = 3,  -->
+
 <!--               # expand = 10,  -->
+
 <!--               webshot = "webshot") -->
+
 <!-- ``` -->
 
 <!-- Here is the final table1 for publication in LaTeX. -->
 
 <!-- ```{r "table_latex"} -->
+
 <!-- library(xtable) -->
+
 <!-- xtable(as.data.frame(tbl1), type = "latex", -->
+
 <!--       file = paste0("figure/tsa_13_final_table1_", Sys.Date(), ".tex")) -->
 
 <!-- library(xtable) -->
+
 <!-- xtable(as.data.frame(tbl1_date), type = "latex", -->
+
 <!--       file = paste0("figure/tsa_13_final_table1_with_date_", Sys.Date(), ".tex")) -->
 
 <!-- ``` -->
@@ -178,43 +190,81 @@ tbl1_date
 <!-- Here are the final Table1 with all the font and format changes. -->
 
 <!-- ```{tex} -->
+
 <!-- % Mon Jan 22 15:49:24 2024 -->
+
 <!-- \begin{table}[ht] -->
+
 <!-- \centering -->
+
 <!-- \begin{tabular}{rllll} -->
+
 <!--   \hline -->
+
 <!--  & **Characteristics** & **1Training**, N = 1,145 & **2Testing**, N = 574 & **p-value** \\  -->
+
 <!--   \hline -->
+
 <!-- 1 & \_\_\_patient\_age\_\_\_ &  &  & 0.6 \\  -->
+
 <!--   2 & Median (IQR) & 69 (63, 74) & 69 (63, 75) &  \\  -->
+
 <!--   3 & (Range) & (35, 89) & (26, 89) &  \\  -->
+
 <!--   4 & \_\_\_patient\_gender\_\_\_ &  &  & 0.8 \\  -->
+
 <!--   5 & Female & 603 (53\%) & 299 (52\%) &  \\  -->
+
 <!--   6 & Male & 542 (47\%) & 275 (48\%) &  \\  -->
+
 <!--   7 & \_\_\_primary\_payer\_\_\_ &  &  & $>$0.9 \\  -->
+
 <!--   8 & Commercial & 379 (33\%) & 190 (33\%) &  \\  -->
+
 <!--   9 & Medicaid & 19 (1.7\%) & 10 (1.7\%) &  \\  -->
+
 <!--   10 & Medicare & 723 (63\%) & 362 (63\%) &  \\  -->
+
 <!--   11 & Workers comp / liability & 23 (2.0\%) & 12 (2.1\%) &  \\  -->
+
 <!--   12 & Unknown & 1 & 0 &  \\  -->
+
 <!--   13 & \_\_\_surgery\_type\_\_\_ &  &  & 0.4 \\  -->
+
 <!--   14 & Reverse TSA & 447 (39\%) & 237 (41\%) &  \\  -->
+
 <!--   15 & TSA & 698 (61\%) & 337 (59\%) &  \\  -->
+
 <!--   16 & \_\_\_visit\_max\_\_\_ &  &  & 0.8 \\  -->
+
 <!--   17 & Median (IQR) & 9 (6, 14) & 10 (7, 13) &  \\  -->
+
 <!--   18 & (Range) & (4, 75) & (4, 53) &  \\  -->
+
 <!--   19 & \_\_\_adi\_value\_\_\_ &  &  & 0.3 \\  -->
+
 <!--   20 & Median (IQR) & 97 (86, 107) & 98 (89, 108) &  \\  -->
+
 <!--   21 & (Range) & (-20, 136) & (-8, 135) &  \\  -->
+
 <!--   22 & \_\_\_bmi\_\_\_ &  &  & 0.6 \\  -->
+
 <!--   23 & Median (IQR) & 30 (26, 35) & 30 (26, 35) &  \\  -->
+
 <!--   24 & (Range) & (18, 288) & (3, 65) &  \\  -->
+
 <!--    \hline -->
+
 <!-- \end{tabular} -->
+
 <!-- \end{table} -->
+
 <!-- ``` -->
 
 <!-- ```{r} -->
+
 <!-- #| label: sessionInfo -->
+
 <!-- sessionInfo() -->
+
 <!-- ``` -->

@@ -16,25 +16,32 @@ here::set_here()
 ## setup for plm ------------------------------
 
 anchor <- c(14, 30, 60, 90)
-bsk_knots <- c(seq(10, 100, by = 10), seq(120, 300, by = 20))
+bsk_knots <- c(20, 50, 100, 150, 200, 250)
+kappa1 <- seq(4, 100, by = 2)
 
-kappa2 <- seq(110, 200, by = 10)
+mlmf <- "outcome_score ~ surgery_type + surgery_type:baseline0 + surgery_type:t0 +
+                      patient_gender + patient_gender:baseline0 + patient_gender:t0 +
+                      adi_value + adi_value:baseline0 + adi_value:t0 +
+                      primary_payer + primary_payer:baseline0 + primary_payer:t0 +
+                      bmi + bmi:baseline0 + bmi:t0 +
+                      patient_age + patient_age:baseline0 + patient_age:t0 +
+                      baseline0 + t0"
 
-mlmf <- "log_outcome ~ surgery_type + patient_gender + adi_value +
-                      adi_value:log_baseline + primary_payer + 
-                      bmi + patient_age +
-                      patient_age:log_baseline + log_baseline + t0"
-gf <- "log_outcome ~ cs(time, df = 3)"
+gf <- "outcome_score ~ cs(time, df = 3)"
 gs <- "~ cs(time, df = 1)"
 
-lmf <- "log_outcome ~ as.factor(time) + surgery_type + patient_gender +
-                      adi_value + adi_value:log_baseline + primary_payer +
-                      bmi + patient_age +
-                      patient_age:log_baseline + log_baseline + t0"
+lmf <- "outcome_score ~ as.factor(time) + 
+                      surgery_type + surgery_type:baseline0 + surgery_type:t0 +
+                      patient_gender + patient_gender:baseline0 + patient_gender:t0 +
+                      adi_value + adi_value:baseline0 + adi_value:t0 +
+                      primary_payer + primary_payer:baseline0 + primary_payer:t0 +
+                      bmi + bmi:baseline0 + bmi:t0 +
+                      patient_age + patient_age:baseline0 + patient_age:t0 +
+                      baseline0 + t0"
 
 ## euclidean kappa ---------------------------------
 ## change the slm and kappa number
-e_kcv_kappa2 <- map(kappa2, 
+e_kcv_kappa1 <- map(kappa1, 
                     ~people_like_us(train_data = tsa_train,
                                     test_data = tsa_test,
                                     anchor_time = anchor,
@@ -46,7 +53,7 @@ e_kcv_kappa2 <- map(kappa2,
                                     tmin = 0,
                                     tmax = 100,
                                     id_var = "id",
-                                    outcome_var = "log_outcome",
+                                    outcome_var = "outcome_score",
                                     time = "time",
                                     weight = FALSE,
                                     match_plot = FALSE,
@@ -68,16 +75,16 @@ meanout <- function(dataset){
   return(result1)}
 
 
-result_kappa2 <- map(e_kcv_kappa2,
-                     ~map(.x, "centiles_observed") %>%
+result_kappa1 <- map(e_kcv_kappa1,
+                     ~try(map(.x, "centiles_observed") %>%
                        map_dfr(~try(meanout(.))) %>%
                        dplyr::select(coverage50, coverage80, 
                                      coverage90, bias, mse) %>%
-                       colMeans())
+                       colMeans()))
 
-## saving the results --------------------------------
+## saresult_kappa1## saving the results --------------------------------
 
-save(e_kcv_kappa2, file = paste0("figure/tsa_16_kappa2_cross_validation_", Sys.time(), ".Rdata"))
+save(e_kcv_kappa1, file = paste0("figure/new2_tsa_16_kappa1_cross_validation_", Sys.time(), ".Rdata"))
 
-save(result_kappa2, file = paste0("figure/tsa_16_table_kappa2_cross_validation_", Sys.time(), ".Rdata"))
+save(result_kappa1, file = paste0("figure/new2_tsa_16_table_kappa1_cross_validation_", Sys.time(), ".Rdata"))
 

@@ -31,7 +31,6 @@ here::set_here()
 #      Sys.Date(), ".filetype")
 ```
 
-
 ```{css, echo=FALSE}
 .scroll-100 {
   max-height: 300px;
@@ -43,22 +42,16 @@ here::set_here()
 
 ## Calibration Plots
 
-One possible mistake I made here,
-before log transformation, 
-I added 0.001 into the zeros to make the log transformation possible.
+One possible mistake I made here, before log transformation, I added 0.001 into the zeros to make the log transformation possible.
 
-However the values is too small that the first 
-decile observations are impossible for people-like-me to capture.
-This results the all predictions with small values 
-dragged towards large negative values.
+However the values is too small that the first decile observations are impossible for people-like-me to capture. This results the all predictions with small values dragged towards large negative values.
 
 Probably need to rerun the model???
 
 ```{r}
 #| warning: false
-load("figure/tsa_18_kappa50_relationship_2024-01-31.Rdata")
+load("figure/new_tsa_18_kappa20_relationship_2024-04-10.Rdata")
 ```
-
 
 ```{r}
 calib_plot <- function(data) {
@@ -140,62 +133,60 @@ calib_plot <- function(data) {
 
 ```
 
-
 ```{r}
 #| label: calibration_plot
 #| warning: false
-mk50_slm_plot <- calib_plot(data = m_k50_slm)$plot +
+mk20_slm_plot <- calib_plot(data = m_k20_slm)$plot +
   scale_x_continuous(name = "Prediction", 
-                     limits = c(1, 5),
-                     breaks = seq(1, 5, 0.5)) +
+                     limits = c(0, 100),
+                     breaks = seq(0, 100, 10)) +
   scale_y_continuous(name = "Observation", 
-                     limits = c(1, 5),
-                     breaks = seq(1, 5, 0.5)) +
+                     limits = c(0, 100),
+                     breaks = seq(0, 100, 10)) +
   theme_bw() +
   theme(axis.text = element_text(size = 5),
         axis.ticks.length = unit(.05, "cm"), 
         axis.title = element_text(size = 6)) 
 
 
-mk50_mlm_plot <- calib_plot(data = m_k50_mlm)$plot +
+mk20_mlm_plot <- calib_plot(data = m_k20_mlm)$plot +
   scale_x_continuous(name = "Prediction", 
-                     limits = c(1, 5),
-                     breaks = seq(1, 5, 0.5)) +
+                     limits = c(0, 100),
+                     breaks = seq(0, 100, 10)) +
   scale_y_continuous(name = "Observation", 
-                     limits = c(1, 5),
-                     breaks = seq(1, 5, 0.5)) +
+                     limits = c(0, 100),
+                     breaks = seq(0, 100, 10)) +
   theme_bw() +
   theme(axis.text = element_text(size = 5),
         axis.ticks.length = unit(.05, "cm"), 
         axis.title = element_text(size = 6)) 
 
 
-ek50_slm_plot <- calib_plot(data = e_k50_slm)$plot +
+ek20_slm_plot <- calib_plot(data = e_k20_slm)$plot +
   scale_x_continuous(name = "Prediction", 
-                     limits = c(1, 5),
-                     breaks = seq(1, 5, 0.5)) +
+                     limits = c(0, 100),
+                     breaks = seq(0, 100, 10)) +
   scale_y_continuous(name = "Observation", 
-                     limits = c(1, 5),
-                     breaks = seq(1, 5, 0.5)) +
+                     limits = c(0, 100),
+                     breaks = seq(0, 100, 10)) +
   theme_bw() +
   theme(axis.text = element_text(size = 5),
         axis.ticks.length = unit(.05, "cm"), 
         axis.title = element_text(size = 6)) 
 
-ek50_mlm_plot <- calib_plot(data = e_k50_mlm)$plot +
+ek20_mlm_plot <- calib_plot(data = e_k20_mlm)$plot +
   scale_x_continuous(name = "Prediction", 
-                     limits = c(1, 5),
-                     breaks = seq(1, 5, 0.5)) +
+                     limits = c(0, 100),
+                     breaks = seq(0, 100, 10)) +
   scale_y_continuous(name = "Observation", 
-                     limits = c(1, 5),
-                     breaks = seq(1, 5, 0.5)) +
+                     limits = c(0, 100),
+                     breaks = seq(0, 100, 10)) +
   theme_bw() +
   theme(axis.text = element_text(size = 5),
         axis.ticks.length = unit(.05, "cm"), 
         axis.title = element_text(size = 6)) 
 
 ```
-
 
 ```{r}
 #| fig-cap: "Calibration plot"
@@ -210,101 +201,104 @@ ek50_mlm_plot <- calib_plot(data = e_k50_mlm)$plot +
 #| layout-nrow: 2
 
 
-ek50_slm_plot +
+ek20_slm_plot +
   ggtitle(expression(paste("Euclidean Distance ",
                            {kappa}, "= 50"))) +
   theme(plot.title = element_text(size = 6))
 
-ek50_mlm_plot +
+ek20_mlm_plot +
   ggtitle(expression(paste("Euclidean Distance ",
                            {kappa}, "= 50"))) +
   theme(plot.title = element_text(size = 6))
 
-mk50_slm_plot +
+mk20_slm_plot +
   ggtitle(expression(paste("Mahalanobis Distance ",
                            {kappa}, "= 50"))) +
   theme(plot.title = element_text(size = 6))
 
-mk50_mlm_plot +
+mk20_mlm_plot +
   ggtitle(expression(paste("Euclidean Distance ",
                            {kappa}, "= 50"))) +
   theme(plot.title = element_text(size = 6))
 ```
 
+-   pred: the deciles for the predictions
+-   obs: the deciles for the observations
+-   mean: the mean values for the observations in each decile
+-   sd: the standard deviation for the observations in each decile
 
-- pred: the deciles for the predictions
-- obs: the deciles for the observations
-- mean: the mean values for the observations in each decile
-- sd: the standard deviation for the observations in each decile
+<!-- # ```{r, class.output="scroll-100"} -->
 
-```{r, class.output="scroll-100"}
-calib_plot(data = e_k50_slm)$summary
-calib_plot(data = e_k50_mlm)$summary
-calib_plot(data = m_k50_slm)$summary
-calib_plot(data = m_k50_mlm)$summary
+<!-- # calib_plot(data = e_k20_slm)$summary -->
 
-```
+<!-- # calib_plot(data = e_k20_mlm)$summary -->
 
+<!-- # calib_plot(data = m_k20_slm)$summary -->
 
+<!-- # calib_plot(data = m_k20_mlm)$summary -->
 
-## Interval range
+<!-- #  -->
 
-```{r}
+<!-- # ``` -->
 
-ci_ek50_slm <- map_dfr(e_k50_slm, "centiles_predicted") %>%
-  dplyr::select(contains("cfint")) %>% 
-  colMeans()
+<!-- ## Interval range -->
 
-ci_ek50_mlm <- map_dfr(e_k50_mlm, "centiles_predicted") %>%
-  dplyr::select(contains("cfint")) %>% 
-  colMeans()
+<!-- ```{r} -->
 
-ci_mk50_slm <- map_dfr(m_k50_slm, "centiles_predicted") %>%
-  dplyr::select(contains("cfint")) %>% 
-  colMeans()
+<!-- ci_ek50_slm <- map_dfr(e_k20_slm, "centiles_predicted") %>% -->
 
-ci_mk50_mlm <- map_dfr(m_k50_mlm, "centiles_predicted") %>%
-  dplyr::select(contains("cfint")) %>% 
-  colMeans()
-  
-```
+<!--   dplyr::select(contains("cfint")) %>%  -->
 
-### Predictive interval range for Ek50 SLM
+<!--   colMeans() -->
 
-```{r class.output="scroll-100"}
-ci_ek50_slm
-```
+<!-- ci_ek50_mlm <- map_dfr(e_k20_mlm, "centiles_predicted") %>% -->
 
-### Predictive interval range for Ek50 MLM
+<!--   dplyr::select(contains("cfint")) %>%  -->
 
+<!--   colMeans() -->
 
-```{r class.output="scroll-100"}
-ci_ek50_mlm
-```
+<!-- ci_mk50_slm <- map_dfr(m_k20_slm, "centiles_predicted") %>% -->
 
+<!--   dplyr::select(contains("cfint")) %>%  -->
 
+<!--   colMeans() -->
 
-### Predictive interval range for Mk50 SLM
+<!-- ci_mk50_mlm <- map_dfr(m_k20_mlm, "centiles_predicted") %>% -->
 
-```{r class.output="scroll-100"}
-ci_mk50_slm
-```
+<!--   dplyr::select(contains("cfint")) %>%  -->
 
-### Predictive interval range for Mk50 MLM
+<!--   colMeans() -->
 
+<!-- ``` -->
 
-```{r class.output="scroll-100"}
-ci_mk50_mlm
-```
+<!-- ### Predictive interval range for Ek20 SLM -->
 
+<!-- ```{r class.output="scroll-100"} -->
 
+<!-- ci_ek20_slm -->
 
+<!-- ``` -->
 
+<!-- ### Predictive interval range for Ek20 MLM -->
 
+<!-- ```{r class.output="scroll-100"} -->
 
+<!-- ci_ek20_mlm -->
 
+<!-- ``` -->
 
+<!-- ### Predictive interval range for Mk20 SLM -->
 
+<!-- ```{r class.output="scroll-100"} -->
 
+<!-- ci_mk20_slm -->
 
+<!-- ``` -->
 
+<!-- ### Predictive interval range for Mk20 MLM -->
+
+<!-- ```{r class.output="scroll-100"} -->
+
+<!-- ci_mk20_mlm -->
+
+<!-- ``` -->

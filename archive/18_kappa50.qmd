@@ -1,0 +1,290 @@
+---
+title: "Ek25 and Mk25 (Pulication)"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      warnings = FALSE,
+                      message = FALSE,
+                      comment = "#>",
+                      #results = "hide",
+                      digits = 4,
+                      error = FALSE)
+
+## clean the R environment
+# graphics.off()
+# rm(list = ls())
+# freshr::freshr()
+
+## load packages
+library(here, quietly = TRUE)
+library(tidyverse, quietly = TRUE)
+library(devtools, quietly = TRUE)
+
+load_all()
+
+## check the directory for the file
+# here::dr_here()
+here::set_here()
+
+## the figure or results should be saved 
+# paste0("foldername/Sfilename_workingresult_", 
+#      Sys.Date(), ".filetype")
+```
+
+```{css "css-setup", echo=FALSE}
+.scroll-100 {
+  max-height: 300px;
+  max-width: 1000px;
+  overflow-y: auto;
+  background-color: inherit;
+}
+```
+
+## Euclidean distance and Mahalanobis distance
+
+Need to change this part for the $\kappa$ into 5 to 10.
+
+```{r "kappa167"}
+#| eval: false
+#| include: true
+#| error: true
+#| warning: true
+#| hide: true
+
+anchor <- c(14, 30, 60, 90)
+bsk_knots <- c(25, 50, 75, 100, 150)
+
+mlmf <- "outcome_score ~ adi_value + adi_value:outcome0 + adi_value:t0 +
+                      bmi + bmi:outcome0 + bmi:t0 +
+                      patient_age + patient_age:outcome0 + patient_age:t0 +
+                      patient_gender + patient_gender:outcome0 + patient_gender:t0 +
+                      primary_payer + primary_payer:outcome0 + primary_payer:t0 +
+                      surgery_type + surgery_type:outcome0 + surgery_type:t0 +
+                      outcome0 + t0"
+
+gf <- "outcome_score ~ cs(time, df = 3)"
+gs <- "~ cs(time, df = 1)"
+
+lmf <- "outcome_score ~ as.factor(time) + 
+                      adi_value + adi_value:outcome0 + adi_value:t0 + 
+                      bmi + bmi:outcome0 + bmi:t0 +
+                      patient_age + patient_age:outcome0 + patient_age:t0 +
+                      patient_gender + patient_gender:outcome0 + patient_gender:t0 +
+                      primary_payer + primary_payer:outcome0 + primary_payer:t0 +
+                      surgery_type + surgery_type:outcome0 + surgery_type:t0 +
+                      outcome0 + t0"
+
+e_k25_slm <- people_like_us(train_data = tsa_train1,
+                        test_data = tsa_test1,
+                        anchor_time = anchor,
+                        brokenstick_knots = bsk_knots,
+                        linear_model = "lm",
+                        linear_formula = lmf,
+                        gamlss_formula = gf,
+                        gamlss_sigma = gs,
+                        tmin = 0,
+                        tmax = 100,
+                        id_var = "id",
+                        outcome_var = "outcome_score",
+                        time = "time",
+                        weight = FALSE,
+                        match_plot = FALSE,
+                        predict_plot = FALSE,
+                        match_methods = "euclidean",
+                        match_number = 25)
+
+e_k25_mlm <- people_like_us(train_data = tsa_train1,
+                        test_data = tsa_test1,
+                        anchor_time = anchor,
+                        brokenstick_knots = bsk_knots,
+                        linear_model = "mlm",
+                        linear_formula = mlmf,
+                        gamlss_formula = gf,
+                        gamlss_sigma = gs,
+                        tmin = 0,
+                        tmax = 100,
+                        id_var = "id",
+                        outcome_var = "outcome_score",
+                        time = "time",
+                        weight = FALSE,
+                        match_plot = FALSE,
+                        predict_plot = FALSE,
+                        match_methods = "euclidean",
+                        match_number = 25)
+# 
+# m_k25_slm <- people_like_us(train_data = tsa_train,
+#                         test_data = tsa_test,
+#                         anchor_time = anchor,
+#                         brokenstick_knots = bsk_knots,
+#                         linear_model = "lm",
+#                         linear_formula = lmf,
+#                         gamlss_formula = gf,
+#                         gamlss_sigma = gs,
+#                         tmin = 0,
+#                         tmax = 100,
+#                         id_var = "id",
+#                         outcome_var = "outcome_score",
+#                         time = "time",
+#                         weight = FALSE,
+#                         match_plot = FALSE,
+#                         predict_plot = FALSE,
+#                         match_methods = "mahalanobis",
+#                         match_number = 25)
+# 
+# m_k25_mlm <- people_like_us(train_data = tsa_train,
+#                         test_data = tsa_test,
+#                         anchor_time = anchor,
+#                         brokenstick_knots = bsk_knots,
+#                         linear_model = "mlm",
+#                         linear_formula = mlmf,
+#                         gamlss_formula = gf,
+#                         gamlss_sigma = gs,
+#                         tmin = 0,
+#                         tmax = 100,
+#                         id_var = "id",
+#                         outcome_var = "outcome_score",
+#                         time = "time",
+#                         weight = FALSE,
+#                         match_plot = FALSE,
+#                         predict_plot = FALSE,
+#                         match_methods = "mahalanobis",
+#                         match_number = 25)
+
+
+save(e_k25_mlm, e_k25_slm, 
+     file = paste0("results/tsa_23_kappa25_relationship_", Sys.Date(), ".Rdata"))
+```
+
+For Mahalanobis distance, we have some target with no matches at all. This is not include due to we would not include the results of Mahalanobis distance into this paper.
+
+## Summary for the Results
+
+```{r "summarization_k25"}
+
+load("results/tsa_23_kappa25_relationship_2024-04-12.Rdata")
+
+meanout <- function(dataset){
+  # browser()
+  result0 <- dataset %>%
+    as.data.frame() %>%
+    mutate(mse = bias^2) 
+  result1 <- result0 %>%
+    colMeans() %>%
+    unlist()
+  return(result1)}
+
+```
+
+```{r "mean_all"}
+#| include: false
+#| error: true
+#| warning: false
+#| hide: true
+
+mean_result_ek25s <- map(e_k25_slm, "centiles_observed") %>% 
+  map_dfr(~try(meanout(.))) %>%
+  dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+  colMeans()
+# all_result_ek25s <- map(e_k25_slm, "centiles_observed") %>% 
+#   map_dfr(~try(all_out(.))) %>%
+#   dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+#   colMeans()
+mean_result_ek25m <- map(e_k25_mlm, "centiles_observed") %>%
+  map_dfr(~try(meanout(.))) %>%
+  dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+  colMeans()
+# all_result_ek25m <- map(e_k25_mlm, "centiles_observed") %>%
+#   map_dfr(~try(all_out(.))) %>%
+#   dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+#   colMeans()
+# mean_result_mk25s <- map(m_k25_slm, "centiles_observed") %>%
+#   map_dfr(~try(meanout(.))) %>%
+#   dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+#   colMeans()
+# all_result_mk25s <- map(m_k25_slm, "centiles_observed") %>%
+#   map_dfr(~try(all_out(.))) %>%
+#   dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+#   colMeans()
+# mean_result_mk25m <- map(m_k25_mlm, "centiles_observed") %>%
+#   map_dfr(~try(meanout(.))) %>%
+#   dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+#   colMeans()
+# all_result_mk25m <- map(m_k25_mlm, "centiles_observed") %>%
+#   map_dfr(~try(all_out(.))) %>%
+#   dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+#   colMeans()
+# 
+# mean_result_ma90m <- map(m_a90_mlm, "centiles_observed") %>%
+#   map(~try(meanout(.)) %>% unlist()) 
+# mean_result_ma90m[grep("Error", mean_result_ma90m)] <- NULL
+# mean_result_ma90m <- mean_result_ma90m %>%
+#   map_dfr(~t(.) %>% as.data.frame()) %>%
+#   dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+#   colMeans()
+# mean_result_ma90s <- map(m_a90_slm, "centiles_observed") %>%
+#   map(~try(meanout(.)) %>% unlist()) 
+# mean_result_ma90s[grep("Error", mean_result_ma90s)] <- NULL
+# mean_result_ma90s <- mean_result_ma90s %>%
+#   map_dfr(~t(.) %>% as.data.frame()) %>%
+#   dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+#   colMeans()
+# mean_result_ma95m <- map(m_a95_mlm, "centiles_observed") %>%
+#   map(~try(meanout(.)) %>% unlist()) 
+# mean_result_ma95m[grep("Error", mean_result_ma95m)] <- NULL
+# mean_result_ma95m <- mean_result_ma95m %>%
+#   map_dfr(~t(.) %>% as.data.frame()) %>%
+#   dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+#   colMeans()
+# mean_result_ma95s <- map(m_a95_slm, "centiles_observed") %>%
+#   map(~try(meanout(.)) %>% unlist()) 
+# mean_result_ma95s[grep("Error", mean_result_ma95s)] <- NULL
+# mean_result_ma95s <- mean_result_ma95s %>%
+#   map_dfr(~t(.) %>% as.data.frame()) %>%
+#   dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+#   colMeans()
+# all_result_ma90m <- map(m_a90_mlm, "centiles_observed") %>%
+#   map(~try(all_out(.))) 
+# all_result_ma90m[grep("Error", all_result_ma90m)] <- NULL
+# all_result_ma90m <- all_result_ma90m %>%
+#   map_dfr(~as.data.frame(.)) %>%
+#   dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+#   colMeans()
+# all_result_ma90s <- map(m_a90_slm, "centiles_observed") %>%
+#   map(~try(all_out(.))) 
+# all_result_ma90s[grep("Error", all_result_ma90s)] <- NULL
+# all_result_ma90s <- all_result_ma90s %>%
+#   map_dfr(~as.data.frame(.)) %>%
+#   dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+#   colMeans()
+# all_result_ma95m <- map(m_a95_mlm, "centiles_observed") %>%
+#   map(~try(all_out(.))) 
+# all_result_ma95m[grep("Error", all_result_ma95m)] <- NULL
+# all_result_ma95m <- all_result_ma95m %>%
+#   map_dfr(~as.data.frame(.)) %>%
+#   dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+#   colMeans()
+# all_result_ma95s <- map(m_a95_slm, "centiles_observed") %>%
+#   map(~try(all_out(.))) 
+# all_result_ma95s[grep("Error", all_result_ma95s)] <- NULL
+# all_result_ma95s <- all_result_ma95s %>%
+#   map_dfr(as.data.frame) %>%
+#   dplyr::select(coverage50, coverage80, coverage90, bias, mse) %>%
+#   colMeans()
+```
+
+```{r "final_table",  class.output="scroll-100"}
+options(scipen=1, digits=4)
+
+result19_nw <- 
+  rbind(meanEk25_SLM = mean_result_ek25s, 
+        meanEk25_MLM = mean_result_ek25m) %>%
+  as.data.frame() %>% 
+  mutate(rmse = sqrt(mse)) %>%
+  rownames_to_column("methods") %>%
+  separate("methods", into = c("Methods", "LM"))
+
+result19_nw
+```
+
+
