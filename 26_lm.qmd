@@ -391,3 +391,61 @@ row.names(result26) <- c("without_time&outcome",
 
 result26
 ```
+
+
+
+## GAMLSS for all {#sec-gamlss-for-all}
+
+The final model is only fitted with `mgcv` or `gamlss`; 
+We cannot use a linear mixed model for the testing dataset prediction.
+The prediction for the linear mixed model has to be conditional on the random effects.
+
+```{r}
+gamlss_fit <- gamlss(outcome_score ~ cs(time, df = 3),
+                     # + adi_value + bmi + patient_age + patient_gender + primary_payer + surgery_type + outcome0 + t0,
+                     sigma.formula = ~cs(time, df = 1),
+                     data = tsa_train1)
+
+summary(gamlss_fit)
+```
+
+```{r}
+test_base1 <- tsa_test1 %>%
+  group_by(id) %>%
+  slice(1L) %>%
+  ungroup()
+
+gamlss_pred <-  tsa_test1 %>%
+  group_by(id) %>%
+  group_map(~gamlss::centiles.pred(gamlss_fit,
+                             type = c("centiles"),
+                             xname = "time",
+                             xvalues = .x$time,
+                             cen = c(5, 10, 25, 50, 75, 90, 95))) %>% 
+  bind_rows() %>%
+    cbind(id = tsa_test1[["id"]],
+          time = tsa_test1[["time"]],
+          actual = tsa_test1[["outcome_score"]]) %>%
+    as.data.frame() %>%
+    mutate(coverage50 = ifelse(actual >= `25` & actual <= `75`, 1, 0),
+           coverage80 = ifelse(actual >= `10` & actual <= `90`, 1, 0),
+           coverage90 = ifelse(actual >= `5` & actual <= `95`, 1, 0),
+           # mse = (actual - `50`)^2,
+           # biassq = bias^2,
+           # var = mse - bias^2,
+           bias = abs(actual - `50`))
+```
+
+```{r class.output="scroll-100"}
+gamlss_tbl <- gamlss_pred %>%
+  group_by(id) %>%
+  dplyr::select(bias, coverage50, coverage80, coverage90) %>%
+  group_map(~colMeans(.x)) %>%
+  bind_rows() %>%
+  mutate(mse = bias^2) %>%
+  as.data.frame() %>%
+  mutate(rmse = sqrt(as.numeric(mse))) %>%
+  colMeans() 
+
+gamlss_tbl
+```

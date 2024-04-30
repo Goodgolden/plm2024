@@ -17,7 +17,7 @@ Depends:
     matrixcalc,
     nlme,
     plotly,
-    R,
+    R (>= 2.10),
     shiny,
     splines,
     tibble,

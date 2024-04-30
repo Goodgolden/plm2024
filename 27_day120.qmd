@@ -1,5 +1,5 @@
 ---
-title: "kappa 20"
+title: "120 Days"
 ---
 
 ```{r setup, include=FALSE}
@@ -41,19 +41,31 @@ here::set_here()
 }
 ```
 
-## Euclidean distance {#sec_E_kappa20}
+## Goal for this Chapter
 
-Need to change this part for the $\kappa$ into 5 to 10.
+-   [x] cross validation + range for the cr interval @sec-mlm_cv
 
-We can also try $\kappa$ 25 or larger, doubting about whether it will improve anything at all.
+-   [x] time to 120 day (not exactly worth it)
 
-```{r "kappa167"}
-#| eval: false
-#| include: true
-#| error: true
-#| warning: true
-#| hide: true
+-   [x] take the all the data (the whole model) + dyn @sec-gamlss-for-all
 
+-   [x] Shiny app Euclidean. (now to Jeremy)
+
+## 120 Days {#sec-120days}
+
+Here we are fitting the model first than making the table1.
+
+```{r}
+tsa_train2 <- tsa_train1 %>%
+  filter(time <= 120) %>%
+  group_by(id) 
+
+tsa_test2 <- tsa_test1 %>%
+  filter(time <= 120) %>%
+  group_by(id)
+```
+
+```{r}
 bsk_knots <- c(25, 50, 75, 100, 125, 150)
 anchor <- c(14, 30, 60, 90)
 
@@ -116,12 +128,11 @@ e_k20_mlm <- people_like_us(train_data = tsa_train1,
                         match_number = 20)
 
 save(e_k20_mlm, e_k20_slm, 
-     file = paste0("results/tsa_23_kappa20_relationship_", Sys.Date(), ".Rdata"))
-
+     file = paste0("results/tsa_27_day120_kappa20_", Sys.Date(), ".Rdata"))
 ```
 
 ```{r}
-load("results/tsa_23_kappa20_relationship_2024-04-17.Rdata")
+load("results/tsa_27_day120_kappa20_2024-04-29.Rdata")
 
 meanout <- function(dataset){
   # browser()
@@ -154,7 +165,7 @@ mean_result_ek20m <- map(e_k20_mlm, "centiles_observed") %>%
 ```{r "final_table",  class.output="scroll-100"}
 options(scipen=1, digits=4)
 
-result23 <- 
+result27 <- 
   rbind(meanEk20_SLM = mean_result_ek20s, 
         meanEk20_MLM = mean_result_ek20m) %>%
   as.data.frame() %>% 
@@ -162,5 +173,5 @@ result23 <-
   rownames_to_column("methods") %>%
   separate("methods", into = c("Methods", "LM"))
 
-result23
+result27
 ```

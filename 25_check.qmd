@@ -2,7 +2,6 @@
 title: "Brokenstick and Linear"
 ---
 
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,
                       warnings = FALSE,
@@ -38,22 +37,21 @@ here::set_here()
 
 ## Goal for this Chapter
 
-- [x] to check the brokenstick model impute `bks_plots`
+-   [x] to check the brokenstick model impute `bks_plots`
 
-- [x] to confirm the linear model is the problem `lm_plots`
+-   [x] to confirm the linear model is the problem `lm_plots`
 
-- [x] to merge the brokenstick and linear into one step
+-   [x] to merge the brokenstick and linear into one step
 
-  - [x] using dynamic prediction MC `JMbayes::IndvPred_lme()`
-  
-  - [x] writing a new function `plm2024::IndvPred_lmer()`, and it works!!!
-  
-  - [x] comparing it with the `bks_plots` and `lm_plots`
-  
-  - [x] 
+    -   [x] using dynamic prediction MC `JMbayes::IndvPred_lme()`
 
+    -   [x] writing a new function `plm2024::IndvPred_lmer()`, and it works!!!
 
-## Brokenstick model
+    -   [x] comparing it with the `bks_plots` and `lm_plots`
+
+    -   [x] gamlss model for all model
+
+## Step1 Brokenstick model
 
 ```{r}
 
@@ -81,16 +79,13 @@ lmf <- "outcome_score ~ as.factor(time) +
                       outcome0 + t0"
 ```
 
+### `nlme::lme()` takes too long time
 
-## `nlme::lme()` takes too long time
+Stef is right, the `nlme::lme()` takes way too long time. Also having the convergence problem with more than six internal knots.
 
-Stef is right, the `nlme::lme()` takes way too long time.
-Also having the convergence problem with more than six internal knots.
+Need to rewrite the `IndvPred_lme()` into the `IndvPred_lmer()`. Probably change the name to as `plm2024::dyn_impute`
 
-Need to rewrite the `IndvPred_lme()` into the `IndvPred_lmer()`.
-Probably change the name to as `plm2024::dyn_impute`
-
-```
+```         
 Quitting from lines 99-123 [unnamed-chunk-2] (25_check.qmd)
 Error in `lme.formula()`:
 ! optim problem, convergence error code = 1
@@ -99,6 +94,8 @@ Backtrace:
  1. nlme::lme(...)
  2. nlme::lme.formula(...)
 ```
+
+### Writing my own function for `IndvPred_lmer()`
 
 ```{r}
 
@@ -129,8 +126,6 @@ bks_lmer <- lmer(outcome_score ~ 0 + bs(time,
 toc()
 ```
 
-
-
 ```{r}
 
 data1 <- impute_brokenstick(outcome_var = "outcome_score",
@@ -144,11 +139,9 @@ data1 <- impute_brokenstick(outcome_var = "outcome_score",
 
 ```
 
-
 ```{r class.output="scroll-100"}
 data1 
 ```
-
 
 ```{r}
 #| eval: false
@@ -197,10 +190,9 @@ knitr::include_graphics("figure/tsa_25_individual_trajectories.png")
 
 ```
 
-## Imputation
+## Step2 Imputation
 
 The dynamic prediction will automatically add the intitial values to cause trouble remember to remove all of them.
-
 
 ```{r}
 data1_ci50 <- 
@@ -237,7 +229,6 @@ data2_test <-
 # View(extract_lmeComponents)
 
 ```
-
 
 ```{r}
 #| eval: false
@@ -294,10 +285,7 @@ ggsave("figure/tsa_25_dynamic_predict_trajectories.png",
 knitr::include_graphics("figure/tsa_25_dynamic_predict_trajectories.png")
 ```
 
-
-
-
-## Matching
+## Step3 Matching
 
 ```{r}
 #| eval: false
@@ -328,7 +316,6 @@ subset <- data2 %>%
 
 ```
 
-
 ```{r}
 #| eval: false
 #| fig-wideth: 50
@@ -346,13 +333,11 @@ ggsave("figure/tsa_25_matching_plot.png",
        dpi = 300)
 ```
 
-
 ```{r}
 knitr::include_graphics("figure/tsa_25_matching_plot.png")
 ```
 
-
-## Final prediction
+## Step4 Final prediction
 
 ```{r}
 #| eval: false
@@ -394,8 +379,13 @@ ggsave("figure/tsa_25_final_predictive_plot.png",
        dpi = 300)
 ```
 
-
 ```{r}
 knitr::include_graphics("figure/tsa_25_final_predictive_plot.png")
 ```
+
+
+
+
+
+
 

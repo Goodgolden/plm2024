@@ -331,6 +331,7 @@ IndvPred_lmer <- function (lmerObject,
 }
 
 ## might be useful one day
+## to redo the function at all
 ## mapping from nlme::lme() to lme4::lmer()
 # data0 <- bks_nlme$data
 # formYx0 <- formula(bks_nlme); formYx0

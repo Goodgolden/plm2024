@@ -52,6 +52,7 @@ book:
     - 24_calibration.qmd
     - 25_check.qmd
     - 26_lm.qmd
+    - 27_day120.qmd
     - summary.qmd
     - references.qmd
 

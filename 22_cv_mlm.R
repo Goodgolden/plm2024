@@ -64,11 +64,14 @@ e_kcv_kappa1 <- map(kappa1,
 
 ## summary ------------------------------------------
 
+e_kcv_kappa1
+
 meanout <- function(dataset){
   # browser()
   result0 <- dataset %>%
     as.data.frame() %>%
-    mutate(mse = bias^2) 
+    mutate(mse = bias^2,
+           cr50 = `C75` - `C25`)
   result1 <- result0 %>%
     colMeans() %>%
     unlist()
@@ -78,13 +81,13 @@ meanout <- function(dataset){
 mlm_kappa1 <- map(e_kcv_kappa1,
                      ~try(map(.x, "centiles_observed") %>%
                             map_dfr(~try(meanout(.))) %>%
-                            dplyr::select(coverage50, coverage80, 
-                                          coverage90, bias, mse) %>%
+                            dplyr::select(coverage50, coverage80,
+                                          coverage90, bias, mse, cr50) %>%
                             colMeans()))
 
-## saresult_kappa1## saving the results --------------------------------
+## saving the results --------------------------------
 
 save(e_kcv_kappa1, file = paste0("results/tsa_22_mlm_cv_", Sys.time(), ".Rdata"))
 
-save(mlm_kappa1, file = paste0("results/tsa_22_table_mlm_cv_", Sys.time(), ".Rdata"))
+# save(mlm_kappa1, file = paste0("results/tsa_22_table_mlm_cv_", Sys.time(), ".Rdata"))
 

@@ -110,7 +110,7 @@ hist(tbl1_p2$time_min)
 ```{r}
 #| eval: false
 
-tbl1_p3 <- read.csv("newdata/tsa_clean_baseline_for_outcome_2024-01-22.csv",
+tbl1_p3 <- read.csv("data-raw/tsa_clean_baseline_for_outcome_2024-01-22.csv",
                     row.names = 1) %>% 
   mutate(surgery_dt = as.Date(as.character(as.POSIXct(surgery_dt)), 
                               format = "%Y-%m-%d")) %>%
@@ -336,4 +336,6 @@ usethis::use_data(tsa_train, tsa_test,
                   internal = TRUE,
                   overwrite = TRUE)
 
+write.csv(tsa_train1, "data/tsa_train1.csv")
+write.csv(tsa_test1, "data/tsa_test1.csv")
 ```
