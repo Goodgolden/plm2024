@@ -16,7 +16,7 @@ here::set_here()
 
 anchor <- c(14, 30, 60, 90)
 bsk_knots <- c(20, 50, 100, 150, 200, 250)
-kappa1 <- seq(4, 200, by = 1)
+kappa1 <- seq(4, 100, by = 1)
 
 mlmf <- "outcome_score ~ adi_value + adi_value:outcome0 + adi_value:t0 +
                       bmi + bmi:outcome0 + bmi:t0 +
@@ -44,7 +44,6 @@ e_kcv_kappa1 <- map(kappa1,
                     ~people_like_us(train_data = tsa_train1,
                                     test_data = tsa_test1,
                                     anchor_time = anchor,
-                                    anchor_time = anchor,
                                     brokenstick_knots = bsk_knots,
                                     linear_model = "lm",
                                     linear_formula = lmf,
@@ -64,27 +63,36 @@ e_kcv_kappa1 <- map(kappa1,
 
 ## summary ------------------------------------------
 
+# save(e_kcv_kappa1, file = paste0("results/tsa_22_slm_cv_", Sys.time(), ".Rdata"))
+## summary ------------------------------------------
+
 meanout <- function(dataset){
-  # browser()
+  
   result0 <- dataset %>%
     as.data.frame() %>%
-    mutate(mse = bias^2) 
+    mutate(mse = bias^2,
+           cr50 = `75` - `25`)
   result1 <- result0 %>%
     colMeans() %>%
     unlist()
   return(result1)}
 
 
-result_kappa1 <- map(e_kcv_kappa1,
-                     ~try(map(.x, "centiles_observed") %>%
-                            map_dfr(~try(meanout(.))) %>%
-                            dplyr::select(coverage50, coverage80, 
-                                          coverage90, bias, mse) %>%
-                            colMeans()))
+slm_kappa1 <- map(e_kcv_kappa1,
+                  ~try(map(.x, "centiles_observed") %>%
+                         map_dfr(~try(meanout(.))) %>%
+                         colMeans()))
+
+# result_kappa1 <- map(e_kcv_kappa1,
+#                      ~try(map(.x, "centiles_observed") %>%
+#                             map_dfr(~try(meanout(.))) %>%
+#                             dplyr::select(coverage50, coverage80, 
+#                                           coverage90, bias, mse) %>%
+#                             colMeans()))
 
 ## saresult_kappa1## saving the results --------------------------------
 
 save(e_kcv_kappa1, file = paste0("results/tsa_22_slm_cv_", Sys.time(), ".Rdata"))
 
-save(result_kappa1, file = paste0("results/tsa_22_table_slm_cv_", Sys.time(), ".Rdata"))
+save(slm_kappa1, file = paste0("results/tsa_22_table_slm_cv_", Sys.time(), ".Rdata"))
 

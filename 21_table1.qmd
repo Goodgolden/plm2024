@@ -1,5 +1,6 @@
 ---
 title: "Table1"
+format: docx
 ---
 
 ```{r setup, include=FALSE}
@@ -121,23 +122,12 @@ tbl1_p3 <- read.csv("data-raw/tsa_clean_baseline_for_outcome_2024-01-22.csv",
                 -outcome_n, -timemax) %>% 
   mutate(surgery_dt = as.numeric(surgery_dt))
 
+View(tbl1_p3)
+
 # names(tbl1_p3)
 
 tbl1_p3$surgery_dt <- chron(dates. = tbl1_p3$surgery_dt)
 
-tsa_data0 <- tsa_baseline %>%
-  dplyr::select(-log_outcome, -visit_max, 
-                -visit_n, -t0, -log_baseline,
-                -time0, -group) %>%
-  inner_join(tbl1_p2, by = "sid") %>%
-  left_join(tbl1_p3, by = c("patient_age", 
-                            "patient_gender", 
-                            "bmi", "adi_value", 
-                            "surgery_type")) %>%
-  group_by(sid) %>%
-  slice(1L) %>%
-  ungroup() %>%
-  filter(time_min <= 31)
 
 # [1] 744 for the first time point 31
 # [1] 1010 for the first time point 62
@@ -155,6 +145,21 @@ tsa_data0 <- tsa_baseline %>%
 
 set.seed(5555)
 library(splitstackshape)
+tsa_data0 <- tsa_baseline %>%
+  dplyr::select(-log_outcome, -visit_max, 
+                -visit_n, -t0, -log_baseline,
+                -time0, -group) %>%
+  inner_join(tbl1_p2, by = "sid") %>%
+  left_join(tbl1_p3, by = c("patient_age", 
+                            "patient_gender", 
+                            "bmi", "adi_value", 
+                            "surgery_type")) %>%
+  group_by(sid) %>%
+  slice(1L) %>%
+  ungroup() %>%
+  filter(time_min <= 31)
+
+
 tsa_test0 <- stratified(tsa_data0,
                          group = "primary_payer", 
                          0.25) %>% 
@@ -176,22 +181,33 @@ id_train <- tsa_train0$id %>% unique()
 
 ```{r}
 #| label: "tsa_all0"
-
+#| eval: false
 # identical(names(tsa_test0), names(tsa_train0))
 # View(tsa_train)
 # View(tsa_test)
 
-tsa_all0 <- rbind(tsa_train0, tsa_test0) %>%
-  as.data.frame()
+tsa_all1 <- tsa_long1 |>
+  filter(time <= 120) %>%
+  group_by(id) %>%
+  summarize(time_max = max(time),
+            time_min = min(time),
+            visit_n = n()) %>%
+  filter(visit_n >= 8)
 
-table(tsa_all0$group, tsa_all0$patient_gender)
-table(tsa_all0$group, tsa_all0$primary_payer)
+
+tsa_all0 <- rbind(tsa_train0, tsa_test0) %>%
+  as.data.frame() %>%
+  dplyr::select(-time_max, -time_min, -visit_n) %>%
+  inner_join(tsa_all1, by = "id")
+
+
 ```
 
 ## Table1 with date
 
 ```{r, class.output="scroll-100"}
 #| label: "tbl1"
+
 tbl1 <- tsa_all0 %>%
   dplyr::select(patient_age, patient_gender, group, 
                 primary_payer, surgery_type, 
@@ -263,10 +279,12 @@ tbl1_date
 
 ```{r}
 #| label: "tsa_longitudinal"
+
+# View(tsa_test)
 tsa_long1 <- rbind(tsa_test,
                  tsa_train) %>%
   as.data.frame() %>% 
-  filter(time <= 180,
+  filter(time <= 120,
          outcome_score <= 100,
          sid %in% tsa_all0$sid) %>% 
   full_join(tsa_all0) %>% 
@@ -314,6 +332,7 @@ ggsave("figure/tsa_21_individual_trajectories.png",
 ```
 
 ```{r}
+#| eval: false
 #| label: "plot_trajectories"
 #| fig-cap: "Individual Trajectories"
 knitr::include_graphics("figure/tsa_21_individual_trajectories.png")

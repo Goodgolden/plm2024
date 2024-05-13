@@ -1,5 +1,6 @@
 ---
 title: "Cross Validation"
+format: docx
 ---
 
 ```{r setup, include=FALSE}
@@ -55,19 +56,20 @@ The codes are in the file `16_mlm_kappa_cv.R` and `16_slm_kappa_cv.R`file
 
 The setup for this PLM:
 
--   anchor \<- c(14, 30, 60, 90) including 14 as the anchor
--   bsk_knots \<- c(seq(10, 100, by = 10), seq(120, 300, by = 20)) extreme
+-   anchor \<- c(32, 45, 60, 90)including 14 as the anchor
+-   bsk_knots \<- c(25, 50, 75, 100, 125, 150)
 -   kappa1 \<- seq(4, 100, by = 2), it may seems not big enough to see the pattern
 
 ```{r}
 #| label: "kappa_load_15"
 
-load("results/tsa_22_table_mlm_cv_2024-04-12 09:45:59.Rdata")
+load("results/tsa_22_table_mlm_cv_2024-05-08.Rdata")
 
-kappa200_mlm <- rbind(map_dfr(result_kappa1, ~unlist(., recursive = FALSE))) %>%
+kappa200_mlm <- rbind(map_dfr(mlm_kappa1, ~unlist(., recursive = FALSE))) %>%
   as.data.frame() %>%
-  mutate(kappa = seq(4, 200, by = 1)) %>%
+  mutate(kappa = seq(4, 100, by = 1)) %>%
   dplyr::select(kappa, everything())
+
 # map_dfr(result_kappa5, ~unlist(., recursive = FALSE))
 ```
 
@@ -79,14 +81,15 @@ not sure whether the result is due to the brokenstick model or not
 #| label: "kappa200_mlm plot_15"
 #| fig-cap: Cross validation for kappa
 #| fig-subcap-location: top
-#| fig-width: 4
-#| fig-height: 2
+#| fig-width: 6
+#| fig-height: 3
 #| fig-subcap:
-#| - "CV_kappa200MLM_BIAS"
-#| - "CV_kappa200MLM_MSE"
-#| - "CV_kappa200MLM_CR50"
-#| - "CV_kappa200MLM_CR80"
-#| - "CV_kappa200MLM_CR90"
+#| - "CV_kappa200SLM_BIAS"
+#| - "CV_kappa200SLM_MSE"
+#| - "CV_kappa200SLM_width50"
+#| - "CV_kappa200SLM_CR50"
+#| - "CV_kappa200SLM_CR80"
+#| - "CV_kappa200SLM_CR90"
 #| warning: false
 #| layout-ncol: 2
 
@@ -100,6 +103,9 @@ kappa200_mlm_mse <- kappa200_mlm %>%
   geom_line(aes(x = kappa, y = mse), color = "indianred") 
   # scale_y_continuous("Bias", 
   #   sec.axis = sec_axis(~ ., name = "MSE"))
+kappa200_mlm_ci50 <- kappa200_mlm %>%
+  ggplot() +
+  geom_line(aes(x = kappa, y = cr50), color = "purple") 
 kappa200_mlm_cr50 <- kappa200_mlm %>%
   ggplot() +
   geom_line(aes(x = kappa, y = coverage50), color = "blue1") 
@@ -112,10 +118,79 @@ kappa200_mlm_cr90<- kappa200_mlm %>%
   # geom_line(aes(x = kappa, y = bias), color = "blue") +
   geom_line(aes(x = kappa, y = coverage90), color = "blue4")
 
-kappa200_mlm_bias + theme_bw() + theme(legend.position = "none")
-kappa200_mlm_mse + theme_bw() + theme(legend.position = "none")
-kappa200_mlm_cr50 + theme_bw() + theme(legend.position = "none")
-kappa200_mlm_cr80 + theme_bw() + theme(legend.position = "none")
-kappa200_mlm_cr90 + theme_bw() + theme(legend.position = "none")
+kappa200_mlm_bias + theme_bw() + theme(legend.position = "none") + ylab("BIAS") + xlab("Number of Matches")
+kappa200_mlm_mse + theme_bw() + theme(legend.position = "none") + ylab("MSE") + xlab("Number of Matches")
+kappa200_mlm_ci50 + theme_bw() + theme(legend.position = "none") + ylab("Width of 50% PI") + xlab("Number of Matches")
+kappa200_mlm_cr50 + theme_bw() + theme(legend.position = "none") + ylab("CR of 50% PI") + xlab("Number of Matches")
+kappa200_mlm_cr80 + theme_bw() + theme(legend.position = "none") + ylab("CR of 80% PI") + xlab("Number of Matches")
+kappa200_mlm_cr90 + theme_bw() + theme(legend.position = "none") + ylab("CR of 90% PI") + xlab("Number of Matches")
+
+```
+
+### The SLM {#sec-slm_cv}
+
+```{r}
+#| label: "kappa_load__15_slm"
+
+load("results/tsa_22_table_slm_cv_2024-05-08.Rdata")
+
+kappa200_slm <- rbind(map_dfr(slm_kappa1, ~unlist(., recursive = FALSE))) %>%
+  as.data.frame() %>%
+  mutate(kappa = seq(4, 100, by = 1)) %>%
+  dplyr::select(kappa, everything())
+# map_dfr(result_kappa5, ~unlist(., recursive = FALSE))
+```
+
+The trade-off is not very obvious, the MSE is still around 50, but BIAS is hard to see. The coverage is not very good, but it is not very bad either.
+
+not sure whether the result is due to the brokenstick model or not
+
+```{r}
+#| label: "kappa200_slm"
+#| fig-cap: Cross validation for kappa
+#| fig-subcap-location: top
+#| fig-width: 6
+#| fig-height: 3
+#| fig-subcap:
+#| - "CV_kappa200slm_BIAS"
+#| - "CV_kappa200slm_MSE"
+#| - "CV_kappa200slm_width50"
+#| - "CV_kappa200slm_CR50"
+#| - "CV_kappa200slm_CR80"
+#| - "CV_kappa200slm_CR90"
+#| warning: false
+#| layout-ncol: 2
+
+
+kappa200_slm_bias <- kappa200_slm %>%
+  ggplot() +
+  geom_line(aes(x = kappa, y = bias), color = "darkgreen") 
+kappa200_slm_mse <- kappa200_slm %>%
+  ggplot() +
+  # geom_line(aes(x = kappa, y = bias), color = "blue") +
+  geom_line(aes(x = kappa, y = mse), color = "indianred") 
+  # scale_y_continuous("Bias", 
+  #   sec.axis = sec_axis(~ ., name = "MSE"))
+kappa200_slm_ci50 <- kappa200_slm %>%
+  ggplot() +
+  geom_line(aes(x = kappa, y = cr50), color = "purple") 
+kappa200_slm_cr50 <- kappa200_slm %>%
+  ggplot() +
+  geom_line(aes(x = kappa, y = coverage50), color = "blue1") 
+kappa200_slm_cr80<- kappa200_slm %>%
+  ggplot() +
+  # geom_line(aes(x = kappa, y = bias), color = "blue") +
+  geom_line(aes(x = kappa, y = coverage80), color = "blue3") 
+kappa200_slm_cr90<- kappa200_slm %>%
+  ggplot() +
+  # geom_line(aes(x = kappa, y = bias), color = "blue") +
+  geom_line(aes(x = kappa, y = coverage90), color = "blue4")
+
+kappa200_slm_bias + theme_bw() + theme(legend.position = "none") + ylab("BIAS") + xlab("Number of Matches")
+kappa200_slm_mse + theme_bw() + theme(legend.position = "none") + ylab("MSE") + xlab("Number of Matches")
+kappa200_slm_ci50 + theme_bw() + theme(legend.position = "none") + ylab("Width of 50% PI") + xlab("Number of Matches")
+kappa200_slm_cr50 + theme_bw() + theme(legend.position = "none") + ylab("CR of 50% PI") + xlab("Number of Matches")
+kappa200_slm_cr80 + theme_bw() + theme(legend.position = "none") + ylab("CR of 80% PI") + xlab("Number of Matches")
+kappa200_slm_cr90 + theme_bw() + theme(legend.position = "none") + ylab("CR of 90% PI") + xlab("Number of Matches")
 
 ```

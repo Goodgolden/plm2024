@@ -1,5 +1,6 @@
 ---
 title: "Calibration"
+format: docx
 ---
 
 ```{r setup, include=FALSE}
@@ -51,15 +52,16 @@ Probably need to rerun the model???
 
 ```{r}
 #| warning: false
-load("results/tsa_23_kappa20_relationship_2024-04-12.Rdata")
+load("results/tsa_23_kappa20_relationship_2024-05-08.Rdata")
 ```
 
 ```{r}
 calib_plot <- function(data) {
+  # browser()
   data1 <- map(data, "centiles_observed") %>%
     map_dfr(~try(dplyr::select(., 
-                               time = "time",
-                               prediction = "C50", 
+                               time = "x",
+                               prediction = "50", 
                                observation = "actual"))) %>%
     filter(observation >= -1) 
   
@@ -220,7 +222,4 @@ ci_ek20_slm
 
 ci_ek20_mlm
 
-tsa_long1 %>%
-  ggplot(aes(x = time, y = outcome_score, group = id)) +
-  geom_line(alpha = 0.1) 
 ```

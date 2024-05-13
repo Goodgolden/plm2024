@@ -1,5 +1,6 @@
 ---
 title: "kappa 20"
+format: docx
 ---
 
 ```{r setup, include=FALSE}
@@ -121,7 +122,7 @@ save(e_k20_mlm, e_k20_slm,
 ```
 
 ```{r}
-load("results/tsa_23_kappa20_relationship_2024-04-17.Rdata")
+load("results/tsa_23_kappa20_relationship_2024-05-08.Rdata")
 
 meanout <- function(dataset){
   # browser()

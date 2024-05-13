@@ -41,7 +41,6 @@ here::set_here()
 #.       Sys.Date(), ".filetype")
 ```
 
-
 ```{css "css-setup", echo=FALSE}
 .scroll-100 {
   max-height: 300px;
@@ -51,10 +50,9 @@ here::set_here()
 }
 ```
 
-The formula is the part affecting the performance a lot. 
-Here are the formula used for the old version of PLM:
+The formula is the part affecting the performance a lot. Here are the formula used for the old version of PLM:
 
-```
+```         
 mlmf <- "log_outcome ~ surgery_type + patient_gender + adi_value +
                       adi_value:log_baseline + primary_payer + 
                       bmi + patient_age +
@@ -64,8 +62,6 @@ lmf <- "log_outcome ~ as.factor(time) + surgery_type + patient_gender +
                       bmi + patient_age +
                       patient_age:log_baseline + log_baseline + t0"
 ```
-                      
-                      
 
 ```{r "model-setup"}
 set.seed(555)
@@ -141,11 +137,9 @@ PI <- predictInterval(merMod = fitLMER,
 
 ```
 
-
 ## Trying the `lme4::lmer()` and `nlme::lme()`
 
-Stef used the lme4::lmer() function, which is faster and more reliable with complicated random effects.
-However the JMbayes package can only take nlme:lme() function for prediction by Drizopoulos.
+Stef used the lme4::lmer() function, which is faster and more reliable with complicated random effects. However the JMbayes package can only take nlme:lme() function for prediction by Drizopoulos.
 
 ```{r}
 #| eval: FALSE
@@ -181,7 +175,6 @@ toc()
 save(bks_lmer, bks_nlme, file = paste0("newdata/19_dynamic_prediction_bks_lmer_nlme_", Sys.Date(),".RData"))
 ```
 
-
 ```{r, css.hide="scroll-100"}
 load("newdata/19_dynamic_prediction_bks_lmer_nlme_2024-02-28.RData")
 # summary(bks_lmer)
@@ -193,12 +186,9 @@ tidy(bks_nlme) %>% dplyr::select(-1, -2)
 tidy(bks_lmer) %>% dplyr::select(-1, -2)
 ```
 
-
 ## Dynamic Prediction PLM
 
-Here we can use more than the first time visit value, how about we use the first 10 days.
-If the person does not have any visit in ten days we just ignore that patient.
-Probably use EPIC data or other data with more observations at the beginning.
+Here we can use more than the first time visit value, how about we use the first 10 days. If the person does not have any visit in ten days we just ignore that patient. Probably use EPIC data or other data with more observations at the beginning.
 
 ```{r}
 time_vec <- c(14, 30, 90, 120)
@@ -280,9 +270,7 @@ save(test_eld, file = paste0("figure/tsa_19_dynamic_prediction_test_eld_k50_", S
 
 Here are the examples for the dynamic prediction of PLM
 
-The results are not good, the prediction is not good at all.
-Even compare to the old ones.
-
+The results are not good, the prediction is not good at all. Even compare to the old ones.
 
 ```{r, css.hide="scroll-100"}
 load("figure/tsa_19_dynamic_prediction_test_eld_k50_2024-02-29.RData")
@@ -294,11 +282,7 @@ example[[500]]
 example[[333]]
 ```
 
-
 ```{r}
 mean_dyn_eld <- meanall(test_eld)
 mean_dyn_eld
 ```
-
-
-

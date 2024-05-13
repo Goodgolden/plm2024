@@ -1,5 +1,6 @@
 ---
 title: "Linear comparison"
+format: docx
 ---
 
 ```{r setup, include=FALSE}
@@ -392,13 +393,9 @@ row.names(result26) <- c("without_time&outcome",
 result26
 ```
 
-
-
 ## GAMLSS for all {#sec-gamlss-for-all}
 
-The final model is only fitted with `mgcv` or `gamlss`; 
-We cannot use a linear mixed model for the testing dataset prediction.
-The prediction for the linear mixed model has to be conditional on the random effects.
+The final model is only fitted with `mgcv` or `gamlss`; We cannot use a linear mixed model for the testing dataset prediction. The prediction for the linear mixed model has to be conditional on the random effects.
 
 ```{r}
 gamlss_fit <- gamlss(outcome_score ~ cs(time, df = 3),

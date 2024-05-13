@@ -66,6 +66,7 @@ tsa_test2 <- tsa_test1 %>%
 ```
 
 ```{r}
+#| warning: false
 bsk_knots <- c(25, 50, 75, 100, 125, 150)
 anchor <- c(14, 30, 60, 90)
 
@@ -132,7 +133,7 @@ save(e_k20_mlm, e_k20_slm,
 ```
 
 ```{r}
-load("results/tsa_27_day120_kappa20_2024-04-29.Rdata")
+load("results/tsa_27_day120_kappa20_2024-05-08.Rdata")
 
 meanout <- function(dataset){
   # browser()

@@ -1,7 +1,7 @@
 ## clean the R environment --------------------
-graphics.off()
-rm(list = ls())
-freshr::freshr()
+# graphics.off()
+# rm(list = ls())
+# freshr::freshr()
 
 ## load packages -----------------------------
 library(here, quietly = TRUE)
@@ -16,8 +16,8 @@ here::set_here()
 ## setup for plm ------------------------------
 
 anchor <- c(14, 30, 60, 90)
-bsk_knots <- c(20, 50, 100, 150)
-kappa1 <- seq(4, 200, by = 1)
+bsk_knots <- c(25, 50, 75, 100, 125, 150)
+kappa1 <- seq(4, 100, by = 1)
 
 mlmf <- "outcome_score ~ adi_value + adi_value:outcome0 + adi_value:t0 +
                       bmi + bmi:outcome0 + bmi:t0 +
@@ -62,16 +62,15 @@ e_kcv_kappa1 <- map(kappa1,
                                     match_number = .x),
                     .progress = TRUE)
 
+save(e_kcv_kappa1, file = paste0("results/tsa_22_mlm_cv_", Sys.time(), ".Rdata"))
 ## summary ------------------------------------------
 
-e_kcv_kappa1
-
 meanout <- function(dataset){
-  # browser()
+  
   result0 <- dataset %>%
     as.data.frame() %>%
     mutate(mse = bias^2,
-           cr50 = `C75` - `C25`)
+           cr50 = `75` - `25`)
   result1 <- result0 %>%
     colMeans() %>%
     unlist()
@@ -81,13 +80,11 @@ meanout <- function(dataset){
 mlm_kappa1 <- map(e_kcv_kappa1,
                      ~try(map(.x, "centiles_observed") %>%
                             map_dfr(~try(meanout(.))) %>%
-                            dplyr::select(coverage50, coverage80,
-                                          coverage90, bias, mse, cr50) %>%
                             colMeans()))
 
 ## saving the results --------------------------------
 
-save(e_kcv_kappa1, file = paste0("results/tsa_22_mlm_cv_", Sys.time(), ".Rdata"))
+# save(e_kcv_kappa1, file = paste0("results/tsa_22_mlm_cv_", Sys.time(), ".Rdata"))
 
-# save(mlm_kappa1, file = paste0("results/tsa_22_table_mlm_cv_", Sys.time(), ".Rdata"))
+save(mlm_kappa1, file = paste0("results/tsa_22_table_mlm_cv_", Sys.time(), ".Rdata"))
 

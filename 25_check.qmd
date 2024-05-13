@@ -1,5 +1,6 @@
 ---
 title: "Brokenstick and Linear"
+format: docx
 ---
 
 ```{r setup, include=FALSE}
@@ -382,10 +383,3 @@ ggsave("figure/tsa_25_final_predictive_plot.png",
 ```{r}
 knitr::include_graphics("figure/tsa_25_final_predictive_plot.png")
 ```
-
-
-
-
-
-
-
