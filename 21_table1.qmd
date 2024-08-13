@@ -122,13 +122,12 @@ tbl1_p3 <- read.csv("data-raw/tsa_clean_baseline_for_outcome_2024-01-22.csv",
                 -outcome_n, -timemax) %>% 
   mutate(surgery_dt = as.numeric(surgery_dt))
 
-View(tbl1_p3)
-
 # names(tbl1_p3)
 
 tbl1_p3$surgery_dt <- chron(dates. = tbl1_p3$surgery_dt)
 
 
+View(tbl1_p3)
 # [1] 744 for the first time point 31
 # [1] 1010 for the first time point 62
 # View(tsa_data0)

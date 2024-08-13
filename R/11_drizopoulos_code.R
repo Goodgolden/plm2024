@@ -82,9 +82,8 @@ IndvPred_lmer <- function (lmerObject,
                            level = 0.95, 
                            return_data = TRUE,
                            seed = 1L) {
-  
   interval <- match.arg(interval)
-  if (inherits(lmerObject, "lmerMod")) {
+  # if (inherits(lmerObject, "lmerMod")) {
     ## extract data.matrix info from lmerObject
     formYx <- formula(lmerObject, 
                       fixed.only = TRUE)
@@ -111,7 +110,7 @@ IndvPred_lmer <- function (lmerObject,
     ## extract time and newdata
     times_orig <- data[[timeVar]]
     times_orig <- times_orig[!is.na(times_orig)]
-  }
+  # }
   
   ## rebuild for the new 
   all_vars <- unique(c(all.vars(TermsX), 
@@ -155,6 +154,7 @@ IndvPred_lmer <- function (lmerObject,
   
 
   for (i in seq_len(n)) {
+    
     ## this is the most weird part of the function
     ## why use the boolean to calculate the matrix
     ## probably need to check more than one time for prediction
@@ -173,7 +173,7 @@ IndvPred_lmer <- function (lmerObject,
     
     modes[i, ] <- c(DZtVinv[[i]] %*% 
                       (y_new[id_i] - 
-                         X_new_id %*%  betas))
+                         X_new_id %*% betas))
     
     
     t1 <- DZtVinv[[i]] %*% Z_new_id %*% D
@@ -184,10 +184,13 @@ IndvPred_lmer <- function (lmerObject,
     post_vars[[i]] <- D - t1 + t2
   }
   
-  
+  dim(X_new)
+  dim(betas)
   fitted_y <- c(X_new %*% betas) + 
     ## conditional random effects based on modes
     rowSums(Z_new * modes[id_nomiss, , drop = FALSE])
+  
+  dim(Z_new)
   
   if (is.null(times) || !is.numeric(times)) {
     times <- seq(min(times_orig), 

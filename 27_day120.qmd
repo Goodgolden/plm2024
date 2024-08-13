@@ -90,24 +90,24 @@ lmf <- "outcome_score ~ as.factor(time) +
                       surgery_type + surgery_type:outcome0 + surgery_type:t0 +
                       outcome0 + t0"
 
-e_k20_slm <- people_like_us(train_data = tsa_train1,
-                        test_data = tsa_test1,
-                        anchor_time = anchor,
-                        brokenstick_knots = bsk_knots,
-                        linear_model = "lm",
-                        linear_formula = lmf,
-                        gamlss_formula = gf,
-                        gamlss_sigma = gs,
-                        tmin = 0,
-                        tmax = 100,
-                        id_var = "id",
-                        outcome_var = "outcome_score",
-                        time = "time",
-                        weight = FALSE,
-                        match_plot = FALSE,
-                        predict_plot = FALSE,
-                        match_methods = "euclidean",
-                        match_number = 20)
+# e_k20_slm <- people_like_us(train_data = tsa_train1,
+#                         test_data = tsa_test1,
+#                         anchor_time = anchor,
+#                         brokenstick_knots = bsk_knots,
+#                         linear_model = "lm",
+#                         linear_formula = lmf,
+#                         gamlss_formula = gf,
+#                         gamlss_sigma = gs,
+#                         tmin = 0,
+#                         tmax = 100,
+#                         id_var = "id",
+#                         outcome_var = "outcome_score",
+#                         time = "time",
+#                         weight = FALSE,
+#                         match_plot = FALSE,
+#                         predict_plot = FALSE,
+#                         match_methods = "euclidean",
+#                         match_number = 20)
 
 e_k20_mlm <- people_like_us(train_data = tsa_train1,
                         test_data = tsa_test1,
@@ -128,7 +128,7 @@ e_k20_mlm <- people_like_us(train_data = tsa_train1,
                         match_methods = "euclidean",
                         match_number = 20)
 
-save(e_k20_mlm, e_k20_slm, 
+save(e_k20_mlm,  
      file = paste0("results/tsa_27_day120_kappa20_", Sys.Date(), ".Rdata"))
 ```
 

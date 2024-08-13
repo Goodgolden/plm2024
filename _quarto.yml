@@ -1,0 +1,79 @@
+project:
+  type: book
+  output-dir: _tsa_book
+
+book:
+  title: "TSA project analysis"
+  # output-file: "TSA project analysis"
+  date: "10/30/2023"
+  navbar:
+    search: true
+    downloads: [pdf, epub]
+  repo-url: https://github.com/Goodgolden/tsa
+  repo-actions: [edit]
+  sidebar:
+    search: true
+    tools:
+      - icon: github
+        href: https://github.com/Goodgolden/tsa
+        aria-label: GitHub
+      - icon: share
+        aria-label: Email
+      - icon: hospital
+        aria-label: CU Anschutz
+        href: https://coloradosph.cuanschutz.edu/education/departments/biostatistics-informatics
+  page-navigation: true
+  chapters:
+    - index.qmd
+    - intro.qmd
+    # - 01_table1.qmd
+    # - 02_time.qmd
+    # - 03_time2.qmd
+    # - 04_pain.qmd
+    # - 05_pain2.qmd
+    # - 06_final_outcome.qmd
+    # - 07_clean_insurance.qmd
+    # - 08_plm2024.qmd
+    # - 09_plm_steps.qmd
+    # - 10_linear_extension.qmd
+    # - 11_kappa.qmd
+    # - 12_data_clean.qmd
+    # - 13_table1.qmd
+    # - 14_flowchart.qmd
+    # - 15_cross_validation.qmd
+    # - 16_coverage_rate.qmd
+    # - 17_gamlss.qmd
+    # - 18_kappa50.qmd
+    # - 19_stepwised.qmd
+    # - 20_calibration.qmd
+    - 21_table1.qmd
+    - 22_cv.qmd
+    - 23_kappa20.qmd
+    - 24_calibration.qmd
+    # - 25_check.qmd
+    - 26_lm.qmd
+    # - 27_day120.qmd
+    # - 28_visit5.qmd
+    - summary.qmd
+    - references.qmd
+
+bibliography: references.bib
+
+format: 
+  html:
+    code-fold: true
+    code-tools: true
+    code-link: true
+    df-print: paged
+    # fig-cap-location: top
+    fig.topcaption: TRUE
+    author-meta: "Randy Jin, Elizabeth Juarez-Colunga"
+    # include-in-header: "plausible.html"
+    callout-appearance: simple
+
+editor: visual
+
+toc: true
+
+comments:
+  hypothesis: true
