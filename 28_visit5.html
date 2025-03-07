@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.4.553">
+<meta name="generator" content="quarto-1.5.57">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -20,40 +20,6 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for syntax highlighting */
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
 </style>
 
 
@@ -67,13 +33,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="28_visit5_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="28_visit5_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="28_visit5_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
-<link href="28_visit5_files/libs/htmltools-fill-0.5.8.1/fill.css" rel="stylesheet">
-<script src="28_visit5_files/libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
-<script src="28_visit5_files/libs/viz-1.8.2/viz.js"></script>
-<link href="28_visit5_files/libs/DiagrammeR-styles-0.2/styles.css" rel="stylesheet">
-<script src="28_visit5_files/libs/grViz-binding-1.0.11/grViz.js"></script>
 
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <script type="text/javascript">
@@ -130,223 +91,35 @@ window.Quarto = {
 </header>
 
 
-<div class="cell">
-<style type="text/css">
-.scroll-100 {
-  max-height: 300px;
-  max-width: 1000px;
-  overflow-y: auto;
-  background-color: inherit;
-}
-</style>
-</div>
+<!-- ```{css, echo=FALSE} -->
+<!-- .scroll-100 { -->
+<!--   max-height: 300px; -->
+<!--   max-width: 1000px; -->
+<!--   overflow-y: auto; -->
+<!--   background-color: inherit; -->
+<!-- } -->
+<!-- ``` -->
 <section id="goal-for-this-chapter" class="level2">
 <h2 class="anchored" data-anchor-id="goal-for-this-chapter">Goal for this chapter</h2>
 <ul>
 <li><p><label><input type="checkbox" checked="">Rebuild dataset</label></p></li>
 <li><p><label><input type="checkbox" checked="">Table1</label></p></li>
-<li><p>[x]</p></li>
-<li><p>[x]</p></li>
-<li><p>[x]</p></li>
+<li><p>[] Flowchart</p></li>
+<li><p><label><input type="checkbox" checked="">cross-validation</label></p></li>
+<li><p><label><input type="checkbox" checked="">results</label></p></li>
+<li><p><label><input type="checkbox" checked="">calibration</label></p></li>
 <li><p><label><input type="checkbox" checked="">You are astounding!</label></p></li>
 </ul>
 </section>
 <section id="rebuild-dataset" class="level2">
 <h2 class="anchored" data-anchor-id="rebuild-dataset">Rebuild dataset</h2>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="do">## total of 1550 individuals </span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>tbl1_p2 <span class="ot">&lt;-</span> <span class="fu">rbind</span>(tsa_test,</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>                 tsa_train) <span class="sc">%&gt;%</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span> </span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(time <span class="sc">&lt;=</span> <span class="dv">180</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(sid) <span class="sc">%&gt;%</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">time_max =</span> <span class="fu">max</span>(time),</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">time_min =</span> <span class="fu">min</span>(time),</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>            <span class="at">visit_n =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(visit_n <span class="sc">&gt;=</span> <span class="dv">5</span>,</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>         time_min <span class="sc">&lt;=</span> <span class="dv">31</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="do">## total of 1054</span></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(tbl1_p2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>#&gt; [1] 1054</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>tbl1_p1 <span class="ot">&lt;-</span> <span class="fu">rbind</span>(tsa_test,</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>                 tsa_train) <span class="sc">%&gt;%</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span> </span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(id, sid, surgery_type,</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>                patient_age, patient_gender, adi_value,</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>                primary_payer, bmi) <span class="sc">%&gt;%</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unique</span>() <span class="sc">%&gt;%</span> </span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(sid <span class="sc">%in%</span> tbl1_p2<span class="sc">$</span>sid)</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(tbl1_p1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>#&gt; [1] 1054</code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>tbl1_p3 <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"data-raw/tsa_clean_baseline_for_outcome_2024-01-22.csv"</span>,</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>                    <span class="at">row.names =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">surgery_dt =</span> <span class="fu">as.Date</span>(<span class="fu">as.character</span>(<span class="fu">as.POSIXct</span>(surgery_dt)), </span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>                              <span class="at">format =</span> <span class="st">"%Y-%m-%d"</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">-</span>sid, <span class="sc">-</span>id, <span class="sc">-</span>primary_payer,</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>                <span class="sc">-</span>charlson_comorbidity_count, </span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>                <span class="sc">-</span>charlson_comorbidity_index_value,</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>                <span class="sc">-</span>adi_quintile, <span class="sc">-</span>surgery_max, </span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>                <span class="sc">-</span>outcome_n, <span class="sc">-</span>timemax) <span class="sc">%&gt;%</span> </span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">surgery_dt =</span> <span class="fu">as.numeric</span>(surgery_dt)) <span class="sc">%&gt;%</span></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(tbl1_p1, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"patient_age"</span>, <span class="st">"patient_gender"</span>,</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>                             <span class="st">"adi_value"</span>, <span class="st">"bmi"</span>, <span class="st">"surgery_type"</span>))</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>tbl1_p3<span class="sc">$</span>surgery_dt <span class="ot">&lt;-</span> <span class="fu">chron</span>(<span class="at">dates. =</span> tbl1_p3<span class="sc">$</span>surgery_dt)</span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>tbl1_p4 <span class="ot">&lt;-</span> tbl1_p3 <span class="sc">%&gt;%</span></span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(sid) <span class="sc">%&gt;%</span></span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">surgery_n =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(surgery_n <span class="sc">==</span> <span class="dv">2</span>) </span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="do">## there are 10 patients with two surgeries</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>tsa0 <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"data-raw/final_tsa_clean_baseline_for_insurance_2024-01-22.csv"</span>,</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>                      <span class="at">row.names =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span>  </span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">-</span>adi_quintile, <span class="sc">-</span>charlson_comorbidity_count,</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>                <span class="sc">-</span>charlson_comorbidity_index_value, <span class="sc">-</span>surgery_max, </span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>                <span class="sc">-</span>outcome_n, <span class="sc">-</span>timemax, <span class="sc">-</span>sid, <span class="sc">-</span>id, <span class="sc">-</span>surgery_dt) <span class="sc">%&gt;%</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># inner_join(tbl1_p2, by = "sid") %&gt;% View()</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(tbl1_p3, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"patient_age"</span>, </span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>                            <span class="st">"empi_deidentified"</span>,</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>                            <span class="st">"patient_gender"</span>, </span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>                            <span class="st">"bmi"</span>, <span class="st">"adi_value"</span>, </span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>                            <span class="st">"surgery_type"</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(id, sid, empi_deidentified, </span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>                patient_age, patient_gender,</span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>                adi_value, bmi, </span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>                <span class="at">primary_payer =</span> primary_payer.y,</span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>                surgery_type, surgery_dt) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>#&gt; Warning in inner_join(., tbl1_p3, by = c("patient_age", "empi_deidentified", : Detected an unexpected many-to-many relationship between `x` and `y`.
-#&gt; ℹ Row 138 of `x` matches multiple rows in `y`.
-#&gt; ℹ Row 66 of `y` matches multiple rows in `x`.
-#&gt; ℹ If a many-to-many relationship is expected, set `relationship =
-#&gt;   "many-to-many"` to silence this warning.</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>tsa_date <span class="ot">&lt;-</span> tsa0 <span class="sc">%&gt;%</span> </span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(sid, id, surgery_dt) <span class="sc">%&gt;%</span> </span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(sid) <span class="sc">%&gt;%</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">surgery_dt =</span> <span class="fu">min</span>(surgery_dt)) <span class="sc">%&gt;%</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unique</span>()</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>unique_id <span class="ot">&lt;-</span> tsa0<span class="sc">$</span>sid <span class="sc">%&gt;%</span> <span class="fu">unique</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">555</span>)</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(splitstackshape)</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>tsa_data1 <span class="ot">&lt;-</span> <span class="fu">rbind</span>(tsa_test,</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>                   tsa_train) <span class="sc">%&gt;%</span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span> </span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(time <span class="sc">&lt;=</span> <span class="dv">180</span>,</span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>         sid <span class="sc">%in%</span> unique_id) <span class="sc">%&gt;%</span></span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(sid) <span class="sc">%&gt;%</span></span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">time_max =</span> <span class="fu">max</span>(time),</span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>            <span class="at">time_min =</span> <span class="fu">min</span>(time),</span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>            <span class="at">visit_n =</span> <span class="fu">n</span>())</span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>tsa_data0 <span class="ot">&lt;-</span> <span class="fu">rbind</span>(tsa_test,</span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>                   tsa_train) <span class="sc">%&gt;%</span></span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span> </span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(time <span class="sc">&lt;=</span> <span class="dv">180</span>,</span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>         sid <span class="sc">%in%</span> unique_id) <span class="sc">%&gt;%</span></span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(sid) <span class="sc">%&gt;%</span></span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">1</span>L) <span class="sc">%&gt;%</span> </span>
-<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">-</span>outcome_score, <span class="sc">-</span>time, <span class="sc">-</span>log_outcome) <span class="sc">%&gt;%</span></span>
-<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span> </span>
-<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(tsa_data1, <span class="at">by =</span> <span class="st">"sid"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(tsa_date, <span class="at">by =</span> <span class="st">"sid"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
-<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>tsa_test0 <span class="ot">&lt;-</span> <span class="fu">stratified</span>(tsa_data0,</span>
-<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>                         <span class="at">group =</span> <span class="st">"primary_payer"</span>, </span>
-<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>                         <span class="fl">0.25</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">group =</span> <span class="st">"2_Test"</span>)</span>
-<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>id_test <span class="ot">&lt;-</span> tsa_test0<span class="sc">$</span>id <span class="sc">%&gt;%</span> <span class="fu">unique</span>()</span>
-<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>tsa_train0 <span class="ot">&lt;-</span> tsa_data0 <span class="sc">%&gt;%</span></span>
-<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(id <span class="sc">%!in%</span> id_test) <span class="sc">%&gt;%</span></span>
-<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">group =</span> <span class="st">"1_Train"</span>)</span>
-<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a>id_train <span class="ot">&lt;-</span> tsa_train0<span class="sc">$</span>id <span class="sc">%&gt;%</span> <span class="fu">unique</span>()</span>
-<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a>tsa_table1_0 <span class="ot">&lt;-</span> <span class="fu">rbind</span>(tsa_train0, tsa_test0) <span class="sc">%&gt;%</span></span>
-<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>() </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>tsa_train1 <span class="ot">&lt;-</span> <span class="fu">rbind</span>(tsa_test,</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>                   tsa_train) <span class="sc">%&gt;%</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span> </span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">outcome0 =</span> <span class="fu">round</span>(<span class="fu">exp</span>(log_baseline), <span class="dv">0</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(time <span class="sc">&lt;=</span> <span class="dv">180</span>,</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>         id <span class="sc">%in%</span> id_train)</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>tsa_test1 <span class="ot">&lt;-</span> <span class="fu">rbind</span>(tsa_test,</span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>                   tsa_train) <span class="sc">%&gt;%</span></span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">outcome0 =</span> <span class="fu">round</span>(<span class="fu">exp</span>(log_baseline), <span class="dv">0</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span> </span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(time <span class="sc">&lt;=</span> <span class="dv">180</span>,</span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>         id <span class="sc">%in%</span> id_test)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
 </section>
-<section id="table1" class="level2">
-<h2 class="anchored" data-anchor-id="table1">Table1</h2>
+<section id="table1-total-of-1050-individuals" class="level2">
+<h2 class="anchored" data-anchor-id="table1-total-of-1050-individuals">Table1 total of 1050 individuals</h2>
 <section id="table1-without-date" class="level3">
 <h3 class="anchored" data-anchor-id="table1-without-date">Table1 without Date</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>tbl1 <span class="ot">&lt;-</span> tsa_table1_0 <span class="sc">%&gt;%</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(patient_age, </span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>                patient_gender, </span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>                primary_payer, </span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>                surgery_type, </span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>                time_min,</span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>                time_max,</span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>                visit_n,</span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>                adi_value,</span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>                <span class="co"># surgery_dt,</span></span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>                bmi,</span>
-<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>                group) <span class="sc">%&gt;%</span> </span>
-<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>  <span class="co"># mutate(surgery_dt = as.Date(surgery_dt)) %&gt;%</span></span>
-<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>  <span class="co"># mutate(adi_quintile = as.factor(adi_quintile)) %&gt;% </span></span>
-<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tbl_summary</span>(<span class="at">by =</span> group,</span>
-<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>              <span class="at">label =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"patient_age"</span>) <span class="sc">~</span> <span class="st">"Patient Age"</span>,</span>
-<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>                           <span class="fu">c</span>(<span class="st">"patient_gender"</span>) <span class="sc">~</span> <span class="st">"Patient Gender"</span>,</span>
-<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>                           <span class="fu">c</span>(<span class="st">"primary_payer"</span>) <span class="sc">~</span> <span class="st">"Primary Payer"</span>,</span>
-<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>                           <span class="fu">c</span>(<span class="st">"surgery_type"</span>) <span class="sc">~</span> <span class="st">"Surgery Type"</span>,</span>
-<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>                           <span class="co"># c("surgery_dt") ~ "Surgery Date",</span></span>
-<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>                           <span class="fu">c</span>(<span class="st">"time_min"</span>) <span class="sc">~</span> <span class="st">"Starting Time"</span>,</span>
-<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>                           <span class="fu">c</span>(<span class="st">"time_max"</span>) <span class="sc">~</span> <span class="st">"Follow-up Time"</span>,</span>
-<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>                           <span class="fu">c</span>(<span class="st">"visit_n"</span>) <span class="sc">~</span> <span class="st">"Number of Visits"</span>,</span>
-<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>                           <span class="fu">c</span>(<span class="st">"adi_value"</span>) <span class="sc">~</span> <span class="st">"ADI Value"</span>,</span>
-<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>                           <span class="fu">c</span>(<span class="st">"bmi"</span>) <span class="sc">~</span> <span class="st">"BMI"</span>),</span>
-<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>              <span class="at">type =</span> <span class="fu">list</span>(<span class="co"># c("surgery_dt") ~ "continuous2",</span></span>
-<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">all_continuous</span>() <span class="sc">~</span> <span class="st">"continuous2"</span>),</span>
-<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>              <span class="at">statistic =</span> <span class="fu">list</span>(<span class="co"># c("surgery_dt") ~ c("({min}, {max})"),</span></span>
-<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>                               <span class="fu">all_continuous</span>() <span class="sc">~</span> <span class="fu">c</span>(<span class="st">"{median} ({p25}, {p75})"</span>,</span>
-<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a>                                               <span class="st">"({min}, {max})"</span>))) <span class="sc">%&gt;%</span></span>
-<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a>  <span class="do">## just display all the variables in one column</span></span>
-<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">modify_header</span>(<span class="at">label =</span> <span class="st">"**Characteristics**"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a>  <span class="co"># update the column header</span></span>
-<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bold_labels</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_p</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">italicize_labels</span>()</span>
-<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a>tbl1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div>
 <div id="sakuzofrmy" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#sakuzofrmy table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
@@ -786,9 +559,18 @@ window.Quarto = {
 #sakuzofrmy .gt_indent_5 {
   text-indent: 25px;
 }
+
+#sakuzofrmy .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#sakuzofrmy div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
 </style>
 
-<table class="gt_table table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
 <colgroup>
 <col style="width: 25%">
 <col style="width: 25%">
@@ -797,10 +579,10 @@ window.Quarto = {
 </colgroup>
 <thead>
 <tr class="header gt_col_headings">
-<th id="<strong>Characteristics</strong>" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col"><strong>Characteristics</strong></th>
-<th id="<strong>1_Train</strong>, N = 787<span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;><sup>1</sup></span>" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>1_Train</strong>, N = 787<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
-<th id="<strong>2_Test</strong>, N = 263<span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;><sup>1</sup></span>" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>2_Test</strong>, N = 263<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
-<th id="<strong>p-value</strong><span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;><sup>2</sup></span>" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>p-value</strong><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>2</sup></span></th>
+<th id="label" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col"><strong>Characteristics</strong></th>
+<th id="stat_1" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>1_Train</strong><br> N = 787<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;line-height:0;"><sup>1</sup></span></th>
+<th id="stat_2" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>2_Test</strong><br> N = 263<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;line-height:0;"><sup>1</sup></span></th>
+<th id="p.value" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>p-value</strong><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;line-height:0;"><sup>2</sup></span></th>
 </tr>
 </thead>
 <tbody class="gt_table_body">
@@ -813,14 +595,14 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="p.value">0.8</td>
 </tr>
 <tr class="even">
-<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;Median (IQR)</td>
+<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;Median (Q1, Q3)</td>
 <td class="gt_row gt_center" headers="stat_1">68 (63, 74)</td>
 <td class="gt_row gt_center" headers="stat_2">69 (63, 74)</td>
 <td class="gt_row gt_center" headers="p.value"><br>
 </td>
 </tr>
 <tr class="odd">
-<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;(Range)</td>
+<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;(Min, Max)</td>
 <td class="gt_row gt_center" headers="stat_1">(35, 88)</td>
 <td class="gt_row gt_center" headers="stat_2">(40, 89)</td>
 <td class="gt_row gt_center" headers="p.value"><br>
@@ -915,14 +697,14 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="p.value">0.6</td>
 </tr>
 <tr class="even">
-<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;Median (IQR)</td>
+<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;Median (Q1, Q3)</td>
 <td class="gt_row gt_center" headers="stat_1">17 (13, 22)</td>
 <td class="gt_row gt_center" headers="stat_2">16 (13, 21)</td>
 <td class="gt_row gt_center" headers="p.value"><br>
 </td>
 </tr>
 <tr class="odd">
-<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;(Range)</td>
+<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;(Min, Max)</td>
 <td class="gt_row gt_center" headers="stat_1">(0, 31)</td>
 <td class="gt_row gt_center" headers="stat_2">(0, 31)</td>
 <td class="gt_row gt_center" headers="p.value"><br>
@@ -937,14 +719,14 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="p.value">0.6</td>
 </tr>
 <tr class="odd">
-<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;Median (IQR)</td>
+<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;Median (Q1, Q3)</td>
 <td class="gt_row gt_center" headers="stat_1">99 (78, 127)</td>
-<td class="gt_row gt_center" headers="stat_2">98 (82, 129)</td>
+<td class="gt_row gt_center" headers="stat_2">98 (81, 129)</td>
 <td class="gt_row gt_center" headers="p.value"><br>
 </td>
 </tr>
 <tr class="even">
-<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;(Range)</td>
+<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;(Min, Max)</td>
 <td class="gt_row gt_center" headers="stat_1">(21, 180)</td>
 <td class="gt_row gt_center" headers="stat_2">(35, 179)</td>
 <td class="gt_row gt_center" headers="p.value"><br>
@@ -959,14 +741,14 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="p.value">0.4</td>
 </tr>
 <tr class="even">
-<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;Median (IQR)</td>
+<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;Median (Q1, Q3)</td>
 <td class="gt_row gt_center" headers="stat_1">10 (7, 14)</td>
 <td class="gt_row gt_center" headers="stat_2">10 (7, 14)</td>
 <td class="gt_row gt_center" headers="p.value"><br>
 </td>
 </tr>
 <tr class="odd">
-<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;(Range)</td>
+<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;(Min, Max)</td>
 <td class="gt_row gt_center" headers="stat_1">(5, 41)</td>
 <td class="gt_row gt_center" headers="stat_2">(5, 45)</td>
 <td class="gt_row gt_center" headers="p.value"><br>
@@ -981,14 +763,14 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="p.value">0.8</td>
 </tr>
 <tr class="odd">
-<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;Median (IQR)</td>
+<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;Median (Q1, Q3)</td>
 <td class="gt_row gt_center" headers="stat_1">98 (86, 107)</td>
 <td class="gt_row gt_center" headers="stat_2">97 (87, 106)</td>
 <td class="gt_row gt_center" headers="p.value"><br>
 </td>
 </tr>
 <tr class="even">
-<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;(Range)</td>
+<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;(Min, Max)</td>
 <td class="gt_row gt_center" headers="stat_1">(-20, 136)</td>
 <td class="gt_row gt_center" headers="stat_2">(13, 135)</td>
 <td class="gt_row gt_center" headers="p.value"><br>
@@ -1003,14 +785,14 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="p.value">0.6</td>
 </tr>
 <tr class="even">
-<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;Median (IQR)</td>
+<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;Median (Q1, Q3)</td>
 <td class="gt_row gt_center" headers="stat_1">30 (26, 35)</td>
 <td class="gt_row gt_center" headers="stat_2">30 (26, 35)</td>
 <td class="gt_row gt_center" headers="p.value"><br>
 </td>
 </tr>
 <tr class="odd">
-<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;(Range)</td>
+<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;(Min, Max)</td>
 <td class="gt_row gt_center" headers="stat_1">(17, 65)</td>
 <td class="gt_row gt_center" headers="stat_2">(19, 56)</td>
 <td class="gt_row gt_center" headers="p.value"><br>
@@ -1018,10 +800,10 @@ window.Quarto = {
 </tr>
 </tbody><tfoot class="gt_footnotes">
 <tr class="even">
-<td colspan="4" class="gt_footnote"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span> n (%)</td>
+<td colspan="4" class="gt_footnote"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;line-height:0;"><sup>1</sup></span> n (%)</td>
 </tr>
 <tr class="odd">
-<td colspan="4" class="gt_footnote"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>2</sup></span> Wilcoxon rank sum test; Pearson’s Chi-squared test; Fisher’s exact test</td>
+<td colspan="4" class="gt_footnote"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;line-height:0;"><sup>2</sup></span> Wilcoxon rank sum test; Pearson’s Chi-squared test; Fisher’s exact test</td>
 </tr>
 </tfoot>
 
@@ -1030,57 +812,29 @@ window.Quarto = {
 </div>
 </div>
 </div>
-</div>
 <div style="page-break-after: always;"></div>
 </section>
 <section id="table1-with-date" class="level3">
 <h3 class="anchored" data-anchor-id="table1-with-date">Table1 with Date</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>tbl1_date <span class="ot">&lt;-</span> tsa_table1_0 <span class="sc">%&gt;%</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">surgery_dt =</span> <span class="fu">as.Date</span>(surgery_dt)) <span class="sc">%&gt;%</span></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tbl_summary</span>(<span class="at">include =</span> <span class="fu">c</span>(patient_age,</span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>                          patient_gender, group, </span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>                          primary_payer, surgery_type, </span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>                          surgery_dt, </span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>                          visit_n,</span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>                          time_min,</span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>                          time_max,</span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>                          adi_value, bmi),</span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>              <span class="at">by =</span> group,</span>
-<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>              <span class="at">label =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"patient_age"</span>) <span class="sc">~</span> <span class="st">"Patient Age"</span>,</span>
-<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>                           <span class="fu">c</span>(<span class="st">"patient_gender"</span>) <span class="sc">~</span> <span class="st">"Patient Gender"</span>,</span>
-<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>                           <span class="fu">c</span>(<span class="st">"primary_payer"</span>) <span class="sc">~</span> <span class="st">"Primary Payer"</span>,</span>
-<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>                           <span class="fu">c</span>(<span class="st">"surgery_type"</span>) <span class="sc">~</span> <span class="st">"Surgery Type"</span>,</span>
-<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>                           <span class="fu">c</span>(<span class="st">"surgery_dt"</span>) <span class="sc">~</span> <span class="st">"Surgery Date"</span>,</span>
-<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>                           <span class="fu">c</span>(<span class="st">"time_min"</span>) <span class="sc">~</span> <span class="st">"Starting Time"</span>,</span>
-<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>                           <span class="fu">c</span>(<span class="st">"time_max"</span>) <span class="sc">~</span> <span class="st">"Follow-up Time"</span>,</span>
-<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>                           <span class="fu">c</span>(<span class="st">"visit_n"</span>) <span class="sc">~</span> <span class="st">"Number of Visits"</span>,</span>
-<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>                           <span class="fu">c</span>(<span class="st">"adi_value"</span>) <span class="sc">~</span> <span class="st">"ADI Value"</span>,</span>
-<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>                           <span class="fu">c</span>(<span class="st">"bmi"</span>) <span class="sc">~</span> <span class="st">"BMI"</span>),</span>
-<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>              <span class="at">type =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"surgery_dt"</span>) <span class="sc">~</span> <span class="st">"continuous2"</span>),</span>
-<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>              <span class="at">statistic =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"surgery_dt"</span>) <span class="sc">~</span> <span class="fu">c</span>(<span class="st">"{min}, {max}"</span>))) </span>
-<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>tbl1_date</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div>
-<div id="afbtfxhlmh" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#afbtfxhlmh table {
+<div id="tfxhlmhntc" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#tfxhlmhntc table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#afbtfxhlmh thead, #afbtfxhlmh tbody, #afbtfxhlmh tfoot, #afbtfxhlmh tr, #afbtfxhlmh td, #afbtfxhlmh th {
+#tfxhlmhntc thead, #tfxhlmhntc tbody, #tfxhlmhntc tfoot, #tfxhlmhntc tr, #tfxhlmhntc td, #tfxhlmhntc th {
   border-style: none;
 }
 
-#afbtfxhlmh p {
+#tfxhlmhntc p {
   margin: 0;
   padding: 0;
 }
 
-#afbtfxhlmh .gt_table {
+#tfxhlmhntc .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1106,12 +860,12 @@ window.Quarto = {
   border-left-color: #D3D3D3;
 }
 
-#afbtfxhlmh .gt_caption {
+#tfxhlmhntc .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#afbtfxhlmh .gt_title {
+#tfxhlmhntc .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1123,7 +877,7 @@ window.Quarto = {
   border-bottom-width: 0;
 }
 
-#afbtfxhlmh .gt_subtitle {
+#tfxhlmhntc .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1135,7 +889,7 @@ window.Quarto = {
   border-top-width: 0;
 }
 
-#afbtfxhlmh .gt_heading {
+#tfxhlmhntc .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1147,13 +901,13 @@ window.Quarto = {
   border-right-color: #D3D3D3;
 }
 
-#afbtfxhlmh .gt_bottom_border {
+#tfxhlmhntc .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#afbtfxhlmh .gt_col_headings {
+#tfxhlmhntc .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1168,7 +922,7 @@ window.Quarto = {
   border-right-color: #D3D3D3;
 }
 
-#afbtfxhlmh .gt_col_heading {
+#tfxhlmhntc .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1188,7 +942,7 @@ window.Quarto = {
   overflow-x: hidden;
 }
 
-#afbtfxhlmh .gt_column_spanner_outer {
+#tfxhlmhntc .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1200,15 +954,15 @@ window.Quarto = {
   padding-right: 4px;
 }
 
-#afbtfxhlmh .gt_column_spanner_outer:first-child {
+#tfxhlmhntc .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#afbtfxhlmh .gt_column_spanner_outer:last-child {
+#tfxhlmhntc .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#afbtfxhlmh .gt_column_spanner {
+#tfxhlmhntc .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1220,11 +974,11 @@ window.Quarto = {
   width: 100%;
 }
 
-#afbtfxhlmh .gt_spanner_row {
+#tfxhlmhntc .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#afbtfxhlmh .gt_group_heading {
+#tfxhlmhntc .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1250,7 +1004,7 @@ window.Quarto = {
   text-align: left;
 }
 
-#afbtfxhlmh .gt_empty_group_heading {
+#tfxhlmhntc .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1265,15 +1019,15 @@ window.Quarto = {
   vertical-align: middle;
 }
 
-#afbtfxhlmh .gt_from_md > :first-child {
+#tfxhlmhntc .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#afbtfxhlmh .gt_from_md > :last-child {
+#tfxhlmhntc .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#afbtfxhlmh .gt_row {
+#tfxhlmhntc .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1292,7 +1046,7 @@ window.Quarto = {
   overflow-x: hidden;
 }
 
-#afbtfxhlmh .gt_stub {
+#tfxhlmhntc .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1305,7 +1059,7 @@ window.Quarto = {
   padding-right: 5px;
 }
 
-#afbtfxhlmh .gt_stub_row_group {
+#tfxhlmhntc .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1319,15 +1073,15 @@ window.Quarto = {
   vertical-align: top;
 }
 
-#afbtfxhlmh .gt_row_group_first td {
+#tfxhlmhntc .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#afbtfxhlmh .gt_row_group_first th {
+#tfxhlmhntc .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#afbtfxhlmh .gt_summary_row {
+#tfxhlmhntc .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1337,16 +1091,16 @@ window.Quarto = {
   padding-right: 5px;
 }
 
-#afbtfxhlmh .gt_first_summary_row {
+#tfxhlmhntc .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#afbtfxhlmh .gt_first_summary_row.thick {
+#tfxhlmhntc .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#afbtfxhlmh .gt_last_summary_row {
+#tfxhlmhntc .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1356,7 +1110,7 @@ window.Quarto = {
   border-bottom-color: #D3D3D3;
 }
 
-#afbtfxhlmh .gt_grand_summary_row {
+#tfxhlmhntc .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1366,7 +1120,7 @@ window.Quarto = {
   padding-right: 5px;
 }
 
-#afbtfxhlmh .gt_first_grand_summary_row {
+#tfxhlmhntc .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1376,7 +1130,7 @@ window.Quarto = {
   border-top-color: #D3D3D3;
 }
 
-#afbtfxhlmh .gt_last_grand_summary_row_top {
+#tfxhlmhntc .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1386,11 +1140,11 @@ window.Quarto = {
   border-bottom-color: #D3D3D3;
 }
 
-#afbtfxhlmh .gt_striped {
+#tfxhlmhntc .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#afbtfxhlmh .gt_table_body {
+#tfxhlmhntc .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1399,7 +1153,7 @@ window.Quarto = {
   border-bottom-color: #D3D3D3;
 }
 
-#afbtfxhlmh .gt_footnotes {
+#tfxhlmhntc .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1413,7 +1167,7 @@ window.Quarto = {
   border-right-color: #D3D3D3;
 }
 
-#afbtfxhlmh .gt_footnote {
+#tfxhlmhntc .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1422,7 +1176,7 @@ window.Quarto = {
   padding-right: 5px;
 }
 
-#afbtfxhlmh .gt_sourcenotes {
+#tfxhlmhntc .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1436,7 +1190,7 @@ window.Quarto = {
   border-right-color: #D3D3D3;
 }
 
-#afbtfxhlmh .gt_sourcenote {
+#tfxhlmhntc .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1444,68 +1198,77 @@ window.Quarto = {
   padding-right: 5px;
 }
 
-#afbtfxhlmh .gt_left {
+#tfxhlmhntc .gt_left {
   text-align: left;
 }
 
-#afbtfxhlmh .gt_center {
+#tfxhlmhntc .gt_center {
   text-align: center;
 }
 
-#afbtfxhlmh .gt_right {
+#tfxhlmhntc .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#afbtfxhlmh .gt_font_normal {
+#tfxhlmhntc .gt_font_normal {
   font-weight: normal;
 }
 
-#afbtfxhlmh .gt_font_bold {
+#tfxhlmhntc .gt_font_bold {
   font-weight: bold;
 }
 
-#afbtfxhlmh .gt_font_italic {
+#tfxhlmhntc .gt_font_italic {
   font-style: italic;
 }
 
-#afbtfxhlmh .gt_super {
+#tfxhlmhntc .gt_super {
   font-size: 65%;
 }
 
-#afbtfxhlmh .gt_footnote_marks {
+#tfxhlmhntc .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#afbtfxhlmh .gt_asterisk {
+#tfxhlmhntc .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#afbtfxhlmh .gt_indent_1 {
+#tfxhlmhntc .gt_indent_1 {
   text-indent: 5px;
 }
 
-#afbtfxhlmh .gt_indent_2 {
+#tfxhlmhntc .gt_indent_2 {
   text-indent: 10px;
 }
 
-#afbtfxhlmh .gt_indent_3 {
+#tfxhlmhntc .gt_indent_3 {
   text-indent: 15px;
 }
 
-#afbtfxhlmh .gt_indent_4 {
+#tfxhlmhntc .gt_indent_4 {
   text-indent: 20px;
 }
 
-#afbtfxhlmh .gt_indent_5 {
+#tfxhlmhntc .gt_indent_5 {
   text-indent: 25px;
+}
+
+#tfxhlmhntc .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#tfxhlmhntc div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
 }
 </style>
 
-<table class="gt_table table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
 <colgroup>
 <col style="width: 33%">
 <col style="width: 33%">
@@ -1513,9 +1276,9 @@ window.Quarto = {
 </colgroup>
 <thead>
 <tr class="header gt_col_headings">
-<th id="<strong>Characteristic</strong>" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col"><strong>Characteristic</strong></th>
-<th id="<strong>1_Train</strong>, N = 787<span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;><sup>1</sup></span>" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>1_Train</strong>, N = 787<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
-<th id="<strong>2_Test</strong>, N = 263<span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;><sup>1</sup></span>" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>2_Test</strong>, N = 263<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+<th id="label" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col"><strong>Characteristic</strong></th>
+<th id="stat_1" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>1_Train</strong><br> N = 787<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;line-height:0;"><sup>1</sup></span></th>
+<th id="stat_2" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>2_Test</strong><br> N = 263<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;line-height:0;"><sup>1</sup></span></th>
 </tr>
 </thead>
 <tbody class="gt_table_body">
@@ -1593,7 +1356,7 @@ window.Quarto = {
 </td>
 </tr>
 <tr class="even">
-<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;Range</td>
+<td class="gt_row gt_left" headers="label">&nbsp;&nbsp;&nbsp;&nbsp;Min, Max</td>
 <td class="gt_row gt_center" headers="stat_1">2017-01-10, 2022-10-31</td>
 <td class="gt_row gt_center" headers="stat_2">2017-01-10, 2022-11-16</td>
 </tr>
@@ -1610,7 +1373,7 @@ window.Quarto = {
 <tr class="odd">
 <td class="gt_row gt_left" headers="label">Follow-up Time</td>
 <td class="gt_row gt_center" headers="stat_1">99 (78, 127)</td>
-<td class="gt_row gt_center" headers="stat_2">98 (82, 129)</td>
+<td class="gt_row gt_center" headers="stat_2">98 (81, 129)</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="label">ADI Value</td>
@@ -1624,7 +1387,7 @@ window.Quarto = {
 </tr>
 </tbody><tfoot class="gt_footnotes">
 <tr class="even">
-<td colspan="3" class="gt_footnote"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span> Median (IQR); n (%)</td>
+<td colspan="3" class="gt_footnote"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;line-height:0;"><sup>1</sup></span> Median (Q1, Q3); n (%)</td>
 </tr>
 </tfoot>
 
@@ -1633,196 +1396,25 @@ window.Quarto = {
 </div>
 </div>
 </div>
-</div>
 </section>
 </section>
 <section id="flowchart" class="level2">
 <h2 class="anchored" data-anchor-id="flowchart">Flowchart</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>flowchart1 <span class="ot">&lt;-</span> DiagrammeR<span class="sc">::</span><span class="fu">grViz</span>(<span class="st">"</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="st">digraph graph2 {</span></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="st">graph [layout = dot]</span></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="st"># node definitions with substituted label text</span></span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="st">node [shape = rectangle, width = 4, fillcolor = Biege]</span></span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="st">a [label = &lt;Raw Data&lt;br ALIGN = 'CENTER'/&gt;</span></span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="st"> Total number of patient (N = 2651):&lt;br ALIGN = 'CENTER'/&gt;</span></span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="st">   Total number of surgeries (S = 3032):&lt;br ALIGN = 'CENTER'/&gt;</span></span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="st"> &amp;nbsp; &amp;#8226; 2304 patients have one surgery&lt;br ALIGN = 'LEFT'/&gt;</span></span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="st"> &amp;nbsp; &amp;#8226; 316 patients have two surgeries&lt;br ALIGN = 'LEFT'/&gt;</span></span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="st"> &amp;nbsp; &amp;#8226; 28 patients have three surgeries&lt;br ALIGN = 'LEFT'/&gt;</span></span>
-<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="st"> &amp;nbsp; &amp;#8226; 3 patients have four surgeries&lt;br ALIGN = 'LEFT'/&gt;</span></span>
-<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="st">&gt;]</span></span>
-<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="st"># These are the main nodes at top of graph</span></span>
-<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a><span class="st">  a -&gt; b</span></span>
-<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a><span class="st">  [label = </span></span>
-<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a><span class="st">  &lt;        Outcomes Cleaning:&lt;br ALIGN = 'LEFT'/&gt; </span></span>
-<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a><span class="st">      &amp;nbsp; &amp;#8226; Remove 30 outcomes before their first surgery &lt;br ALIGN = 'LEFT'/&gt;</span></span>
-<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a><span class="st">       &amp;nbsp; &amp;#8226; Remove 299 patient without outcome after surgery &lt;br ALIGN = 'LEFT'/&gt; </span></span>
-<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a><span class="st">      &amp;nbsp; &amp;#8226; Total of 329 patients with 567 surgeries removed &lt;br ALIGN = 'LEFT'/&gt;&gt;]</span></span>
-<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a><span class="st">b [label = &lt;Data&lt;br ALIGN = 'CENTER'/&gt;</span></span>
-<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a><span class="st"> Total number of patient (N = 2322):&lt;br ALIGN = 'CENTER'/&gt;</span></span>
-<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a><span class="st">    Total number of surgeries (S = 2510):&lt;br ALIGN = 'CENTER'/&gt;</span></span>
-<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a><span class="st"> &amp;nbsp; &amp;#8226; 2141 patients have one surgery&lt;br ALIGN = 'LEFT'/&gt;</span></span>
-<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a><span class="st"> &amp;nbsp; &amp;#8226; 174 patients have two surgeries&lt;br ALIGN = 'LEFT'/&gt;</span></span>
-<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a><span class="st"> &amp;nbsp; &amp;#8226; 7 patients have three surgeries&lt;br ALIGN = 'LEFT'/&gt;</span></span>
-<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a><span class="st">&gt;]</span></span>
-<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a><span class="st"> </span></span>
-<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a><span class="st"> b -&gt; c</span></span>
-<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a><span class="st"> [label =</span></span>
-<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a><span class="st"> &lt;            Variable Cleaning:&lt;br ALIGN = 'LEFT'/&gt; </span></span>
-<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a><span class="st">         &amp;nbsp;     &amp;#8226; ADI missing values: 178 &lt;br ALIGN = 'LEFT'/&gt;</span></span>
-<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a><span class="st">          &amp;nbsp;     &amp;#8226; BMI missing values: 41 &lt;br ALIGN = 'LEFT'/&gt;</span></span>
-<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a><span class="st">          &amp;nbsp;     &amp;#8226; Insurance elimination: 2 &lt;br ALIGN = 'LEFT'/&gt; </span></span>
-<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a><span class="st">         &amp;nbsp;     &amp;#8226; Total of 203 patients and 213 surgeries removed&lt;br ALIGN = 'LEFT'/&gt;&gt;]</span></span>
-<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a><span class="st"> </span></span>
-<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a><span class="st">c [label = </span></span>
-<span id="cb13-44"><a href="#cb13-44" aria-hidden="true" tabindex="-1"></a><span class="st">&lt; Data &lt;br ALIGN = 'CENTER'/&gt;</span></span>
-<span id="cb13-45"><a href="#cb13-45" aria-hidden="true" tabindex="-1"></a><span class="sc">\n</span><span class="st"> Total number of patient (N = 2119):&lt;br ALIGN = 'CENTER'/&gt;</span></span>
-<span id="cb13-46"><a href="#cb13-46" aria-hidden="true" tabindex="-1"></a><span class="sc">\n</span><span class="st"> Total number of surgeries (S = 2297):&lt;br ALIGN = 'CENTER'/&gt;</span></span>
-<span id="cb13-47"><a href="#cb13-47" aria-hidden="true" tabindex="-1"></a><span class="sc">\n</span><span class="st"> &amp;nbsp; &amp;#8226; 1948 patients have one surgery&lt;br ALIGN = 'LEFT'/&gt;</span></span>
-<span id="cb13-48"><a href="#cb13-48" aria-hidden="true" tabindex="-1"></a><span class="sc">\n</span><span class="st"> &amp;nbsp; &amp;#8226; 164 patients have two surgeries&lt;br ALIGN = 'LEFT'/&gt;</span></span>
-<span id="cb13-49"><a href="#cb13-49" aria-hidden="true" tabindex="-1"></a><span class="sc">\n</span><span class="st"> &amp;nbsp; &amp;#8226; 7 patients have three surgeries&lt;br ALIGN = 'LEFT'/&gt;&gt;]</span></span>
-<span id="cb13-50"><a href="#cb13-50" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-51"><a href="#cb13-51" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-52"><a href="#cb13-52" aria-hidden="true" tabindex="-1"></a><span class="st"> c -&gt; d</span></span>
-<span id="cb13-53"><a href="#cb13-53" aria-hidden="true" tabindex="-1"></a><span class="st"> </span></span>
-<span id="cb13-54"><a href="#cb13-54" aria-hidden="true" tabindex="-1"></a><span class="st"> [label =</span></span>
-<span id="cb13-55"><a href="#cb13-55" aria-hidden="true" tabindex="-1"></a><span class="st"> &lt;</span></span>
-<span id="cb13-56"><a href="#cb13-56" aria-hidden="true" tabindex="-1"></a><span class="st">             Time Variable Cleaning:&lt;br ALIGN = 'LEFT'/&gt; </span></span>
-<span id="cb13-57"><a href="#cb13-57" aria-hidden="true" tabindex="-1"></a><span class="st">         &amp;nbsp;     &amp;#8226; Remove outcomes over 365 days &lt;br ALIGN = 'LEFT'/&gt;</span></span>
-<span id="cb13-58"><a href="#cb13-58" aria-hidden="true" tabindex="-1"></a><span class="st">          &amp;nbsp;     &amp;#8226; Remove patients with 3 surgeries: 7 patients &lt;br ALIGN = 'LEFT'/&gt;</span></span>
-<span id="cb13-59"><a href="#cb13-59" aria-hidden="true" tabindex="-1"></a><span class="st">          &amp;nbsp;     &amp;#8226; Remove patient with fewer than 4 outcomes: 394 patients &lt;br ALIGN = 'LEFT'/&gt;</span></span>
-<span id="cb13-60"><a href="#cb13-60" aria-hidden="true" tabindex="-1"></a><span class="st">          &amp;nbsp;     &amp;#8226; Keep only the first available surgeries: 118 surgeris &lt;br ALIGN = 'LEFT'/&gt;</span></span>
-<span id="cb13-61"><a href="#cb13-61" aria-hidden="true" tabindex="-1"></a><span class="st">          &amp;nbsp;     &amp;#8226; Total of 401 patients removed &lt;br ALIGN = 'LEFT'/&gt;&gt;]</span></span>
-<span id="cb13-62"><a href="#cb13-62" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-63"><a href="#cb13-63" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-64"><a href="#cb13-64" aria-hidden="true" tabindex="-1"></a><span class="st">d [label = </span></span>
-<span id="cb13-65"><a href="#cb13-65" aria-hidden="true" tabindex="-1"></a><span class="st">&lt;Working Data: (N = 1718)&lt;br ALIGN = 'CENTER'/&gt;</span></span>
-<span id="cb13-66"><a href="#cb13-66" aria-hidden="true" tabindex="-1"></a><span class="st">Model building with total &lt;br ALIGN = 'LEFT'/&gt; </span></span>
-<span id="cb13-67"><a href="#cb13-67" aria-hidden="true" tabindex="-1"></a><span class="st">Stratified split dataset into two subsets&lt;br ALIGN = 'LEFT'/&gt; &gt;]</span></span>
-<span id="cb13-68"><a href="#cb13-68" aria-hidden="true" tabindex="-1"></a><span class="st">  </span></span>
-<span id="cb13-69"><a href="#cb13-69" aria-hidden="true" tabindex="-1"></a><span class="st">e [label = </span></span>
-<span id="cb13-70"><a href="#cb13-70" aria-hidden="true" tabindex="-1"></a><span class="st">&lt;Training Data: (N = 1144)&lt;br ALIGN = 'CENTER'/&gt; </span></span>
-<span id="cb13-71"><a href="#cb13-71" aria-hidden="true" tabindex="-1"></a><span class="st">Serving as a pool for selecting &lt;br ALIGN = 'LEFT'/&gt;</span></span>
-<span id="cb13-72"><a href="#cb13-72" aria-hidden="true" tabindex="-1"></a><span class="st">The set of information donors &lt;br ALIGN = 'LEFT'/&gt;</span></span>
-<span id="cb13-73"><a href="#cb13-73" aria-hidden="true" tabindex="-1"></a><span class="st">&gt;]\</span></span>
-<span id="cb13-74"><a href="#cb13-74" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-75"><a href="#cb13-75" aria-hidden="true" tabindex="-1"></a><span class="st">f [label = </span></span>
-<span id="cb13-76"><a href="#cb13-76" aria-hidden="true" tabindex="-1"></a><span class="st">&lt;Testing Data:  (N = 574)&lt;br ALIGN = 'CENTER'/&gt; </span></span>
-<span id="cb13-77"><a href="#cb13-77" aria-hidden="true" tabindex="-1"></a><span class="st">Serving as targets for prediction validation &lt;br ALIGN = 'LEFT'/&gt;</span></span>
-<span id="cb13-78"><a href="#cb13-78" aria-hidden="true" tabindex="-1"></a><span class="st">Evaluation for model performance &lt;br ALIGN = 'LEFT'/&gt;</span></span>
-<span id="cb13-79"><a href="#cb13-79" aria-hidden="true" tabindex="-1"></a><span class="st">&gt;]</span></span>
-<span id="cb13-80"><a href="#cb13-80" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-81"><a href="#cb13-81" aria-hidden="true" tabindex="-1"></a><span class="st">d -&gt; {e f}</span></span>
-<span id="cb13-82"><a href="#cb13-82" aria-hidden="true" tabindex="-1"></a><span class="st">}"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="do">## see the flowchart</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>flowchart1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div class="grViz html-widget html-fill-item" id="htmlwidget-fce7e282b11d003a9c71" style="width:100%;height:464px;"></div>
-<script type="application/json" data-for="htmlwidget-fce7e282b11d003a9c71">{"x":{"diagram":"\ndigraph graph2 {\n\ngraph [layout = dot]\n\n# node definitions with substituted label text\nnode [shape = rectangle, width = 4, fillcolor = Biege]\na [label = <Raw Data<br ALIGN = \"CENTER\"/>\n Total number of patient (N = 2651):<br ALIGN = \"CENTER\"/>\n   Total number of surgeries (S = 3032):<br ALIGN = \"CENTER\"/>\n &nbsp; &#8226; 2304 patients have one surgery<br ALIGN = \"LEFT\"/>\n &nbsp; &#8226; 316 patients have two surgeries<br ALIGN = \"LEFT\"/>\n &nbsp; &#8226; 28 patients have three surgeries<br ALIGN = \"LEFT\"/>\n &nbsp; &#8226; 3 patients have four surgeries<br ALIGN = \"LEFT\"/>\n>]\n\n# These are the main nodes at top of graph\n  a -> b\n  [label = \n  <        Outcomes Cleaning:<br ALIGN = \"LEFT\"/> \n      &nbsp; &#8226; Remove 30 outcomes before their first surgery <br ALIGN = \"LEFT\"/>\n       &nbsp; &#8226; Remove 299 patient without outcome after surgery <br ALIGN = \"LEFT\"/> \n      &nbsp; &#8226; Total of 329 patients with 567 surgeries removed <br ALIGN = \"LEFT\"/>>]\n\nb [label = <Data<br ALIGN = \"CENTER\"/>\n Total number of patient (N = 2322):<br ALIGN = \"CENTER\"/>\n    Total number of surgeries (S = 2510):<br ALIGN = \"CENTER\"/>\n &nbsp; &#8226; 2141 patients have one surgery<br ALIGN = \"LEFT\"/>\n &nbsp; &#8226; 174 patients have two surgeries<br ALIGN = \"LEFT\"/>\n &nbsp; &#8226; 7 patients have three surgeries<br ALIGN = \"LEFT\"/>\n>]\n\n \n b -> c\n [label =\n <            Variable Cleaning:<br ALIGN = \"LEFT\"/> \n         &nbsp;     &#8226; ADI missing values: 178 <br ALIGN = \"LEFT\"/>\n          &nbsp;     &#8226; BMI missing values: 41 <br ALIGN = \"LEFT\"/>\n          &nbsp;     &#8226; Insurance elimination: 2 <br ALIGN = \"LEFT\"/> \n         &nbsp;     &#8226; Total of 203 patients and 213 surgeries removed<br ALIGN = \"LEFT\"/>>]\n \n\nc [label = \n< Data <br ALIGN = \"CENTER\"/>\n\n Total number of patient (N = 2119):<br ALIGN = \"CENTER\"/>\n\n Total number of surgeries (S = 2297):<br ALIGN = \"CENTER\"/>\n\n &nbsp; &#8226; 1948 patients have one surgery<br ALIGN = \"LEFT\"/>\n\n &nbsp; &#8226; 164 patients have two surgeries<br ALIGN = \"LEFT\"/>\n\n &nbsp; &#8226; 7 patients have three surgeries<br ALIGN = \"LEFT\"/>>]\n\n\n c -> d\n \n [label =\n <\n             Time Variable Cleaning:<br ALIGN = \"LEFT\"/> \n         &nbsp;     &#8226; Remove outcomes over 365 days <br ALIGN = \"LEFT\"/>\n          &nbsp;     &#8226; Remove patients with 3 surgeries: 7 patients <br ALIGN = \"LEFT\"/>\n          &nbsp;     &#8226; Remove patient with fewer than 4 outcomes: 394 patients <br ALIGN = \"LEFT\"/>\n          &nbsp;     &#8226; Keep only the first available surgeries: 118 surgeris <br ALIGN = \"LEFT\"/>\n          &nbsp;     &#8226; Total of 401 patients removed <br ALIGN = \"LEFT\"/>>]\n\n\nd [label = \n<Working Data: (N = 1718)<br ALIGN = \"CENTER\"/>\nModel building with total <br ALIGN = \"LEFT\"/> \nStratified split dataset into two subsets<br ALIGN = \"LEFT\"/> >]\n  \ne [label = \n<Training Data: (N = 1144)<br ALIGN = \"CENTER\"/> \nServing as a pool for selecting <br ALIGN = \"LEFT\"/>\nThe set of information donors <br ALIGN = \"LEFT\"/>\n>]\n\nf [label = \n<Testing Data:  (N = 574)<br ALIGN = \"CENTER\"/> \nServing as targets for prediction validation <br ALIGN = \"LEFT\"/>\nEvaluation for model performance <br ALIGN = \"LEFT\"/>\n>]\n\nd -> {e f}\n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div>
+<figure class="figure">
+<p><img src="figure/flowchart_data_visit5_2024-06-05.png" class="img-fluid figure-img" width="354"></p>
+</figure>
 </div>
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># flowchart1 %&gt;%</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co">#   export_svg() %&gt;% </span></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="co">#   charToRaw() %&gt;% </span></span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="co">#   rsvg_png(paste0("figure/flowchart_data_cleaning_", Sys.Date(), ".png"))</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 </div>
 </section>
 <section id="cross-validation" class="level2">
 <h2 class="anchored" data-anchor-id="cross-validation">Cross-Validation</h2>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="do">## check the directory for the file</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="co"># here::dr_here()</span></span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="do">## setup for plm ------------------------------</span></span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>anchor <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">32</span>, <span class="dv">45</span>, <span class="dv">60</span>, <span class="dv">90</span>)</span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>bsk_knots <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">25</span>, <span class="dv">50</span>, <span class="dv">75</span>, <span class="dv">100</span>, <span class="dv">125</span>, <span class="dv">150</span>)</span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>kappa1 <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">4</span>, <span class="dv">100</span>, <span class="at">by =</span> <span class="dv">1</span>)</span>
-<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>mlmf <span class="ot">&lt;-</span> <span class="st">"outcome_score ~ adi_value + adi_value:outcome0 + adi_value:t0 +</span></span>
-<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="st">                      bmi + bmi:outcome0 + bmi:t0 +</span></span>
-<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="st">                      patient_age + patient_age:outcome0 + patient_age:t0 +</span></span>
-<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a><span class="st">                      patient_gender + patient_gender:outcome0 + patient_gender:t0 +</span></span>
-<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a><span class="st">                      primary_payer + primary_payer:outcome0 + primary_payer:t0 +</span></span>
-<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a><span class="st">                      surgery_type + surgery_type:outcome0 + surgery_type:t0 +</span></span>
-<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a><span class="st">                      outcome0 + t0"</span></span>
-<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>gf <span class="ot">&lt;-</span> <span class="st">"outcome_score ~ cs(time, df = 3)"</span></span>
-<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>gs <span class="ot">&lt;-</span> <span class="st">"~ cs(time, df = 1)"</span></span>
-<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>lmf <span class="ot">&lt;-</span> <span class="st">"outcome_score ~ as.factor(time) + </span></span>
-<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a><span class="st">                      adi_value + adi_value:outcome0 + adi_value:t0 + </span></span>
-<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a><span class="st">                      bmi + bmi:outcome0 + bmi:t0 +</span></span>
-<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a><span class="st">                      patient_age + patient_age:outcome0 + patient_age:t0 +</span></span>
-<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a><span class="st">                      patient_gender + patient_gender:outcome0 + patient_gender:t0 +</span></span>
-<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a><span class="st">                      primary_payer + primary_payer:outcome0 + primary_payer:t0 +</span></span>
-<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a><span class="st">                      surgery_type + surgery_type:outcome0 + surgery_type:t0 +</span></span>
-<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a><span class="st">                      outcome0 + t0"</span></span>
-<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a><span class="do">## euclidean kappa ---------------------------------</span></span>
-<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a><span class="do">## change the slm and kappa number</span></span>
-<span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a>e_kcv_kappa1 <span class="ot">&lt;-</span> <span class="fu">map</span>(kappa1, </span>
-<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a>                    <span class="sc">~</span><span class="fu">people_like_us</span>(<span class="at">train_data =</span> tsa_train1,</span>
-<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">test_data =</span> tsa_test1,</span>
-<span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">anchor_time =</span> anchor,</span>
-<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">brokenstick_knots =</span> bsk_knots,</span>
-<span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">linear_model =</span> <span class="st">"mlm"</span>,</span>
-<span id="cb16-38"><a href="#cb16-38" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">linear_formula =</span> mlmf,</span>
-<span id="cb16-39"><a href="#cb16-39" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">gamlss_formula =</span> gf,</span>
-<span id="cb16-40"><a href="#cb16-40" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">gamlss_sigma =</span> gs,</span>
-<span id="cb16-41"><a href="#cb16-41" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">tmin =</span> <span class="dv">0</span>,</span>
-<span id="cb16-42"><a href="#cb16-42" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">tmax =</span> <span class="dv">180</span>,</span>
-<span id="cb16-43"><a href="#cb16-43" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">id_var =</span> <span class="st">"id"</span>,</span>
-<span id="cb16-44"><a href="#cb16-44" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">outcome_var =</span> <span class="st">"outcome_score"</span>,</span>
-<span id="cb16-45"><a href="#cb16-45" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">time =</span> <span class="st">"time"</span>,</span>
-<span id="cb16-46"><a href="#cb16-46" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">weight =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb16-47"><a href="#cb16-47" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">match_plot =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb16-48"><a href="#cb16-48" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">predict_plot =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb16-49"><a href="#cb16-49" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">match_methods =</span> <span class="st">"euclidean"</span>,</span>
-<span id="cb16-50"><a href="#cb16-50" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">match_number =</span> .x),</span>
-<span id="cb16-51"><a href="#cb16-51" aria-hidden="true" tabindex="-1"></a>                    <span class="at">.progress =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb16-52"><a href="#cb16-52" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-53"><a href="#cb16-53" aria-hidden="true" tabindex="-1"></a><span class="fu">save</span>(e_kcv_kappa1, <span class="at">file =</span> <span class="fu">paste0</span>(<span class="st">"results/tsa_5visit_mlm_cv_"</span>, <span class="fu">Sys.time</span>(), <span class="st">".Rdata"</span>))</span>
-<span id="cb16-54"><a href="#cb16-54" aria-hidden="true" tabindex="-1"></a><span class="do">## summary ------------------------------------------</span></span>
-<span id="cb16-55"><a href="#cb16-55" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-56"><a href="#cb16-56" aria-hidden="true" tabindex="-1"></a>meanout <span class="ot">&lt;-</span> <span class="cf">function</span>(dataset){</span>
-<span id="cb16-57"><a href="#cb16-57" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb16-58"><a href="#cb16-58" aria-hidden="true" tabindex="-1"></a>  result0 <span class="ot">&lt;-</span> dataset <span class="sc">%&gt;%</span></span>
-<span id="cb16-59"><a href="#cb16-59" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb16-60"><a href="#cb16-60" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">mse =</span> bias<span class="sc">^</span><span class="dv">2</span>,</span>
-<span id="cb16-61"><a href="#cb16-61" aria-hidden="true" tabindex="-1"></a>           <span class="at">cr50 =</span> <span class="st">`</span><span class="at">75</span><span class="st">`</span> <span class="sc">-</span> <span class="st">`</span><span class="at">25</span><span class="st">`</span>)</span>
-<span id="cb16-62"><a href="#cb16-62" aria-hidden="true" tabindex="-1"></a>  result1 <span class="ot">&lt;-</span> result0 <span class="sc">%&gt;%</span></span>
-<span id="cb16-63"><a href="#cb16-63" aria-hidden="true" tabindex="-1"></a>    <span class="fu">colMeans</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb16-64"><a href="#cb16-64" aria-hidden="true" tabindex="-1"></a>    <span class="fu">unlist</span>()</span>
-<span id="cb16-65"><a href="#cb16-65" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(result1)}</span>
-<span id="cb16-66"><a href="#cb16-66" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-67"><a href="#cb16-67" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-68"><a href="#cb16-68" aria-hidden="true" tabindex="-1"></a>mlm_kappa1 <span class="ot">&lt;-</span> <span class="fu">map</span>(e_kcv_kappa1,</span>
-<span id="cb16-69"><a href="#cb16-69" aria-hidden="true" tabindex="-1"></a>                     <span class="sc">~</span><span class="fu">try</span>(<span class="fu">map</span>(.x, <span class="st">"centiles_observed"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb16-70"><a href="#cb16-70" aria-hidden="true" tabindex="-1"></a>                            <span class="fu">map_dfr</span>(<span class="sc">~</span><span class="fu">try</span>(<span class="fu">meanout</span>(.))) <span class="sc">%&gt;%</span></span>
-<span id="cb16-71"><a href="#cb16-71" aria-hidden="true" tabindex="-1"></a>                            <span class="fu">colMeans</span>()))</span>
-<span id="cb16-72"><a href="#cb16-72" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-73"><a href="#cb16-73" aria-hidden="true" tabindex="-1"></a><span class="do">## saving the results --------------------------------</span></span>
-<span id="cb16-74"><a href="#cb16-74" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-75"><a href="#cb16-75" aria-hidden="true" tabindex="-1"></a><span class="co"># save(e_kcv_kappa1, file = paste0("results/tsa_22_mlm_cv_", Sys.time(), ".Rdata"))</span></span>
-<span id="cb16-76"><a href="#cb16-76" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-77"><a href="#cb16-77" aria-hidden="true" tabindex="-1"></a><span class="fu">save</span>(mlm_kappa1, <span class="at">file =</span> <span class="fu">paste0</span>(<span class="st">"results/tsa_5visit_table_mlm_cv_"</span>, <span class="fu">Sys.time</span>(), <span class="st">".Rdata"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
 </section>
 <section id="cross-validation-for-different-kappa-values-larger-brokenstick-knots" class="level2">
 <h2 class="anchored" data-anchor-id="cross-validation-for-different-kappa-values-larger-brokenstick-knots">Cross-validation for different <span class="math inline">\(\kappa\)</span> values larger brokenstick knots</h2>
-<p>Remember to change the kappa each time</p>
-</section>
-<section id="kappa-from-4-to-100-currently-2024-01-24-192205-update-to-2024-04-04" class="level2">
-<h2 class="anchored" data-anchor-id="kappa-from-4-to-100-currently-2024-01-24-192205-update-to-2024-04-04"><span class="math inline">\(\kappa\)</span> from 4 to 100 (currently 2024-01-24 19:22:05 update to 2024-04-04)</h2>
 <section id="sec-mlm_cv" class="level3">
 <h3 class="anchored" data-anchor-id="sec-mlm_cv">The MLM</h3>
 <p>The setup for this PLM:</p>
@@ -1831,48 +1423,9 @@ window.Quarto = {
 <li>bsk_knots &lt;- c(25, 50, 75, 100, 125, 150)</li>
 <li>kappa1 &lt;- seq(4, 100, by = 2), it may seems not big enough to see the pattern</li>
 </ul>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">"results/tsa_5visit_table_mlm_cv_2024-06-05 19:41:22.541108.Rdata"</span>)</span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>kappa200_mlm <span class="ot">&lt;-</span> <span class="fu">rbind</span>(<span class="fu">map_dfr</span>(mlm_kappa1, <span class="sc">~</span><span class="fu">unlist</span>(., <span class="at">recursive =</span> <span class="cn">FALSE</span>))) <span class="sc">%&gt;%</span></span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">kappa =</span> <span class="fu">seq</span>(<span class="dv">4</span>, <span class="dv">100</span>, <span class="at">by =</span> <span class="dv">1</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(kappa, <span class="fu">everything</span>())</span>
-<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="co"># map_dfr(result_kappa5, ~unlist(., recursive = FALSE))</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div>
+
 </div>
-<p>The trade-off is not very obvious, the MSE is still around 50, but BIAS is hard to see. The coverage is not very good, but it is not very bad either.</p>
-<p>not sure whether the result is due to the brokenstick model or not</p>
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>kappa200_mlm_bias <span class="ot">&lt;-</span> kappa200_mlm <span class="sc">%&gt;%</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span></span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> kappa, <span class="at">y =</span> bias), <span class="at">color =</span> <span class="st">"darkgreen"</span>) </span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>kappa200_mlm_mse <span class="ot">&lt;-</span> kappa200_mlm <span class="sc">%&gt;%</span></span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span></span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># geom_line(aes(x = kappa, y = bias), color = "blue") +</span></span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> kappa, <span class="at">y =</span> mse), <span class="at">color =</span> <span class="st">"indianred"</span>) </span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># scale_y_continuous("Bias", </span></span>
-<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   sec.axis = sec_axis(~ ., name = "MSE"))</span></span>
-<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>kappa200_mlm_ci50 <span class="ot">&lt;-</span> kappa200_mlm <span class="sc">%&gt;%</span></span>
-<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span></span>
-<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> kappa, <span class="at">y =</span> cr50), <span class="at">color =</span> <span class="st">"purple"</span>) </span>
-<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>kappa200_mlm_cr50 <span class="ot">&lt;-</span> kappa200_mlm <span class="sc">%&gt;%</span></span>
-<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span></span>
-<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> kappa, <span class="at">y =</span> coverage50), <span class="at">color =</span> <span class="st">"blue1"</span>) </span>
-<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>kappa200_mlm_cr80<span class="ot">&lt;-</span> kappa200_mlm <span class="sc">%&gt;%</span></span>
-<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span></span>
-<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># geom_line(aes(x = kappa, y = bias), color = "blue") +</span></span>
-<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> kappa, <span class="at">y =</span> coverage80), <span class="at">color =</span> <span class="st">"blue3"</span>) </span>
-<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>kappa200_mlm_cr90<span class="ot">&lt;-</span> kappa200_mlm <span class="sc">%&gt;%</span></span>
-<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span></span>
-<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># geom_line(aes(x = kappa, y = bias), color = "blue") +</span></span>
-<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> kappa, <span class="at">y =</span> coverage90), <span class="at">color =</span> <span class="st">"blue4"</span>)</span>
-<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a>kappa200_mlm_bias <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"BIAS"</span>) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Number of Matches"</span>)</span>
-<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a>kappa200_mlm_mse <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"MSE"</span>) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Number of Matches"</span>)</span>
-<span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a>kappa200_mlm_ci50 <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"Width of 50% PI"</span>) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Number of Matches"</span>)</span>
-<span id="cb18-28"><a href="#cb18-28" aria-hidden="true" tabindex="-1"></a>kappa200_mlm_cr50 <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"CR of 50% PI"</span>) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Number of Matches"</span>)</span>
-<span id="cb18-29"><a href="#cb18-29" aria-hidden="true" tabindex="-1"></a>kappa200_mlm_cr80 <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"CR of 80% PI"</span>) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Number of Matches"</span>)</span>
-<span id="cb18-30"><a href="#cb18-30" aria-hidden="true" tabindex="-1"></a>kappa200_mlm_cr90 <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"CR of 90% PI"</span>) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"Number of Matches"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell quarto-layout-panel" data-layout-ncol="2" data-fig-subcap-location="top">
 <div class="quarto-layout-row">
 <div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
@@ -1897,7 +1450,7 @@ window.Quarto = {
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="28_visit5_files/figure-html/kappa200_mlm%20plot_15-3.png" class="img-fluid figure-img" width="576"></p>
-<figcaption>CV_kappa200SLM_width50</figcaption>
+<figcaption>CV_kappa200SLM_CFW50</figcaption>
 </figure>
 </div>
 </div>
@@ -1938,239 +1491,163 @@ window.Quarto = {
 </section>
 <section id="sec_E_kappa25" class="level2">
 <h2 class="anchored" data-anchor-id="sec_E_kappa25">Euclidean distance</h2>
-<p>Need to change this part for the <span class="math inline">\(\kappa\)</span> into 5 to 10.</p>
-<p>We can also try <span class="math inline">\(\kappa\)</span> 25 or larger, doubting about whether it will improve anything at all.</p>
-<div class="cell" data-hide="true">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>bsk_knots <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">25</span>, <span class="dv">50</span>, <span class="dv">75</span>, <span class="dv">100</span>, <span class="dv">125</span>, <span class="dv">150</span>)</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>anchor <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">32</span>, <span class="dv">45</span>, <span class="dv">60</span>, <span class="dv">90</span>)</span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>mlmf <span class="ot">&lt;-</span> <span class="st">"outcome_score ~ adi_value + adi_value:outcome0 + adi_value:t0 +</span></span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="st">                      bmi + bmi:outcome0 + bmi:t0 +</span></span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="st">                      patient_age + patient_age:outcome0 + patient_age:t0 +</span></span>
-<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="st">                      patient_gender + patient_gender:outcome0 + patient_gender:t0 +</span></span>
-<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a><span class="st">                      primary_payer + primary_payer:outcome0 + primary_payer:t0 +</span></span>
-<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a><span class="st">                      surgery_type + surgery_type:outcome0 + surgery_type:t0 +</span></span>
-<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a><span class="st">                      outcome0 + t0"</span></span>
-<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>gf <span class="ot">&lt;-</span> <span class="st">"outcome_score ~ cs(time, df = 3)"</span></span>
-<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>gs <span class="ot">&lt;-</span> <span class="st">"~ cs(time, df = 1)"</span></span>
-<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>lmf <span class="ot">&lt;-</span> <span class="st">"outcome_score ~ as.factor(time) + </span></span>
-<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a><span class="st">                      adi_value + adi_value:outcome0 + adi_value:t0 + </span></span>
-<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a><span class="st">                      bmi + bmi:outcome0 + bmi:t0 +</span></span>
-<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a><span class="st">                      patient_age + patient_age:outcome0 + patient_age:t0 +</span></span>
-<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a><span class="st">                      patient_gender + patient_gender:outcome0 + patient_gender:t0 +</span></span>
-<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a><span class="st">                      primary_payer + primary_payer:outcome0 + primary_payer:t0 +</span></span>
-<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a><span class="st">                      surgery_type + surgery_type:outcome0 + surgery_type:t0 +</span></span>
-<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a><span class="st">                      outcome0 + t0"</span></span>
-<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-24"><a href="#cb19-24" aria-hidden="true" tabindex="-1"></a><span class="co"># e_k25_slm &lt;- people_like_us(train_data = tsa_train1,</span></span>
-<span id="cb19-25"><a href="#cb19-25" aria-hidden="true" tabindex="-1"></a><span class="co">#                         test_data = tsa_test1,</span></span>
-<span id="cb19-26"><a href="#cb19-26" aria-hidden="true" tabindex="-1"></a><span class="co">#                         anchor_time = anchor,</span></span>
-<span id="cb19-27"><a href="#cb19-27" aria-hidden="true" tabindex="-1"></a><span class="co">#                         brokenstick_knots = bsk_knots,</span></span>
-<span id="cb19-28"><a href="#cb19-28" aria-hidden="true" tabindex="-1"></a><span class="co">#                         linear_model = "lm",</span></span>
-<span id="cb19-29"><a href="#cb19-29" aria-hidden="true" tabindex="-1"></a><span class="co">#                         linear_formula = lmf,</span></span>
-<span id="cb19-30"><a href="#cb19-30" aria-hidden="true" tabindex="-1"></a><span class="co">#                         gamlss_formula = gf,</span></span>
-<span id="cb19-31"><a href="#cb19-31" aria-hidden="true" tabindex="-1"></a><span class="co">#                         gamlss_sigma = gs,</span></span>
-<span id="cb19-32"><a href="#cb19-32" aria-hidden="true" tabindex="-1"></a><span class="co">#                         tmin = 0,</span></span>
-<span id="cb19-33"><a href="#cb19-33" aria-hidden="true" tabindex="-1"></a><span class="co">#                         tmax = 100,</span></span>
-<span id="cb19-34"><a href="#cb19-34" aria-hidden="true" tabindex="-1"></a><span class="co">#                         id_var = "id",</span></span>
-<span id="cb19-35"><a href="#cb19-35" aria-hidden="true" tabindex="-1"></a><span class="co">#                         outcome_var = "outcome_score",</span></span>
-<span id="cb19-36"><a href="#cb19-36" aria-hidden="true" tabindex="-1"></a><span class="co">#                         time = "time",</span></span>
-<span id="cb19-37"><a href="#cb19-37" aria-hidden="true" tabindex="-1"></a><span class="co">#                         weight = FALSE,</span></span>
-<span id="cb19-38"><a href="#cb19-38" aria-hidden="true" tabindex="-1"></a><span class="co">#                         match_plot = FALSE,</span></span>
-<span id="cb19-39"><a href="#cb19-39" aria-hidden="true" tabindex="-1"></a><span class="co">#                         predict_plot = FALSE,</span></span>
-<span id="cb19-40"><a href="#cb19-40" aria-hidden="true" tabindex="-1"></a><span class="co">#                         match_methods = "euclidean",</span></span>
-<span id="cb19-41"><a href="#cb19-41" aria-hidden="true" tabindex="-1"></a><span class="co">#                         match_number = 25)</span></span>
-<span id="cb19-42"><a href="#cb19-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-43"><a href="#cb19-43" aria-hidden="true" tabindex="-1"></a>e_k25_mlm <span class="ot">&lt;-</span> <span class="fu">people_like_us</span>(<span class="at">train_data =</span> tsa_train1,</span>
-<span id="cb19-44"><a href="#cb19-44" aria-hidden="true" tabindex="-1"></a>                        <span class="at">test_data =</span> tsa_test1,</span>
-<span id="cb19-45"><a href="#cb19-45" aria-hidden="true" tabindex="-1"></a>                        <span class="at">anchor_time =</span> anchor,</span>
-<span id="cb19-46"><a href="#cb19-46" aria-hidden="true" tabindex="-1"></a>                        <span class="at">brokenstick_knots =</span> bsk_knots,</span>
-<span id="cb19-47"><a href="#cb19-47" aria-hidden="true" tabindex="-1"></a>                        <span class="at">linear_model =</span> <span class="st">"mlm"</span>,</span>
-<span id="cb19-48"><a href="#cb19-48" aria-hidden="true" tabindex="-1"></a>                        <span class="at">linear_formula =</span> mlmf,</span>
-<span id="cb19-49"><a href="#cb19-49" aria-hidden="true" tabindex="-1"></a>                        <span class="at">gamlss_formula =</span> gf,</span>
-<span id="cb19-50"><a href="#cb19-50" aria-hidden="true" tabindex="-1"></a>                        <span class="at">gamlss_sigma =</span> gs,</span>
-<span id="cb19-51"><a href="#cb19-51" aria-hidden="true" tabindex="-1"></a>                        <span class="at">tmin =</span> <span class="dv">0</span>,</span>
-<span id="cb19-52"><a href="#cb19-52" aria-hidden="true" tabindex="-1"></a>                        <span class="at">tmax =</span> <span class="dv">100</span>,</span>
-<span id="cb19-53"><a href="#cb19-53" aria-hidden="true" tabindex="-1"></a>                        <span class="at">id_var =</span> <span class="st">"id"</span>,</span>
-<span id="cb19-54"><a href="#cb19-54" aria-hidden="true" tabindex="-1"></a>                        <span class="at">outcome_var =</span> <span class="st">"outcome_score"</span>,</span>
-<span id="cb19-55"><a href="#cb19-55" aria-hidden="true" tabindex="-1"></a>                        <span class="at">time =</span> <span class="st">"time"</span>,</span>
-<span id="cb19-56"><a href="#cb19-56" aria-hidden="true" tabindex="-1"></a>                        <span class="at">weight =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb19-57"><a href="#cb19-57" aria-hidden="true" tabindex="-1"></a>                        <span class="at">match_plot =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb19-58"><a href="#cb19-58" aria-hidden="true" tabindex="-1"></a>                        <span class="at">predict_plot =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb19-59"><a href="#cb19-59" aria-hidden="true" tabindex="-1"></a>                        <span class="at">match_methods =</span> <span class="st">"euclidean"</span>,</span>
-<span id="cb19-60"><a href="#cb19-60" aria-hidden="true" tabindex="-1"></a>                        <span class="at">match_number =</span> <span class="dv">25</span>)</span>
-<span id="cb19-61"><a href="#cb19-61" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-62"><a href="#cb19-62" aria-hidden="true" tabindex="-1"></a><span class="fu">save</span>(e_k25_mlm, </span>
-<span id="cb19-63"><a href="#cb19-63" aria-hidden="true" tabindex="-1"></a>     <span class="at">file =</span> <span class="fu">paste0</span>(<span class="st">"results/tsa_5visit_kappa25_relationship_"</span>, <span class="fu">Sys.Date</span>(), <span class="st">".Rdata"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">"results/tsa_5visit_kappa25_relationship_2024-06-05.Rdata"</span>)</span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>meanout <span class="ot">&lt;-</span> <span class="cf">function</span>(dataset){</span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># browser()</span></span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  result0 <span class="ot">&lt;-</span> dataset <span class="sc">%&gt;%</span></span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">mse =</span> bias<span class="sc">^</span><span class="dv">2</span>,</span>
-<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>           <span class="at">cr50 =</span> <span class="st">`</span><span class="at">75</span><span class="st">`</span> <span class="sc">-</span> <span class="st">`</span><span class="at">25</span><span class="st">`</span>)</span>
-<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>  result1 <span class="ot">&lt;-</span> result0 <span class="sc">%&gt;%</span></span>
-<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">colMeans</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">unlist</span>()</span>
-<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(result1)}</span>
-<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>mean_result_ek25m <span class="ot">&lt;-</span> <span class="fu">map</span>(e_k25_mlm, <span class="st">"centiles_observed"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map_dfr</span>(<span class="sc">~</span><span class="fu">try</span>(<span class="fu">meanout</span>(.))) <span class="sc">%&gt;%</span></span>
-<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(coverage50, coverage80, coverage90, bias, mse, cr50) <span class="sc">%&gt;%</span></span>
-<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">colMeans</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">scipen=</span><span class="dv">1</span>, <span class="at">digits=</span><span class="dv">4</span>)</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>result25 <span class="ot">&lt;-</span> </span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rbind</span>(<span class="at">meanEk25_MLM =</span> mean_result_ek25m) <span class="sc">%&gt;%</span></span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span> </span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">rmse =</span> <span class="fu">sqrt</span>(mse)) <span class="sc">%&gt;%</span></span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rownames_to_column</span>(<span class="st">"methods"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(<span class="st">"methods"</span>, <span class="at">into =</span> <span class="fu">c</span>(<span class="st">"Methods"</span>, <span class="st">"LM"</span>))</span>
-<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>result25</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre class="scroll-100"><code>#&gt;    Methods  LM coverage50 coverage80 coverage90  bias   mse  cr50  rmse
 #&gt; 1 meanEk25 MLM     0.4969     0.7772     0.8755 11.02 207.2 17.62 14.39</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>calib_plot <span class="ot">&lt;-</span> <span class="cf">function</span>(data) {</span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># browser()</span></span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>  data1 <span class="ot">&lt;-</span> <span class="fu">map</span>(data, <span class="st">"centiles_observed"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">map_dfr</span>(<span class="sc">~</span><span class="fu">try</span>(dplyr<span class="sc">::</span><span class="fu">select</span>(., </span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>                               <span class="at">time =</span> <span class="st">"x"</span>,</span>
-<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>                               <span class="at">prediction =</span> <span class="st">"50"</span>, </span>
-<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>                               <span class="at">observation =</span> <span class="st">"actual"</span>))) <span class="sc">%&gt;%</span></span>
-<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(observation <span class="sc">&gt;=</span> <span class="sc">-</span><span class="dv">1</span>) </span>
-<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>  (q1 <span class="ot">&lt;-</span> <span class="fu">quantile</span>(data1<span class="sc">$</span>prediction, <span class="at">probs =</span> <span class="fu">seq</span>(<span class="fl">0.1</span>, <span class="dv">1</span>, <span class="at">by =</span> <span class="fl">0.1</span>)))</span>
-<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>  qt1 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">mean</span>(<span class="fu">c</span>(<span class="fu">min</span>(data1<span class="sc">$</span>prediction), q1[<span class="dv">1</span>])), </span>
-<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>           <span class="fu">mean</span>(<span class="fu">c</span>(q1[<span class="dv">1</span>], q1[<span class="dv">2</span>])),</span>
-<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>           <span class="fu">mean</span>(<span class="fu">c</span>(q1[<span class="dv">2</span>], q1[<span class="dv">3</span>])),</span>
-<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>           <span class="fu">mean</span>(<span class="fu">c</span>(q1[<span class="dv">3</span>], q1[<span class="dv">4</span>])),</span>
-<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>           <span class="fu">mean</span>(<span class="fu">c</span>(q1[<span class="dv">4</span>], q1[<span class="dv">5</span>])),</span>
-<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>           <span class="fu">mean</span>(<span class="fu">c</span>(q1[<span class="dv">5</span>], q1[<span class="dv">6</span>])),</span>
-<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>           <span class="fu">mean</span>(<span class="fu">c</span>(q1[<span class="dv">6</span>], q1[<span class="dv">7</span>])),</span>
-<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>           <span class="fu">mean</span>(<span class="fu">c</span>(q1[<span class="dv">7</span>], q1[<span class="dv">8</span>])),</span>
-<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a>           <span class="fu">mean</span>(<span class="fu">c</span>(q1[<span class="dv">8</span>], q1[<span class="dv">9</span>])),</span>
-<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a>           <span class="fu">mean</span>(<span class="fu">c</span>(q1[<span class="dv">9</span>], <span class="fu">max</span>(data1<span class="sc">$</span>prediction))))</span>
-<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a>  (q2 <span class="ot">&lt;-</span> <span class="fu">quantile</span>(data1<span class="sc">$</span>observation, <span class="at">probs =</span> <span class="fu">seq</span>(<span class="fl">0.1</span>, <span class="dv">1</span>, <span class="at">by =</span> <span class="fl">0.1</span>)))</span>
-<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a>  qt2 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">mean</span>(<span class="fu">c</span>(<span class="dv">0</span>, q2[<span class="dv">1</span>])), </span>
-<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a>           <span class="fu">mean</span>(<span class="fu">c</span>(q2[<span class="dv">1</span>], q2[<span class="dv">2</span>])),</span>
-<span id="cb23-25"><a href="#cb23-25" aria-hidden="true" tabindex="-1"></a>           <span class="fu">mean</span>(<span class="fu">c</span>(q2[<span class="dv">2</span>], q2[<span class="dv">3</span>])),</span>
-<span id="cb23-26"><a href="#cb23-26" aria-hidden="true" tabindex="-1"></a>           <span class="fu">mean</span>(<span class="fu">c</span>(q2[<span class="dv">3</span>], q2[<span class="dv">4</span>])),</span>
-<span id="cb23-27"><a href="#cb23-27" aria-hidden="true" tabindex="-1"></a>           <span class="fu">mean</span>(<span class="fu">c</span>(q2[<span class="dv">4</span>], q2[<span class="dv">5</span>])),</span>
-<span id="cb23-28"><a href="#cb23-28" aria-hidden="true" tabindex="-1"></a>           <span class="fu">mean</span>(<span class="fu">c</span>(q2[<span class="dv">5</span>], q2[<span class="dv">6</span>])),</span>
-<span id="cb23-29"><a href="#cb23-29" aria-hidden="true" tabindex="-1"></a>           <span class="fu">mean</span>(<span class="fu">c</span>(q2[<span class="dv">6</span>], q2[<span class="dv">7</span>])),</span>
-<span id="cb23-30"><a href="#cb23-30" aria-hidden="true" tabindex="-1"></a>           <span class="fu">mean</span>(<span class="fu">c</span>(q2[<span class="dv">7</span>], q2[<span class="dv">8</span>])),</span>
-<span id="cb23-31"><a href="#cb23-31" aria-hidden="true" tabindex="-1"></a>           <span class="fu">mean</span>(<span class="fu">c</span>(q2[<span class="dv">8</span>], q2[<span class="dv">9</span>])),</span>
-<span id="cb23-32"><a href="#cb23-32" aria-hidden="true" tabindex="-1"></a>           <span class="fu">mean</span>(<span class="fu">c</span>(q2[<span class="dv">9</span>], <span class="fu">max</span>(data1<span class="sc">$</span>observation))))</span>
-<span id="cb23-33"><a href="#cb23-33" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb23-34"><a href="#cb23-34" aria-hidden="true" tabindex="-1"></a>  data1 <span class="ot">&lt;-</span> data1 <span class="sc">%&gt;%</span></span>
-<span id="cb23-35"><a href="#cb23-35" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">group =</span> <span class="fu">case_when</span>(prediction <span class="sc">&lt;=</span> q1[<span class="dv">1</span>] <span class="sc">~</span> qt1[<span class="dv">1</span>],</span>
-<span id="cb23-36"><a href="#cb23-36" aria-hidden="true" tabindex="-1"></a>                             prediction <span class="sc">&gt;</span> q1[<span class="dv">1</span>] <span class="sc">&amp;</span> prediction <span class="sc">&lt;=</span> q1[<span class="dv">2</span>] <span class="sc">~</span> qt1[<span class="dv">2</span>],</span>
-<span id="cb23-37"><a href="#cb23-37" aria-hidden="true" tabindex="-1"></a>                             prediction <span class="sc">&gt;</span> q1[<span class="dv">2</span>] <span class="sc">&amp;</span> prediction <span class="sc">&lt;=</span> q1[<span class="dv">3</span>] <span class="sc">~</span> qt1[<span class="dv">3</span>],</span>
-<span id="cb23-38"><a href="#cb23-38" aria-hidden="true" tabindex="-1"></a>                             prediction <span class="sc">&gt;</span> q1[<span class="dv">3</span>] <span class="sc">&amp;</span> prediction <span class="sc">&lt;=</span> q1[<span class="dv">4</span>] <span class="sc">~</span> qt1[<span class="dv">4</span>],</span>
-<span id="cb23-39"><a href="#cb23-39" aria-hidden="true" tabindex="-1"></a>                             prediction <span class="sc">&gt;</span> q1[<span class="dv">4</span>] <span class="sc">&amp;</span> prediction <span class="sc">&lt;=</span> q1[<span class="dv">5</span>] <span class="sc">~</span> qt1[<span class="dv">5</span>],</span>
-<span id="cb23-40"><a href="#cb23-40" aria-hidden="true" tabindex="-1"></a>                             prediction <span class="sc">&gt;</span> q1[<span class="dv">5</span>] <span class="sc">&amp;</span> prediction <span class="sc">&lt;=</span> q1[<span class="dv">6</span>] <span class="sc">~</span> qt1[<span class="dv">6</span>],</span>
-<span id="cb23-41"><a href="#cb23-41" aria-hidden="true" tabindex="-1"></a>                             prediction <span class="sc">&gt;</span> q1[<span class="dv">6</span>] <span class="sc">&amp;</span> prediction <span class="sc">&lt;=</span> q1[<span class="dv">7</span>] <span class="sc">~</span> qt1[<span class="dv">7</span>],</span>
-<span id="cb23-42"><a href="#cb23-42" aria-hidden="true" tabindex="-1"></a>                             prediction <span class="sc">&gt;</span> q1[<span class="dv">7</span>] <span class="sc">&amp;</span> prediction <span class="sc">&lt;=</span> q1[<span class="dv">8</span>] <span class="sc">~</span> qt1[<span class="dv">8</span>],</span>
-<span id="cb23-43"><a href="#cb23-43" aria-hidden="true" tabindex="-1"></a>                             prediction <span class="sc">&gt;</span> q1[<span class="dv">8</span>] <span class="sc">&amp;</span> prediction <span class="sc">&lt;=</span> q1[<span class="dv">9</span>] <span class="sc">~</span> qt1[<span class="dv">9</span>],</span>
-<span id="cb23-44"><a href="#cb23-44" aria-hidden="true" tabindex="-1"></a>                             prediction <span class="sc">&gt;</span> q1[<span class="dv">9</span>]  <span class="sc">~</span> qt1[<span class="dv">10</span>])) </span>
-<span id="cb23-45"><a href="#cb23-45" aria-hidden="true" tabindex="-1"></a>  sd_ek50m <span class="ot">&lt;-</span> <span class="fu">group_by</span>(data1, group) <span class="sc">%&gt;%</span></span>
-<span id="cb23-46"><a href="#cb23-46" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">sd_observation =</span> <span class="fu">sd</span>(observation),</span>
-<span id="cb23-47"><a href="#cb23-47" aria-hidden="true" tabindex="-1"></a>              <span class="at">mean_observation =</span> <span class="fu">mean</span>(observation)) <span class="sc">%&gt;%</span></span>
-<span id="cb23-48"><a href="#cb23-48" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.data.frame</span>() </span>
-<span id="cb23-49"><a href="#cb23-49" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb23-50"><a href="#cb23-50" aria-hidden="true" tabindex="-1"></a>  data2 <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="at">pred =</span> qt1,</span>
-<span id="cb23-51"><a href="#cb23-51" aria-hidden="true" tabindex="-1"></a>                 <span class="at">obs =</span> qt2,</span>
-<span id="cb23-52"><a href="#cb23-52" aria-hidden="true" tabindex="-1"></a>                 <span class="at">mean =</span> sd_ek50m<span class="sc">$</span>mean_observation,</span>
-<span id="cb23-53"><a href="#cb23-53" aria-hidden="true" tabindex="-1"></a>                 <span class="at">sd =</span> sd_ek50m<span class="sc">$</span>sd_observation) </span>
-<span id="cb23-54"><a href="#cb23-54" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb23-55"><a href="#cb23-55" aria-hidden="true" tabindex="-1"></a>  plot <span class="ot">&lt;-</span> data2 <span class="sc">%&gt;%</span></span>
-<span id="cb23-56"><a href="#cb23-56" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>() <span class="sc">+</span></span>
-<span id="cb23-57"><a href="#cb23-57" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_abline</span>(<span class="at">intercept =</span> <span class="dv">0</span>,</span>
-<span id="cb23-58"><a href="#cb23-58" aria-hidden="true" tabindex="-1"></a>                <span class="at">slope =</span> <span class="dv">1</span>,</span>
-<span id="cb23-59"><a href="#cb23-59" aria-hidden="true" tabindex="-1"></a>                <span class="at">colour =</span> <span class="st">"grey"</span>,</span>
-<span id="cb23-60"><a href="#cb23-60" aria-hidden="true" tabindex="-1"></a>                <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
-<span id="cb23-61"><a href="#cb23-61" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">x =</span> pred,</span>
-<span id="cb23-62"><a href="#cb23-62" aria-hidden="true" tabindex="-1"></a>                      <span class="at">ymin =</span> mean <span class="sc">-</span> <span class="fl">1.96</span> <span class="sc">*</span> sd, </span>
-<span id="cb23-63"><a href="#cb23-63" aria-hidden="true" tabindex="-1"></a>                      <span class="at">ymax =</span> mean <span class="sc">+</span> <span class="fl">1.96</span> <span class="sc">*</span> sd), </span>
-<span id="cb23-64"><a href="#cb23-64" aria-hidden="true" tabindex="-1"></a>                  <span class="at">colour =</span> <span class="st">"red"</span>,</span>
-<span id="cb23-65"><a href="#cb23-65" aria-hidden="true" tabindex="-1"></a>                  <span class="at">alpha =</span> <span class="dv">1</span>,</span>
-<span id="cb23-66"><a href="#cb23-66" aria-hidden="true" tabindex="-1"></a>                  <span class="at">size =</span> <span class="fl">0.2</span>,</span>
-<span id="cb23-67"><a href="#cb23-67" aria-hidden="true" tabindex="-1"></a>                  <span class="at">width =</span> <span class="fl">0.1</span>) <span class="sc">+</span></span>
-<span id="cb23-68"><a href="#cb23-68" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">y =</span> mean,</span>
-<span id="cb23-69"><a href="#cb23-69" aria-hidden="true" tabindex="-1"></a>                   <span class="at">x =</span> pred),</span>
-<span id="cb23-70"><a href="#cb23-70" aria-hidden="true" tabindex="-1"></a>               <span class="at">stat =</span> <span class="st">"identity"</span>,</span>
-<span id="cb23-71"><a href="#cb23-71" aria-hidden="true" tabindex="-1"></a>               <span class="at">colour =</span> <span class="st">"indianred"</span>,</span>
-<span id="cb23-72"><a href="#cb23-72" aria-hidden="true" tabindex="-1"></a>               <span class="at">size =</span> <span class="fl">0.5</span>) </span>
-<span id="cb23-73"><a href="#cb23-73" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb23-74"><a href="#cb23-74" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">list</span>(<span class="at">plot =</span> plot,</span>
-<span id="cb23-75"><a href="#cb23-75" aria-hidden="true" tabindex="-1"></a>         <span class="at">summary =</span> data2))</span>
-<span id="cb23-76"><a href="#cb23-76" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>ek25_mlm_plot <span class="ot">&lt;-</span> <span class="fu">calib_plot</span>(<span class="at">data =</span> e_k25_mlm)<span class="sc">$</span>plot <span class="sc">+</span></span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">name =</span> <span class="st">"Prediction"</span>, </span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>                     <span class="at">limits =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">10</span>, <span class="dv">100</span>),</span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>                     <span class="at">breaks =</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="dv">10</span>, <span class="dv">100</span>, <span class="dv">10</span>)) <span class="sc">+</span></span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">name =</span> <span class="st">"Observation"</span>, </span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>                     <span class="at">limits =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">10</span>, <span class="dv">100</span>),</span>
-<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>                     <span class="at">breaks =</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="dv">10</span>, <span class="dv">100</span>, <span class="dv">10</span>)) <span class="sc">+</span></span>
-<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
-<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">5</span>),</span>
-<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.length =</span> <span class="fu">unit</span>(.<span class="dv">05</span>, <span class="st">"cm"</span>), </span>
-<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">6</span>)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>ek25_mlm_plot <span class="sc">+</span></span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="fu">expression</span>(<span class="fu">paste</span>(<span class="st">"Euclidean Distance "</span>,</span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>                           {kappa}, <span class="st">"= 25"</span>))) <span class="sc">+</span></span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">6</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell quarto-layout-panel" data-layout-ncol="2">
-<div class="quarto-layout-row">
-<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="28_visit5_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="288"></p>
-<figcaption>Ek50 SLM</figcaption>
+<figcaption>Calibration plot</figcaption>
 </figure>
-</div>
-</div>
-<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
-<p>Calibration plot</p>
 </div>
 </div>
 </div>
 </section>
 <section id="interval-range" class="level2">
 <h2 class="anchored" data-anchor-id="interval-range">Interval range</h2>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>ci_ek25_mlm <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(e_k25_mlm, <span class="st">"centiles_predicted"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="fu">contains</span>(<span class="st">"cfint"</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">colMeans</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
 <section id="predictive-interval-range-for-ek25-mlm" class="level3">
 <h3 class="anchored" data-anchor-id="predictive-interval-range-for-ek25-mlm">Predictive interval range for Ek25 MLM</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>ci_ek25_mlm</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre class="scroll-100"><code>#&gt; cfint90 cfint80 cfint50 
-#&gt;   42.00   32.72   17.22</code></pre>
+<pre class="scroll-100"><code>#&gt; cfint50 cfint80 cfint90 
+#&gt;   17.22   32.72   42.00</code></pre>
 </div>
 </div>
 </section>
+</section>
+<section id="sec-gamlss-for-all" class="level2">
+<h2 class="anchored" data-anchor-id="sec-gamlss-for-all">GAMLSS for all</h2>
+<p>The final model is only fitted with <code>mgcv</code> or <code>gamlss</code>; We cannot use a linear mixed model for the testing dataset prediction. The prediction for the linear mixed model has to be conditional on the random effects.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt; GAMLSS-RS iteration 1: Global Deviance = 74999 
+#&gt; GAMLSS-RS iteration 2: Global Deviance = 75000 
+#&gt; GAMLSS-RS iteration 3: Global Deviance = 75000</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt; ******************************************************************
+#&gt; Family:  c("NO", "Normal") 
+#&gt; 
+#&gt; Call:  gamlss(formula = outcome_score ~ cs(time, df = 3),  
+#&gt;     sigma.formula = ~cs(time, df = 1), data = tsa_train1) 
+#&gt; 
+#&gt; Fitting method: RS() 
+#&gt; 
+#&gt; ------------------------------------------------------------------
+#&gt; Mu link function:  identity
+#&gt; Mu Coefficients:
+#&gt;                  Estimate Std. Error t value Pr(&gt;|t|)    
+#&gt; (Intercept)      58.08385    0.40623   143.0   &lt;2e-16 ***
+#&gt; cs(time, df = 3) -0.29799    0.00568   -52.4   &lt;2e-16 ***
+#&gt; ---
+#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+#&gt; 
+#&gt; ------------------------------------------------------------------
+#&gt; Sigma link function:  log
+#&gt; Sigma Coefficients:
+#&gt;                   Estimate Std. Error t value Pr(&gt;|t|)    
+#&gt; (Intercept)       2.988665   0.015083  198.15   &lt;2e-16 ***
+#&gt; cs(time, df = 1) -0.000711   0.000216   -3.29    0.001 ** 
+#&gt; ---
+#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+#&gt; 
+#&gt; ------------------------------------------------------------------
+#&gt; NOTE: Additive smoothing terms exist in the formulas: 
+#&gt;  i) Std. Error for smoothers are for the linear effect only. 
+#&gt; ii) Std. Error for the linear terms maybe are not accurate. 
+#&gt; ------------------------------------------------------------------
+#&gt; No. of observations in the fit:  8591 
+#&gt; Degrees of Freedom for the fit:  7.999
+#&gt;       Residual Deg. of Freedom:  8583 
+#&gt;                       at cycle:  3 
+#&gt;  
+#&gt; Global Deviance:     75000 
+#&gt;             AIC:     75016 
+#&gt;             SBC:     75072 
+#&gt; ******************************************************************</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt; # A tibble: 4 × 6
+#&gt;   parameter term              estimate std.error statistic p.value
+#&gt;   &lt;chr&gt;     &lt;chr&gt;                &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+#&gt; 1 mu        (Intercept)      58.1       0.406       143.   0      
+#&gt; 2 mu        cs(time, df = 3) -0.298     0.00568     -52.4  0      
+#&gt; 3 sigma     (Intercept)       2.99      0.0151      198.   0      
+#&gt; 4 sigma     cs(time, df = 1) -0.000711  0.000218     -3.27 0.00110</code></pre>
+</div>
+</div>
+</section>
+<section id="final-tables" class="level1">
+<h1>Final tables</h1>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Final Predictive Results for GAMLSS and PLM</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: right;">BIAS</th>
+<th style="text-align: right;">RMSE</th>
+<th style="text-align: right;">CR50%</th>
+<th style="text-align: right;">CR80%</th>
+<th style="text-align: right;">CR90%</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">GAMLSS</td>
+<td style="text-align: right;">19.37</td>
+<td style="text-align: right;">20.77</td>
+<td style="text-align: right;">0.3779</td>
+<td style="text-align: right;">0.6695</td>
+<td style="text-align: right;">0.7991</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">PLM</td>
+<td style="text-align: right;">11.02</td>
+<td style="text-align: right;">14.39</td>
+<td style="text-align: right;">0.4969</td>
+<td style="text-align: right;">0.7772</td>
+<td style="text-align: right;">0.8755</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Predictive Interval Range for GAMLSS and PLM</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: right;">CI50%</th>
+<th style="text-align: right;">CI80%</th>
+<th style="text-align: right;">CI90%</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">GAMLSS</td>
+<td style="text-align: right;">25.68</td>
+<td style="text-align: right;">48.78</td>
+<td style="text-align: right;">62.61</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">PLM</td>
+<td style="text-align: right;">17.22</td>
+<td style="text-align: right;">32.72</td>
+<td style="text-align: right;">42.00</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </section>
 
 </main>
@@ -2210,18 +1687,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
     return false;
   }
-  const clipboard = new window.ClipboardJS('.code-copy-button', {
-    text: function(trigger) {
-      const codeEl = trigger.previousElementSibling.cloneNode(true);
-      for (const childEl of codeEl.children) {
-        if (isCodeAnnotation(childEl)) {
-          childEl.remove();
-        }
-      }
-      return codeEl.innerText;
-    }
-  });
-  clipboard.on('success', function(e) {
+  const onCopySuccess = function(e) {
     // button target
     const button = e.trigger;
     // don't keep focus
@@ -2253,7 +1719,29 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }, 1000);
     // clear code selection
     e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
   });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
     var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
     var mailtoRegex = new RegExp(/^mailto:/);
       var filterRegex = new RegExp('/' + window.location.host + '/');
@@ -2261,7 +1749,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
     }
     // Inspect non-navigation links and adorn them if external
- 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
     for (var i=0; i<links.length; i++) {
       const link = links[i];
       if (!isInternal(link.href)) {

@@ -1,0 +1,131 @@
+---
+title: "Demographics"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      warnings = FALSE,
+                      message = FALSE,
+                      comment = "",
+                      #results = "hide",
+                      digits = 4,
+                      error = FALSE)
+
+## clean the R environment
+# graphics.off()
+# rm(list = ls())
+# freshr::freshr()
+
+## load packages
+library(here, quietly = TRUE)
+library(tidyverse, quietly = TRUE)
+library(gtsummary, quietly = TRUE)
+library(flextable, quietly = TRUE)
+
+## check the directory for the file
+# here::dr_here()
+here::set_here()
+
+## the figure or results should be saved 
+# paste0("foldername/Sfilename_workingresult_", 
+#      Sys.Date(), ".filetype")
+
+
+```
+
+## Data Cleaning
+
+```{r}
+library(readxl)    
+
+read_excel_allsheets <- function(filename, tibble = FALSE) {
+    # I prefer straight data.frames
+    # but if you like tidyverse tibbles (the default with read_excel)
+    # then just pass tibble = TRUE
+    sheets <- readxl::excel_sheets(filename)
+    x <- lapply(sheets, function(X) readxl::read_excel(filename, sheet = X))
+    if(!tibble) x <- lapply(x, as.data.frame)
+    names(x) <- sheets
+    return(x)
+}
+
+
+files <- read_excel_allsheets("data/tsa_data_deidentified.xlsx")
+tsa_base <- files[[1]] %>% 
+  janitor::clean_names() %>%
+  mutate(surgery_dt = as.Date(surgery_dt))
+
+tsa_outcome <- files[[2]] %>% 
+  janitor::clean_names()
+
+tsa_pain <- files[[3]] %>% 
+  janitor::clean_names()
+
+tsa_rom <- files[[4]] %>% 
+  janitor::clean_names()
+
+load("~/Desktop/plm2024/data/tsa_table1.Rdata")
+```
+
+```{r}
+data1 <- tsa0 %>%
+  filter(sid %in% tsa_table1_0$sid) %>%
+  select(id, sid, empi_deidentified, surgery_dt) %>% 
+  mutate(surgery_dt = as.Date(surgery_dt)) %>%
+  group_by(id) %>%
+  slice(1L)
+
+tsa_demo_info <- data2 <- left_join(data1, tsa_base, 
+                                    by = c("empi_deidentified",
+                                           "surgery_dt")) 
+
+data3 <- inner_join(tsa_outcome, data1,
+                   by = c("empi_deidentified")) %>%
+  mutate(outcome_dt = as.Date(outcome_dt)) 
+
+unique(data3$id) %>% length()
+  
+tsa_pre_surgery <- data4 <- data3 %>% 
+  filter(outcome_dt <= surgery_dt,
+         outcome_dt >= surgery_dt - 31) %>%
+  group_by(id) %>%
+  arrange(outcome_dt, .by_group = TRUE)
+
+
+data3$id %>% unique() %>% length()
+
+hist(table(data3$id))
+hist(table(data4$id))
+
+save(tsa_demo_info, tsa_pre_surgery, file = "data/tsa_demo_info_presurgery.Rdata")
+write_csv(tsa_demo_info, "data/tsa_demo_info.csv")
+write_csv(tsa_pre_surgery, "data/tsa_pre_surgery.csv")
+```
+
+Jeremy's question on the matching of plots and id.
+
+```{r}
+tsa_match1 <- tsa_test1 %>% arrange(id) %>% group_by(id)
+tsa_id <- unique(tsa_match1$id)
+tsa_results <- list()
+
+for (i in seq_along(1:length(tsa_id))) {
+  tsa_results[[i]] <- list()
+  tsa_results[[i]]$id <- tsa_id[i]
+  tsa_results[[i]]$demo <- tsa_match1 %>% 
+    filter(id == tsa_id[i]) %>% 
+    slice(1L) %>% 
+    select(group, id, sid, adi_value, bmi, 
+           outcome_type, outcome0, 
+           patient_age, patient_gender, 
+           primary_payer, surgery_type, 
+           time, visit_n)
+  tsa_results[[i]]$centile_observed <- e_k25_mlm[[i]]$centiles_observed
+  tsa_results[[i]]$centile_predicted <- e_k25_mlm[[i]]$centiles_predicted
+  tsa_results[[i]]$ggplot <- e_k25_mlm[[i]]$predictive_centiles
+}
+
+save(tsa_results, file = "data/tsa_results_jeremy_demo_datamatching.Rdata")
+
+```
+

@@ -40,38 +40,48 @@ here::set_here()
 #      Sys.Date(), ".filetype")
 ```
 
-
-<!-- ```{css, echo=FALSE} -->
-<!-- .scroll-100 { -->
-<!--   max-height: 300px; -->
-<!--   max-width: 1000px; -->
-<!--   overflow-y: auto; -->
-<!--   background-color: inherit; -->
-<!-- } -->
-<!-- ``` -->
-
 ## Goal for this chapter
 
-- [x] Rebuild dataset 
+-   [x] Rebuild dataset
 
-- [x] Table1
+-   [x] Table1
 
-- [] Flowchart 
+-   [x] Flowchart
 
-- [x] cross-validation
+-   [x] cross-validation
 
-- [x] results
+-   [x] results
 
-- [x] calibration
+-   [x] calibration
 
-- [x] You are astounding!
+-   [x] You are astounding!
 
+## NEW goal for this
+
+-   [x] add the MD to the function and with MAD
+
+-   \[\] flowchart with the final data (do not change this anymore)
+
+-   [x] redo the cross-validation
+
+-   \[\] save all the Rdata and put into shared drive, to find some ind plots
+
+-   [x] keep the steps using the same model
+
+-   \[\] the codes for ggplots in the shared drive too
 
 ## Rebuild dataset
 
 ```{r}
 #| label: "cleaning_data"
 ## total of 1550 individuals 
+dataall <- rbind(tsa_test,
+                 tsa_train) %>%
+  as.data.frame() 
+
+dataall$sid %>% unique() %>% length()
+dataall$id %>% unique() %>% length()
+
 tbl1_p2 <- rbind(tsa_test,
                  tsa_train) %>%
   as.data.frame() %>% 
@@ -80,9 +90,16 @@ tbl1_p2 <- rbind(tsa_test,
   summarize(time_max = max(time),
             time_min = min(time),
             visit_n = n()) %>%
-  filter(visit_n >= 5,
-         time_min <= 31) %>%
+  filter(visit_n >= 5) %>% 
+  filter(time_min <= 31) %>%
   ungroup()
+
+
+library(readr)
+tsa_clean_outcome_2024_01_22 <- read_csv("archive/newdata/tsa_clean_outcome_2024-01-22.csv") 
+id2322 <- tsa_clean_outcome_2024_01_22$id %>% unique() 
+id1787 <- dataall$id %>% unique()
+tbl1_p2$sid %>% unique() %>% length()
 
 tbl1_p1 <- rbind(tsa_test,
                  tsa_train) %>%
@@ -93,10 +110,12 @@ tbl1_p1 <- rbind(tsa_test,
   unique() %>% 
   filter(sid %in% tbl1_p2$sid)
 
+tbl1_p1$sid %>% unique() %>% length()
+
+
 ```
 
-
-```{r}
+```{r "reading data"}
 tbl1_p3 <- read.csv("data-raw/tsa_clean_baseline_for_outcome_2024-01-22.csv",
                     row.names = 1) %>% 
   mutate(surgery_dt = as.Date(as.character(as.POSIXct(surgery_dt)), 
@@ -110,25 +129,34 @@ tbl1_p3 <- read.csv("data-raw/tsa_clean_baseline_for_outcome_2024-01-22.csv",
   inner_join(tbl1_p1, by = c("patient_age", "patient_gender",
                              "adi_value", "bmi", "surgery_type"))
 
+tbl1_p3$sid %>% unique() %>% length()
+
 tbl1_p3$surgery_dt <- chron(dates. = tbl1_p3$surgery_dt)
 
-tbl1_p4 <- tbl1_p3 %>%
-  group_by(sid) %>%
+tbl1_p4 <- tbl1_p3 %>% 
+  group_by(id) %>%
   summarize(surgery_n = n()) %>%
-  filter(surgery_n == 2) 
+  filter(surgery_n == 2) %>%
+  ungroup()
+
+
 
 ## there are 10 patients with two surgeries
-```
+tbl1_p4$id %>% unique() %>% length()
 
+
+```
 
 ```{r}
 #| label: "stratified_split"
+#| warning: false
+#| message: false
 
 tsa0 <- read.csv("data-raw/final_tsa_clean_baseline_for_insurance_2024-01-22.csv",
-                      row.names = 1) %>%  
+                      row.names = 1) %>%
   dplyr::select(-adi_quintile, -charlson_comorbidity_count,
                 -charlson_comorbidity_index_value, -surgery_max, 
-                -outcome_n, -timemax, -sid, -id, -surgery_dt) %>%
+                -outcome_n, -timemax, -sid, -id, -surgery_dt) %>% 
   # inner_join(tbl1_p2, by = "sid") %>% View()
   inner_join(tbl1_p3, by = c("patient_age", 
                             "empi_deidentified",
@@ -141,6 +169,8 @@ tsa0 <- read.csv("data-raw/final_tsa_clean_baseline_for_insurance_2024-01-22.csv
                 primary_payer = primary_payer.y,
                 surgery_type, surgery_dt) 
 
+tsa0$id %>% unique() %>% length() 
+
 tsa_date <- tsa0 %>% 
   dplyr::select(sid, id, surgery_dt) %>% 
   group_by(sid) %>%
@@ -151,7 +181,7 @@ unique_id <- tsa0$sid %>% unique()
 
 ```
 
-```{r}
+```{r "splits"}
 set.seed(555)
 library(splitstackshape)
 
@@ -196,9 +226,8 @@ id_train <- tsa_train0$id %>% unique()
 tsa_table1_0 <- rbind(tsa_train0, tsa_test0) %>%
   as.data.frame() 
 
-```
+save(tsa_table1_0, file = paste0("results/tsa_table1_0_", Sys.Date(), ".Rdata"))
 
-```{r}
 tsa_train1 <- rbind(tsa_test,
                    tsa_train) %>%
   as.data.frame() %>% 
@@ -216,11 +245,9 @@ tsa_test1 <- rbind(tsa_test,
 
 ```
 
-
 ## Table1 total of 1050 individuals
 
 ### Table1 without Date
-
 
 ```{r, class.output="scroll-100"}
 #| label: "tbl1"
@@ -356,7 +383,7 @@ c [label =
 \n &nbsp; &#8226; 7 patients have three surgeries<br ALIGN = 'LEFT'/>>]
 
 
- c -> d
+ c -> d1
  
  [label =
  <
@@ -368,26 +395,45 @@ c [label =
           &nbsp;     &#8226; Total of 401 patients removed <br ALIGN = 'LEFT'/>>]
 
 
-d [label = 
+d1 [label = 
 <Working Data: (N = 1718)<br ALIGN = 'CENTER'/>
+Further cleaning for extra surgeries <br ALIGN = 'LEFT'/> 
+We only keep the first surgeries if the patient has multiple surgeries <br ALIGN = 'LEFT'/> >]
+
+d1 -> d2
+
+[label =
+ <
+             Outcomes Quality Cleaning:<br ALIGN = 'LEFT'/> 
+         &nbsp;     &#8226; Remove extra outcomes over 180 days <br ALIGN = 'LEFT'/>
+         &nbsp;     &#8226; Remove patient with fewer than 5 outcomes: 1718 - 1550 = 168 patients <br ALIGN = 'LEFT'/>
+         &nbsp;     &#8226; Remove 1550 - 1054 = 496 patients without visit in the first 30 days <br ALIGN = 'LEFT'/>
+        &nbsp;     &#8226; Remove 1554 - 4 = 1050 patients with inconsistent information <br ALIGN = 'LEFT'/>
+          &nbsp;     &#8226; Total of 668 patients removed <br ALIGN = 'LEFT'/>>]
+
+
+d2 [label = 
+<Working Data: (N = 1050)<br ALIGN = 'CENTER'/>
 Model building with total <br ALIGN = 'LEFT'/> 
-Stratified split dataset into two subsets<br ALIGN = 'LEFT'/> >]
+Stratified based on the varibsplit dataset into two subsets<br ALIGN = 'LEFT'/> >]
   
 e [label = 
-<Training Data: (N = 1144)<br ALIGN = 'CENTER'/> 
+<Training Data: (N = 787)<br ALIGN = 'CENTER'/> 
 Serving as a pool for selecting <br ALIGN = 'LEFT'/>
 The set of information donors <br ALIGN = 'LEFT'/>
 >]\
 
 f [label = 
-<Testing Data:  (N = 574)<br ALIGN = 'CENTER'/> 
+<Testing Data:  (N = 263)<br ALIGN = 'CENTER'/> 
 Serving as targets for prediction validation <br ALIGN = 'LEFT'/>
 Evaluation for model performance <br ALIGN = 'LEFT'/>
 >]
 
-d -> {e f}
+d2 -> {e f}
 }")
 ```
+
+Here is the new one with all the numbers add up.
 
 ```{r}
 #| label: flowchart
@@ -403,9 +449,114 @@ flowchart1 %>%
 ```
 
 ```{r}
-knitr::include_graphics("figure/flowchart_data_visit5_2024-06-05.png")
+knitr::include_graphics("figure/flowchart_data_visit5_2024-12-30.png")
 ```
 
+```{r}
+#| label: flowchart_code2
+
+flowchart2 <- DiagrammeR::grViz("
+digraph graph2 {
+
+graph [layout = dot]
+
+# node definitions with substituted label text
+node [shape = rectangle, width = 4, fillcolor = Biege]
+a [label = <Raw Data<br ALIGN = 'CENTER'/>
+ Total number of patient (N = 2651):<br ALIGN = 'CENTER'/>
+   Total number of surgeries (S = 3032):<br ALIGN = 'CENTER'/>
+ &nbsp; &#8226; 2304 patients have one surgery<br ALIGN = 'LEFT'/>
+ &nbsp; &#8226; 316 patients have two surgeries<br ALIGN = 'LEFT'/>
+ &nbsp; &#8226; 28 patients have three surgeries<br ALIGN = 'LEFT'/>
+ &nbsp; &#8226; 3 patients have four surgeries<br ALIGN = 'LEFT'/>
+>]
+
+# These are the main nodes at top of graph
+  a -> b
+  [label = 
+  <        Outcomes Cleaning:<br ALIGN = 'LEFT'/> 
+      &nbsp; &#8226; Remove 30 outcomes before their first surgery <br ALIGN = 'LEFT'/>
+       &nbsp; &#8226; Remove 299 patient without outcome after surgery <br ALIGN = 'LEFT'/> 
+      &nbsp; &#8226; Total of 329 patients with 567 surgeries removed <br ALIGN = 'LEFT'/>>]
+
+b [label = <Data<br ALIGN = 'CENTER'/>
+ Total number of patient (N = 2322):<br ALIGN = 'CENTER'/>
+    Total number of surgeries (S = 2510):<br ALIGN = 'CENTER'/>
+ &nbsp; &#8226; 2141 patients have one surgery<br ALIGN = 'LEFT'/>
+ &nbsp; &#8226; 174 patients have two surgeries<br ALIGN = 'LEFT'/>
+ &nbsp; &#8226; 7 patients have three surgeries<br ALIGN = 'LEFT'/>
+>]
+
+ 
+ b -> c
+ [label =
+ <            Variable Cleaning:<br ALIGN = 'LEFT'/> 
+         &nbsp;     &#8226; ADI missing values: 178 <br ALIGN = 'LEFT'/>
+          &nbsp;     &#8226; BMI missing values: 41 <br ALIGN = 'LEFT'/>
+          &nbsp;     &#8226; Insurance elimination: 2 <br ALIGN = 'LEFT'/> 
+        &nbsp;     &#8226; Incomsistant Information: 4 <br ALIGN = 'LEFT'/>
+         &nbsp;     &#8226; Total of 207 patients removed<br ALIGN = 'LEFT'/>>]
+ 
+
+c [label = 
+< Data <br ALIGN = 'CENTER'/>
+\n Total number of patient (N = 2115):<br ALIGN = 'CENTER'/>
+\n Total number of surgeries (S = 2293):<br ALIGN = 'CENTER'/>
+\n &nbsp; &#8226; 1944 patients have one surgery<br ALIGN = 'LEFT'/>
+\n &nbsp; &#8226; 164 patients have two surgeries<br ALIGN = 'LEFT'/>
+\n &nbsp; &#8226; 7 patients have three surgeries<br ALIGN = 'LEFT'/>>]
+
+
+ c -> d
+ 
+ [label =
+ <
+             Time Variable Cleaning:<br ALIGN = 'LEFT'/> 
+         &nbsp;     &#8226; Remove outcomes over 180 days <br ALIGN = 'LEFT'/>
+          &nbsp;     &#8226; Remove patients with 3 or more surgeries: 7 patients <br ALIGN = 'LEFT'/>
+          &nbsp;     &#8226; Keep only the first available surgeries: 118 surgeris <br ALIGN = 'LEFT'/>
+          &nbsp;     &#8226; Remove patient with fewer than 5 outcomes after the surgeries: 652 patients <br ALIGN = 'LEFT'/>
+         &nbsp;     &#8226; Remove 496 patients without visit in the first 30 days <br ALIGN = 'LEFT'/>
+          &nbsp;     &#8226; Total of 1069 patients removed <br ALIGN = 'LEFT'/>>]
+
+d [label = 
+<Working Data: (N = 1050)<br ALIGN = 'CENTER'/>
+Model building with total <br ALIGN = 'LEFT'/> 
+Stratified based on the varibsplit dataset into two subsets<br ALIGN = 'LEFT'/> >]
+  
+e [label = 
+<Training Data: (N = 787)<br ALIGN = 'CENTER'/> 
+Serving as a pool for selecting <br ALIGN = 'LEFT'/>
+The set of information donors <br ALIGN = 'LEFT'/>
+>]\
+
+f [label = 
+<Testing Data:  (N = 263)<br ALIGN = 'CENTER'/> 
+Serving as targets for prediction validation <br ALIGN = 'LEFT'/>
+Evaluation for model performance <br ALIGN = 'LEFT'/>
+>]
+
+d -> {e f}
+}")
+
+```
+
+```{r}
+#| label: flowchart2
+#| include: true
+#| eval: true
+
+## see the flowchart
+
+flowchart2 %>%
+  export_svg() %>%
+  charToRaw() %>%
+  rsvg_png(paste0("figure/flowchart2_data_visit5_", Sys.Date(), ".png"))
+```
+
+```{r}
+knitr::include_graphics("figure/flowchart2_data_visit5_2024-12-31.png")
+```
 
 ## Cross-Validation
 
@@ -418,7 +569,7 @@ knitr::include_graphics("figure/flowchart_data_visit5_2024-06-05.png")
 
 anchor <- c(32, 45, 60, 90)
 bsk_knots <- c(25, 50, 75, 100, 125, 150)
-kappa1 <- seq(4, 100, by = 1)
+kappa1 <- seq(4, 50, by = 1)
 
 mlmf <- "outcome_score ~ adi_value + adi_value:outcome0 + adi_value:t0 +
                       bmi + bmi:outcome0 + bmi:t0 +
@@ -444,8 +595,7 @@ lmf <- "outcome_score ~ as.factor(time) +
 ## change the slm and kappa number
 e_kcv_kappa1 <- map(kappa1, 
                     ~people_like_us(train_data = tsa_train1,
-                                    test_data = tsa_test1,
-                                    anchor_time = anchor,
+                                    test_data = tsa_train1,
                                     brokenstick_knots = bsk_knots,
                                     linear_model = "mlm",
                                     linear_formula = mlmf,
@@ -457,28 +607,32 @@ e_kcv_kappa1 <- map(kappa1,
                                     outcome_var = "outcome_score",
                                     time = "time",
                                     weight = FALSE,
+                                    anchor_time = anchor,
                                     match_plot = FALSE,
                                     predict_plot = FALSE,
                                     match_methods = "euclidean",
                                     match_number = .x),
                     .progress = TRUE)
 
+
 save(e_kcv_kappa1, file = paste0("results/tsa_5visit_mlm_cv_", Sys.time(), ".Rdata"))
 ## summary ------------------------------------------
 
 meanout <- function(dataset){
-  
   result0 <- dataset %>%
     as.data.frame() %>%
-    mutate(mse = bias^2,
+    # dplyr::select(Mad = mad, everything()) %>% 
+    mutate(mad = as.numeric(Mad),
+           md = as.numeric(md),
+           mse = as.numeric(mad)^2,
            cr50 = `75` - `25`)
+  
   result1 <- result0 %>%
     colMeans() %>%
     unlist()
   return(result1)}
 
-
-mlm_kappa1 <- map(e_kcv_kappa1,
+mlm_kappa1 <- map(e_kcv_kappa1[[1:2]],
                      ~try(map(.x, "centiles_observed") %>%
                             map_dfr(~try(meanout(.))) %>%
                             colMeans()))
@@ -489,7 +643,6 @@ mlm_kappa1 <- map(e_kcv_kappa1,
 
 save(mlm_kappa1, file = paste0("results/tsa_5visit_table_mlm_cv_", Sys.time(), ".Rdata"))
 ```
-
 
 ## Cross-validation for different $\kappa$ values larger brokenstick knots
 
@@ -514,7 +667,6 @@ kappa200_mlm <- rbind(map_dfr(mlm_kappa1, ~unlist(., recursive = FALSE))) %>%
 # map_dfr(result_kappa5, ~unlist(., recursive = FALSE))
 ```
 
-
 ```{r}
 #| label: "kappa200_mlm plot_15"
 #| fig-cap: Cross validation for kappa
@@ -522,12 +674,12 @@ kappa200_mlm <- rbind(map_dfr(mlm_kappa1, ~unlist(., recursive = FALSE))) %>%
 #| fig-width: 6
 #| fig-height: 3
 #| fig-subcap:
-#| - "CV_kappa200SLM_BIAS"
-#| - "CV_kappa200SLM_MSE"
-#| - "CV_kappa200SLM_width50"
-#| - "CV_kappa200SLM_CR50"
-#| - "CV_kappa200SLM_CR80"
-#| - "CV_kappa200SLM_CR90"
+#| - "CV_kappa200MLM_BIAS"
+#| - "CV_kappa200MLM_MSE"
+#| - "CV_kappa200MLM_CFW50"
+#| - "CV_kappa200MLM_CR50"
+#| - "CV_kappa200MLM_CR80"
+#| - "CV_kappa200MLM_CR90"
 #| warning: false
 #| layout-ncol: 2
 
@@ -543,7 +695,7 @@ kappa200_mlm_mse <- kappa200_mlm %>%
   #   sec.axis = sec_axis(~ ., name = "MSE"))
 kappa200_mlm_ci50 <- kappa200_mlm %>%
   ggplot() +
-  geom_line(aes(x = kappa, y = cr50), color = "purple") 
+  geom_line(aes(x = kappa, y = cr50), color = "#08519c") 
 kappa200_mlm_cr50 <- kappa200_mlm %>%
   ggplot() +
   geom_line(aes(x = kappa, y = coverage50), color = "blue1") 
@@ -556,12 +708,47 @@ kappa200_mlm_cr90<- kappa200_mlm %>%
   # geom_line(aes(x = kappa, y = bias), color = "blue") +
   geom_line(aes(x = kappa, y = coverage90), color = "blue4")
 
-kappa200_mlm_bias + theme_bw() + theme(legend.position = "none") + ylab("BIAS") + xlab("Number of Matches")
+kappa200_mlm_bias + theme_bw() + theme(legend.position = "none") + ylab("MAD") + xlab("Number of Matches")
 kappa200_mlm_mse + theme_bw() + theme(legend.position = "none") + ylab("MSE") + xlab("Number of Matches")
-kappa200_mlm_ci50 + theme_bw() + theme(legend.position = "none") + ylab("Width of 50% PI") + xlab("Number of Matches")
-kappa200_mlm_cr50 + theme_bw() + theme(legend.position = "none") + ylab("CR of 50% PI") + xlab("Number of Matches")
-kappa200_mlm_cr80 + theme_bw() + theme(legend.position = "none") + ylab("CR of 80% PI") + xlab("Number of Matches")
-kappa200_mlm_cr90 + theme_bw() + theme(legend.position = "none") + ylab("CR of 90% PI") + xlab("Number of Matches")
+kappa200_mlm_ci50 + theme_bw() + theme(legend.position = "none") + ylab("PI of 50%") + xlab("Number of Matches")
+kappa200_mlm_cr50 + theme_bw() + theme(legend.position = "none") + ylab("CR of 50%") + xlab("Number of Matches")
+kappa200_mlm_cr80 + theme_bw() + theme(legend.position = "none") + ylab("CR of 80%") + xlab("Number of Matches")
+kappa200_mlm_cr90 + theme_bw() + theme(legend.position = "none") + ylab("CR of 90%") + xlab("Number of Matches")
+```
+
+```{r}
+library(ggpubr)
+arrange <- ggarrange(kappa200_mlm_bias + theme_bw() + 
+                       theme(legend.position = "none") + 
+                       ylab("MAD") + xlab("Number of Matches"),
+                     kappa200_mlm_mse + theme_bw() + 
+                       theme(legend.position = "none") + 
+                       ylab("MSE") + xlab("Number of Matches") +
+                       rremove("xlab"),
+                     kappa200_mlm_ci50 + theme_bw() + 
+                       theme(legend.position = "none") + 
+                       ylab("50% CI") + 
+                       xlab("Number of Matches") + 
+                       rremove("xlab"),
+                     kappa200_mlm_cr50 + theme_bw() + 
+                       theme(legend.position = "none") + 
+                       ylab("CR of 50%") + 
+                       xlab("Number of Matches") +
+                       rremove("xlab"),
+                     kappa200_mlm_cr80 + theme_bw() + 
+                       theme(legend.position = "none") + 
+                       ylab("CR of 80%") + 
+                       xlab("Number of Matches") +
+                       rremove("xlab"),
+                     kappa200_mlm_cr90 + theme_bw() + 
+                       theme(legend.position = "none") + 
+                       ylab("CR of 90%") + 
+                       xlab("Number of Matches") + 
+                       rremove("xlab"), 
+                     ncol = 2, nrow = 3, 
+                     labels  = "AUTO") 
+arrange
+ggsave("figure/tsa28_cross_validation_arrangedplot.png", arrange, width = 8, height = 6)
 
 ```
 
@@ -615,39 +802,40 @@ lmf <- "outcome_score ~ as.factor(time) +
 #                         predict_plot = FALSE,
 #                         match_methods = "euclidean",
 #                         match_number = 25)
-
+#                         
 e_k25_mlm <- people_like_us(train_data = tsa_train1,
-                        test_data = tsa_test1,
-                        anchor_time = anchor,
-                        brokenstick_knots = bsk_knots,
-                        linear_model = "mlm",
-                        linear_formula = mlmf,
-                        gamlss_formula = gf,
-                        gamlss_sigma = gs,
-                        tmin = 0,
-                        tmax = 100,
-                        id_var = "id",
-                        outcome_var = "outcome_score",
-                        time = "time",
-                        weight = FALSE,
-                        match_plot = FALSE,
-                        predict_plot = FALSE,
-                        match_methods = "euclidean",
-                        match_number = 25)
+                            test_data = tsa_test1,
+                            anchor_time = anchor,
+                            brokenstick_knots = bsk_knots,
+                            linear_model = "mlm",
+                            linear_formula = mlmf,
+                            gamlss_formula = gf,
+                            gamlss_sigma = gs,
+                            tmin = 0,
+                            tmax = 120,
+                            id_var = "id",
+                            outcome_var = "outcome_score",
+                            time = "time",
+                            weight = FALSE,
+                            match_plot = TRUE,
+                            predict_plot = TRUE,
+                            match_methods = "euclidean",
+                            match_number = 25)
 
 save(e_k25_mlm, 
-     file = paste0("results/tsa_5visit_kappa25_relationship_", Sys.Date(), ".Rdata"))
-
+     file = paste0("results/tsa_5visit_kappa25_relationship_120day_", 
+                   Sys.Date(), 
+                   ".Rdata"))
 ```
 
-```{r}
-load("results/tsa_5visit_kappa25_relationship_2024-06-05.Rdata")
+```{r "meanout"}
+load("results/tsa_5visit_kappa25_relationship_120day_2025-01-02.Rdata")
 
 meanout <- function(dataset){
   # browser()
   result0 <- dataset %>%
     as.data.frame() %>%
-    mutate(mse = bias^2,
+    mutate(mse = mad^2,
            cr50 = `75` - `25`)
   result1 <- result0 %>%
     colMeans() %>%
@@ -655,10 +843,21 @@ meanout <- function(dataset){
   return(result1)}
 
 
-mean_result_ek25m <- map(e_k25_mlm, "centiles_observed") %>%
-  map_dfr(~try(meanout(.))) %>%
-  dplyr::select(coverage50, coverage80, coverage90, bias, mse, cr50) %>%
+mean_result_ek25m0 <- map(e_k25_mlm, 
+                         "centiles_observed") %>% 
+  map_dfr(~try(meanout(.))) %>% 
+  as.data.frame()
+
+mean_result_ek25m <- mean_result_ek25m0 %>%
+  dplyr::select("coverage50", 
+                "coverage80",
+                "coverage90",
+                "mad", 
+                "md",
+                "mse",
+                "cr50") %>%
   colMeans()
+
 ```
 
 ```{r "final_table",  class.output="scroll-100"}
@@ -671,13 +870,7 @@ result25 <-
   rownames_to_column("methods") %>%
   separate("methods", into = c("Methods", "LM"))
 
-result25
-```
-
-
-```{r}
 calib_plot <- function(data) {
-  # browser()
   data1 <- map(data, "centiles_observed") %>%
     map_dfr(~try(dplyr::select(., 
                                time = "x",
@@ -737,7 +930,8 @@ calib_plot <- function(data) {
                 colour = "grey",
                 linetype = "dashed") +
     geom_errorbar(aes(x = pred,
-                      ymin = mean - 1.96 * sd, 
+                      ymin = ifelse((mean - 1.96 * sd) >= 0,
+                                    (mean - 1.96 * sd), 0), 
                       ymax = mean + 1.96 * sd), 
                   colour = "red",
                   alpha = 1,
@@ -760,53 +954,162 @@ calib_plot <- function(data) {
 #| label: calibration_plot
 #| warning: false
 
-
 ek25_mlm_plot <- calib_plot(data = e_k25_mlm)$plot +
   scale_x_continuous(name = "Prediction", 
-                     limits = c(-10, 100),
-                     breaks = seq(-10, 100, 10)) +
+                     limits = c(0, 100),
+                     breaks = seq(0, 100, 10)) +
   scale_y_continuous(name = "Observation", 
-                     limits = c(-10, 100),
-                     breaks = seq(-10, 100, 10)) +
+                     limits = c(0, 100),
+                     breaks = seq(0, 100, 10)) +
   theme_bw() +
   theme(axis.text = element_text(size = 5),
         axis.ticks.length = unit(.05, "cm"), 
         axis.title = element_text(size = 6)) 
 
+
 ```
 
-```{r}
+```{r "plot"}
 #| fig-cap: "Calibration plot"
-#| fig-height: 3
-#| fig-width: 3
-
-
+#| fig-height: 2.5
+#| fig-width: 2.5
 
 ek25_mlm_plot +
-  ggtitle(expression(paste("Euclidean Distance ",
-                           {kappa}, "= 25"))) +
+  # ggtitle(expression(paste("Euclidean Distance ",
+  #                         {kappa}, "= 25"))) +
   theme(plot.title = element_text(size = 6))
 
+ggsave("figure/tsa28_calibration_plot_2x2.png", width = 2, height = 2)
 ```
 
 ## Interval range
 
-```{r}
+```{r "interval"}
 
-ci_ek25_mlm <- map_dfr(e_k25_mlm, "centiles_predicted") %>%
-
-  dplyr::select(contains("cfint")) %>%
-
+mean_result_ek25m <- map(e_k25_mlm, 
+                         "centiles_observed") %>%
+  map_dfr(~try(meanout(.))) %>% 
+  dplyr::select(coverage50, 
+                coverage80,
+                coverage90,
+                mad, 
+                md,
+                mse,
+                cr50) %>%
   colMeans()
 
-```
+ci_ek25_mlm1 <- map_dfr(e_k25_mlm, 
+                       "centiles_predicted") %>% 
+  dplyr::select(cfint50, cfint80, cfint90) %>%
+  colMeans()
 
+# ci_ek25_mlm2 <- map_dfr(e_k25_mlm, 
+#                        "centiles_observed") %>% 
+#   mutate(cfint50 = `75` - `25`,
+#          cfint80 = `90` - `10`,
+#          cfint90 = `95` - `5`) %>%
+#   dplyr::select(cfint50, cfint80, cfint90) %>%
+#   colMeans()
+
+```
 
 ### Predictive interval range for Ek25 MLM
 
 ```{r class.output="scroll-100"}
 
-ci_ek25_mlm
+ci_ek25_mlm1
+```
+
+## GAMLSS for all {#sec-gamlss-for-all}
+
+The final model is only fitted with `mgcv` or `gamlss`; We cannot use a linear mixed model for the testing dataset prediction. The prediction for the linear mixed model has to be conditional on the random effects.
+
+```{r}
+gamlss_fit <- gamlss(outcome_score ~ cs(time, df = 3),
+                     # + adi_value + bmi + patient_age + patient_gender + primary_payer + surgery_type + outcome0 + t0,
+                     sigma.formula = ~cs(time, df = 1),
+                     data = tsa_train1)
+
+summary(gamlss_fit)
+broom::tidy(gamlss_fit)
+
 
 ```
 
+# Final tables
+
+```{r}
+test_base1 <- tsa_test1 %>%
+  group_by(id) %>%
+  slice(1L) %>%
+  ungroup()
+
+gamlss_pred <-  tsa_test1 %>%
+  group_by(id) %>%
+  group_map(~gamlss::centiles.pred(gamlss_fit,
+                             type = c("centiles"),
+                             xname = "time",
+                             xvalues = .x$time,
+                             cen = c(5, 10, 25, 50, 75, 90, 95))) %>% 
+  bind_rows() %>% 
+    cbind(id = tsa_test1[["id"]],
+          time = tsa_test1[["time"]],
+          actual = tsa_test1[["outcome_score"]]) %>%
+    as.data.frame() %>%
+    mutate(coverage50 = ifelse(actual >= `25` & actual <= `75`, 1, 0),
+           coverage80 = ifelse(actual >= `10` & actual <= `90`, 1, 0),
+           coverage90 = ifelse(actual >= `5` & actual <= `95`, 1, 0),
+           cfint50 = `75` - `25`,
+           cfint80 = `90` - `10`,
+           cfint90 = `95` - `5`,
+           # mse = (actual - `50`)^2,
+           # biassq = bias^2,
+           # var = mse - bias^2,
+           md = actual - `50`,
+           mad = abs(actual - `50`))
+```
+
+```{r class.output="scroll-100"}
+gamlss_tbl <- gamlss_pred %>%
+  group_by(id) %>%
+  group_map(~colMeans(.x)) %>%
+  bind_rows() %>%
+  mutate(mse = mad^2) %>% 
+  dplyr::select(mad, md, mse, coverage50, coverage80, coverage90) %>%
+  colMeans()%>%
+  unlist() 
+gamlss_tbl["mse"] <- sqrt(as.numeric(gamlss_tbl["mse"]))
+
+results <- rbind(GAMLSS = gamlss_tbl, 
+                 PLM = result25 %>%
+                   dplyr::select(mad, md, rmse, 
+                                 coverage50,
+                                 coverage80,
+                                 coverage90)) %>%
+  as.data.frame()
+ 
+colnames(results) <- c("BIAS", "MD", "RMSE", "CR50%", "CR80%", "CR90%")
+
+results %>% knitr::kable(caption = "Final Predictive Results for GAMLSS and PLM")
+```
+
+To Jeremy, the different for the confidence interval width is due to.
+
+Whether we take the mean of all the time points (GAMLSS), or we take the average of each individual (we calculate the mean confidence interval width and then take the mean).
+
+```{r class.output="scroll-100"}
+gamlss_wide <- gamlss_pred %>%
+  group_by(id) %>%
+  dplyr::select(cfint50, cfint80, cfint90) %>%
+  group_map(~colMeans(.x)) %>%
+  bind_rows() %>%
+  as.data.frame() %>%
+  colMeans() 
+
+cfint_wide <- rbind(GAMLSS = gamlss_wide, 
+                    PLM = ci_ek25_mlm1) %>%
+  as.data.frame()
+colnames(cfint_wide) <- c("CI50%", "CI80%", "CI90%")
+
+cfint_wide %>% knitr::kable(caption = "Predictive Interval Range for GAMLSS and PLM")
+```

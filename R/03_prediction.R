@@ -70,7 +70,8 @@ predict_gamlss <- function(matching,
            # mse = (actual - `50`)^2,
            # biassq = bias^2,
            # var = mse - bias^2,
-           bias = abs(actual - `50`))
+           md = actual - `50`,
+           mad = abs(actual - `50`))
 
   centiles_pred <-
     centiles.pred(plm,

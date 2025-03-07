@@ -15,7 +15,7 @@ here::set_here()
 
 ## setup for plm ------------------------------
 
-anchor <- c(14, 30, 60, 90)
+anchor <- c(30, 45, 60, 90)
 bsk_knots <- c(25, 50, 75, 100, 125, 150)
 kappa1 <- seq(4, 100, by = 1)
 

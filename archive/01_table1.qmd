@@ -63,7 +63,7 @@ read_excel_allsheets <- function(filename, tibble = FALSE) {
 }
 
 
-files <- read_excel_allsheets("data/tsa_data_deidentified.xlsx")
+files <- read_excel_allsheets("tsa_data_deidentified.xlsx")
 tsa_base <- files[[1]] %>% 
   janitor::clean_names()
 

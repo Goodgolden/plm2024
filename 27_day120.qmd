@@ -164,7 +164,7 @@ mean_result_ek20m <- map(e_k20_mlm, "centiles_observed") %>%
 ```
 
 ```{r "final_table",  class.output="scroll-100"}
-options(scipen=1, digits=4)
+options(scipen = 1, digits = 4)
 
 result27 <- 
   rbind(meanEk20_SLM = mean_result_ek20s, 

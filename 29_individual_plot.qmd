@@ -1,0 +1,122 @@
+---
+title: "Plots"
+format: docx
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      # include = FALSE,
+                      warnings = FALSE,
+                      message = FALSE,
+                      comment = "#>",
+                      #results = "hide",
+                      digits = 4,
+                      error = FALSE)
+
+## load packages
+library(here, quietly = TRUE)
+library(tidyverse, quietly = TRUE)
+library(gtsummary, quietly = TRUE)
+library(flextable, quietly = TRUE)
+library(chron, quietly = TRUE)
+devtools::load_all()
+
+## the packages for the flowchart
+library(DiagrammeR)
+library(DiagrammeRsvg)
+library(rsvg, quietly = TRUE)
+
+## check the directory for the file
+# here::dr_here()
+here::set_here()
+
+## the figure or results should be saved 
+# paste0("foldername/Sfilename_workingresult_", 
+#      Sys.Date(), ".filetype")
+```
+
+```{r}
+load("results/tsa_5visit_kappa25_relationship_120day_2025-01-02.Rdata")
+
+individual_plots <- map(e_k25_mlm, "predictive_centiles")
+
+save(individual_plots, file = paste0("results/tsa_5visit_kappa25_individual_plots_", Sys.time(), ".Rdata"))
+
+```
+
+Here is the function for the predictive plots. It would be the similar code to pullout the rawdata and the predictive intervals, if you need to use the data to make plots in different ways. The code would look like this in below chunck.
+
+```{r}
+#| include: FALSE
+#| eval: FALSE
+rawdata <- map(e_k25_mlm, "centiles_observed")
+newdata <- map(e_k25_mlm, "centiles_predicted")
+```
+
+And here is the function I used to make the plots.
+
+```{r}
+## 3.2 individual people-like-me matching plot ---------------------------------
+#' Title plot individual matching
+#'
+#' @param quantile
+#' @param observation
+#' @param title
+#'
+#' @return
+#' @export
+plm_ind_plot <- function(quantile,
+                         observation,
+                         title = NULL,
+                         outcome_var,
+                         id_var,
+                         time_var,
+                         ...) {
+  observation <- observation %>%
+    mutate(time = !!time_var,
+                  outcome = !!outcome_var)
+
+  plot1 <- ggplot() +
+    geom_line(data = quantile, aes(x = time, y = q05),
+              color = "dodgerblue", linetype = "dashed",
+              alpha = 0.5) +
+    geom_line(data = quantile, aes(x = time, y = q95),
+              color = "dodgerblue", linetype = "dashed",
+              alpha = 0.5) +
+    geom_ribbon(data = quantile,
+                aes(x = time, ymin = q05, ymax = q95),
+                fill = "dodgerblue", alpha = 0.5) +
+    geom_line(data = quantile, aes(x = time, y = q10),
+              color = "dodgerblue2", linetype = "dashed",
+              alpha = 0.7) +
+    geom_line(data = quantile, aes(x = time, y = q90),
+              color = "dodgerblue2", linetype = "dashed",
+              alpha = 0.7) +
+    geom_ribbon(data = quantile,
+                aes(x = time, ymin = q10, ymax = q90),
+                fill = "dodgerblue2", alpha = 0.7) +
+    geom_line(data = quantile, aes(x = time, y = q25),
+              color = "dodgerblue3", linetype = "dashed",
+              alpha = 0.8) +
+    geom_line(data = quantile, aes(x = time, y = q75),
+              color = "dodgerblue3", linetype = "dashed",
+              alpha = 0.8) +
+    geom_ribbon(data = quantile,
+                aes(x = time, ymin = q25, ymax = q75),
+                fill = "dodgerblue3", alpha = 0.8) +
+    geom_line(data = quantile, aes(x = time, y = q50),
+              color = "dodgerblue4", linetype = "dashed") +
+    geom_point(data = observation, 
+               aes(x = time, 
+                   y = outcome),
+               color = "black", 
+               size = 1) +
+    theme_bw() +
+    xlab("Time") +
+    ylab("Outcome") +
+    ggtitle(title)
+
+  # print(range(observation$time))
+  plot1
+}
+```
